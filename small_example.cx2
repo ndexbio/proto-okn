@@ -1,0 +1,2199 @@
+[
+    {
+        "CXVersion": "2.0",
+        "hasFragments": false
+    },
+    {
+        "metaData": [
+            {
+                "name": "networkAttributes",
+                "elementCount": 1
+            },
+            {
+                "name": "visualProperties",
+                "elementCount": 1
+            },
+            {
+                "name": "visualEditorProperties",
+                "elementCount": 1
+            },
+            {
+                "name": "attributeDeclarations",
+                "elementCount": 1
+            },
+            {
+                "name": "nodes",
+                "elementCount": 16
+            },
+            {
+                "name": "edges",
+                "elementCount": 58
+            }
+        ]
+    },
+    {
+        "attributeDeclarations": [
+            {
+                "nodes": {
+                    "represents": {
+                        "a": "r",
+                        "d": "string"
+                    },
+                    "name": {
+                        "a": "n",
+                        "d": "string"
+                    },
+                    "alias": {
+                        "d": "list_of_string"
+                    },
+                    "type": {
+                        "d": "string"
+                    }
+                },
+                "networkAttributes": {
+                    "reference": {
+                        "d": "string"
+                    },
+                    "name": {
+                        "d": "string"
+                    },
+                    "description": {
+                        "d": "string"
+                    },
+                    "version": {
+                        "d": "string"
+                    },
+                    "@context": {
+                        "d": "string"
+                    }
+                },
+                "edges": {
+                    "Relationships": {
+                        "d": "string"
+                    },
+                    "__relationship_score": {
+                        "d": "double"
+                    },
+                    "interaction": {
+                        "a": "i",
+                        "d": "string"
+                    },
+                    "__directed": {
+                        "d": "boolean"
+                    },
+                    "__reverse_directed": {
+                        "d": "boolean"
+                    },
+                    "__edge_source": {
+                        "d": "string"
+                    }
+                }
+            }
+        ]
+    },
+    {
+        "networkAttributes": [
+            {
+                "name": "Sumoylation by RanBP2 regulates transcriptional repression (v2.0)",
+                "description": "<p>This is the updated version of an original NCI Pathway Interaction Database (PID) network.</p><p>The list of entities (genes, proteins, chemicals, etc) from the original network was used to query the <a href=\"https://www.indra.bio\" target=\"_blank\"><b>INDRA</b></a> database, retrieving high-quality relationships between entities. INDRA is a database that integrates information from multiple high-quality text mining engines, pathway databases, and small molecule resources. The INDRA-derived relationships are up-to-date and have links to detailed summaries of supporting literature evidence, including the specific supporting text.</p><p>While we have included only high-confidence relationships, text-mining complicated sentences can produce errors such as the reversal of up-regulation vs. down-regulation or the direction of an edge (i.e. B activates A instead of A activates B). Nevertheless, the entity recognition by the text miners is excellent and the text supporting a relationship almost always describes a genuine relationship between the entities.</p><p><b>Legend:</b><br/>BLUE: edges annotated by INDRA only.<br/>RED: edges annotated both by INDRA and PID.<br/>YELLOW: selected element.</p>",
+                "version": "2.0 (20220901)",
+                "reference": "<p>Pillich RT, Chen J, Churas C, Fong D, Gyori BM, Ideker T, Karis K, Liu SN, Ono K, Pico A, Pratt D.<br/><b>NDEx IQuery: a multi-method network gene set analysis leveraging the Network Data Exchange</b>.<br/> Bioinformatics. 2023 Mar 1;39(3):btad118.<br/><a href=\"https://doi/org/10.1093/bioinformatics/btad118\">doi: 10.1093/bioinformatics/btad118</a></p>",
+                "@context": "{\"chebi\": \"http://identifiers.org/chebi/CHEBI:\", \"uniprot\": \"http://identifiers.org/uniprot/\", \"cas\": \"http://identifiers.org/cas/\", \"kegg.compound\": \"http://identifiers.org/kegg.compound/\", \"hgnc.symbol\": \"http://identifiers.org/hgnc.symbol/\", \"hprd\": \"http://identifiers.org/hprd/\"}"
+
+            }
+        ]
+    },
+    {
+        "nodes": [
+            {
+                "id": 1,
+                "x": 1190.0,
+                "y": 1540.0,
+                "v": {
+                    "n": "HDAC1",
+                    "r": "uniprot:Q13547",
+                    "type": "protein",
+                    "alias": [
+                        "uniprot:Q92534"
+                    ]
+                }
+            },
+            {
+                "id": 2,
+                "x": 1680.0,
+                "y": 1260.0,
+                "v": {
+                    "n": "HDAC4",
+                    "r": "uniprot:E9PGB9",
+                    "type": "protein",
+                    "alias": [
+                        "uniprot:F5GX36",
+                        "uniprot:P56524",
+                        "uniprot:Q86YH7",
+                        "uniprot:Q9UND6"
+                    ]
+                }
+            },
+            {
+                "id": 3,
+                "x": 1680.0,
+                "y": 1750.0,
+                "v": {
+                    "n": "RAN",
+                    "r": "uniprot:A8K3Z8",
+                    "type": "protein",
+                    "alias": [
+                        "uniprot:P17080",
+                        "uniprot:P28746",
+                        "uniprot:P28747",
+                        "uniprot:P62826",
+                        "uniprot:Q6IPB2",
+                        "uniprot:Q86V08",
+                        "uniprot:Q8NI90",
+                        "uniprot:Q9CSP3",
+                        "uniprot:Q9CWI7",
+                        "uniprot:Q9CZA2",
+                        "uniprot:Q9UDJ5",
+                        "uniprot:Q9UEU9"
+                    ]
+                }
+            },
+            {
+                "id": 4,
+                "x": 1330.0,
+                "y": 1610.0,
+                "v": {
+                    "n": "XPO1",
+                    "r": "uniprot:A6NL14",
+                    "type": "protein",
+                    "alias": [
+                        "uniprot:A8K1K5",
+                        "uniprot:D6W5E2",
+                        "uniprot:O14980",
+                        "uniprot:Q63HP8",
+                        "uniprot:Q68CP3",
+                        "uniprot:Q99433"
+                    ]
+                }
+            },
+            {
+                "id": 5,
+                "x": 1540.0,
+                "y": 1400.0,
+                "v": {
+                    "n": "Gam1",
+                    "r": "Gam1",
+                    "type": "protein"
+                }
+            },
+            {
+                "id": 6,
+                "x": 1540.0,
+                "y": 1820.0,
+                "v": {
+                    "n": "NUP153",
+                    "r": "uniprot:B4DIK2",
+                    "type": "protein",
+                    "alias": [
+                        "uniprot:E7EPX5",
+                        "uniprot:F6QR24",
+                        "uniprot:P49790",
+                        "uniprot:Q4LE47",
+                        "uniprot:Q5T9I7",
+                        "uniprot:Q7Z743"
+                    ]
+                }
+            },
+            {
+                "id": 7,
+                "x": 1540.0,
+                "y": 1680.0,
+                "v": {
+                    "n": "NUP210",
+                    "r": "uniprot:A6NN56",
+                    "type": "protein",
+                    "alias": [
+                        "uniprot:O94980",
+                        "uniprot:Q6NXG6",
+                        "uniprot:Q8NBJ1",
+                        "uniprot:Q8TEM1",
+                        "uniprot:Q9H6C8",
+                        "uniprot:Q9UFP3"
+                    ]
+                }
+            },
+            {
+                "id": 8,
+                "x": 1610.0,
+                "y": 1540.0,
+                "v": {
+                    "n": "NUP214",
+                    "r": "uniprot:A6NFQ0",
+                    "type": "protein",
+                    "alias": [
+                        "uniprot:P35658",
+                        "uniprot:Q15010",
+                        "uniprot:Q3KQZ0",
+                        "uniprot:Q5JUP7",
+                        "uniprot:Q75R47",
+                        "uniprot:Q86XD3"
+                    ]
+                }
+            },
+            {
+                "id": 9,
+                "x": 1820.0,
+                "y": 1610.0,
+                "v": {
+                    "n": "NUP62",
+                    "r": "uniprot:B3KWU5",
+                    "type": "protein",
+                    "alias": [
+                        "uniprot:P37198",
+                        "uniprot:Q503A4",
+                        "uniprot:Q6GTM2",
+                        "uniprot:Q96C43",
+                        "uniprot:Q9NSL1"
+                    ]
+                }
+            },
+            {
+                "id": 10,
+                "x": 1750.0,
+                "y": 1470.0,
+                "v": {
+                    "n": "RANBP2",
+                    "r": "uniprot:P49792",
+                    "type": "protein",
+                    "alias": [
+                        "uniprot:Q13074",
+                        "uniprot:Q15280",
+                        "uniprot:Q53TE2",
+                        "uniprot:Q59FH7"
+                    ]
+                }
+            },
+            {
+                "id": 11,
+                "x": 1330.0,
+                "y": 1750.0,
+                "v": {
+                    "n": "RANGAP1",
+                    "r": "uniprot:P46060",
+                    "type": "protein",
+                    "alias": [
+                        "uniprot:Q96JJ2"
+                    ]
+                }
+            },
+            {
+                "id": 12,
+                "x": 1470.0,
+                "y": 1260.0,
+                "v": {
+                    "n": "SUMO1",
+                    "r": "uniprot:A8MUS8",
+                    "type": "protein",
+                    "alias": [
+                        "uniprot:B2R4I5",
+                        "uniprot:P55856",
+                        "uniprot:P63165",
+                        "uniprot:Q6FGG0",
+                        "uniprot:Q6NZ62",
+                        "uniprot:Q93068"
+                    ]
+                }
+            },
+            {
+                "id": 13,
+                "x": 1470.0,
+                "y": 1540.0,
+                "v": {
+                    "n": "UBE2I",
+                    "r": "uniprot:D3DU69",
+                    "type": "protein",
+                    "alias": [
+                        "uniprot:P50550",
+                        "uniprot:P63279",
+                        "uniprot:Q15698",
+                        "uniprot:Q59GX1",
+                        "uniprot:Q86VB3"
+                    ]
+                }
+            },
+            {
+                "id": 14,
+                "x": 1330.0,
+                "y": 1400.0,
+                "v": {
+                    "n": "MDM2",
+                    "r": "uniprot:A6NL51",
+                    "type": "protein",
+                    "alias": [
+                        "uniprot:A8K2S6",
+                        "uniprot:Q00987",
+                        "uniprot:Q13226",
+                        "uniprot:Q13297",
+                        "uniprot:Q13298",
+                        "uniprot:Q13299",
+                        "uniprot:Q13300",
+                        "uniprot:Q13301",
+                        "uniprot:Q53XW0",
+                        "uniprot:Q71TW9",
+                        "uniprot:Q8WYJ1",
+                        "uniprot:Q8WYJ2",
+                        "uniprot:Q9UGI3",
+                        "uniprot:Q9UMT8"
+                    ]
+                }
+            },
+            {
+                "id": 15,
+                "x": 1120.0,
+                "y": 1330.0,
+                "v": {
+                    "n": "PIAS1",
+                    "r": "uniprot:B2RB67",
+                    "type": "protein",
+                    "alias": [
+                        "uniprot:B3KSY9",
+                        "uniprot:C5J4B4",
+                        "uniprot:O75925",
+                        "uniprot:Q147X4",
+                        "uniprot:Q99751",
+                        "uniprot:Q9UN02"
+                    ]
+                }
+            },
+            {
+                "id": 16,
+                "x": 1330.0,
+                "y": 1260.0,
+                "v": {
+                    "n": "PIAS2",
+                    "r": "uniprot:O75927",
+                    "type": "protein",
+                    "alias": [
+                        "uniprot:O75928",
+                        "uniprot:Q96BT5",
+                        "uniprot:Q96KE3"
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "edges": [
+            {
+                "id": 227,
+                "s": 13,
+                "t": 15,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=PIAS1&agent1=UBE2I&format=html&expand_all=false\" target=\"INDRA_Evidence\">32</a>)<ul><li/>PIAS1 binds UBE2I(<a href=\"https://db.indra.bio/statements/from_agents?subject=PIAS1&object=UBE2I&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">32</a>)</ul>",
+                    "__edge_source": "INDRA",
+                    "__relationship_score": 3.4657359027997265,
+                    "__directed": false,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 230,
+                "s": 15,
+                "t": 16,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=PIAS1&agent1=PIAS2&format=html&expand_all=false\" target=\"INDRA_Evidence\">8</a>)<ul><li/>PIAS1 binds PIAS2(<a href=\"https://db.indra.bio/statements/from_agents?subject=PIAS1&object=PIAS2&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">8</a>)</ul>",
+                    "__edge_source": "INDRA",
+                    "__relationship_score": 2.0794415416798357,
+                    "__directed": false,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 231,
+                "s": 1,
+                "t": 15,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=PIAS1&agent1=HDAC1&format=html&expand_all=false\" target=\"INDRA_Evidence\">13</a>)<ul><li/>PIAS1 sumoylates HDAC1(<a href=\"https://db.indra.bio/statements/from_agents?subject=PIAS1&object=HDAC1&type=Sumoylation&format=html&expand_all=true\" target=\"INDRA_Evidence\">8</a>)<li/>PIAS1 binds HDAC1(<a href=\"https://db.indra.bio/statements/from_agents?subject=PIAS1&object=HDAC1&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">3</a>)<li/>PIAS1 desumoylates HDAC1(<a href=\"https://db.indra.bio/statements/from_agents?subject=PIAS1&object=HDAC1&type=Desumoylation&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)</ul>",
+                    "__edge_source": "INDRA",
+                    "__relationship_score": 2.5649493574615367,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 244,
+                "s": 1,
+                "t": 14,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=MDM2&agent1=HDAC1&format=html&expand_all=false\" target=\"INDRA_Evidence\">49</a>)<ul><li/>HDAC1 binds MDM2(<a href=\"https://db.indra.bio/statements/from_agents?subject=HDAC1&object=MDM2&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">25</a>)<li/>MDM2 ubiquitinates HDAC1(<a href=\"https://db.indra.bio/statements/from_agents?subject=MDM2&object=HDAC1&type=Ubiquitination&format=html&expand_all=true\" target=\"INDRA_Evidence\">12</a>)<li/>MDM2 activates HDAC1(<a href=\"https://db.indra.bio/statements/from_agents?subject=MDM2&object=HDAC1&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">4</a>)<li/>MDM2 decreases the amount of HDAC1(<a href=\"https://db.indra.bio/statements/from_agents?subject=MDM2&object=HDAC1&type=DecreaseAmount&format=html&expand_all=true\" target=\"INDRA_Evidence\">3</a>)<li/>MDM2 inhibits HDAC1(<a href=\"https://db.indra.bio/statements/from_agents?subject=MDM2&object=HDAC1&type=Inhibition&format=html&expand_all=true\" target=\"INDRA_Evidence\">3</a>)<li/>MDM2 deubiquitinates HDAC1(<a href=\"https://db.indra.bio/statements/from_agents?subject=MDM2&object=HDAC1&type=Deubiquitination&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)</ul>",
+                    "__edge_source": "INDRA",
+                    "__relationship_score": 3.8918202981106265,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 246,
+                "s": 1,
+                "t": 2,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=HDAC1&agent1=HDAC4&format=html&expand_all=false\" target=\"INDRA_Evidence\">17</a>)<ul><li/>HDAC1 binds HDAC4(<a href=\"https://db.indra.bio/statements/from_agents?subject=HDAC1&object=HDAC4&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">17</a>)</ul>",
+                    "__edge_source": "INDRA",
+                    "__relationship_score": 2.833213344056216,
+                    "__directed": false,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 254,
+                "s": 4,
+                "t": 14,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=MDM2&agent1=XPO1&format=html&expand_all=false\" target=\"INDRA_Evidence\">5</a>)<ul><li/>MDM2 binds XPO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=MDM2&object=XPO1&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">5</a>)</ul>",
+                    "__edge_source": "INDRA",
+                    "__relationship_score": 1.6094379124341003,
+                    "__directed": false,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 257,
+                "s": 5,
+                "t": 13,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=Gam1&agent1=UBE2I&format=html&expand_all=false\" target=\"INDRA_Evidence\">14</a>)<ul><li/>Gam1 inhibits UBE2I(<a href=\"https://db.indra.bio/statements/from_agents?subject=Gam1&object=UBE2I&type=Inhibition&format=html&expand_all=true\" target=\"INDRA_Evidence\">6</a>)<li/>Gam1 activates UBE2I(<a href=\"https://db.indra.bio/statements/from_agents?subject=Gam1&object=UBE2I&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">5</a>)<li/>Gam1 binds UBE2I(<a href=\"https://db.indra.bio/statements/from_agents?subject=Gam1&object=UBE2I&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">3</a>)</ul>",
+                    "__edge_source": "INDRA",
+                    "__relationship_score": 2.6390573296152584,
+                    "__directed": true,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 261,
+                "s": 13,
+                "t": 16,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=PIAS2&agent1=UBE2I&format=html&expand_all=false\" target=\"INDRA_Evidence\">11</a>)<ul><li/>PIAS2 binds UBE2I(<a href=\"https://db.indra.bio/statements/from_agents?subject=PIAS2&object=UBE2I&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">11</a>)</ul>",
+                    "__edge_source": "INDRA",
+                    "__relationship_score": 2.3978952727983707,
+                    "__directed": false,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 264,
+                "s": 5,
+                "t": 12,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=SUMO1&agent1=Gam1&format=html&expand_all=false\" target=\"INDRA_Evidence\">2</a>)<ul><li/>SUMO1 binds Gam1(<a href=\"https://db.indra.bio/statements/from_agents?subject=SUMO1&object=Gam1&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 0.6931471805599453,
+                    "__directed": true,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 265,
+                "s": 1,
+                "t": 12,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=SUMO1&agent1=HDAC1&format=html&expand_all=false\" target=\"INDRA_Evidence\">14</a>)<ul><li/>HDAC1 binds SUMO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=HDAC1&object=SUMO1&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">4</a>)<li/>HDAC1 inhibits SUMO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=HDAC1&object=SUMO1&type=Inhibition&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)<li/>SUMO1 activates HDAC1(<a href=\"https://db.indra.bio/statements/from_agents?subject=SUMO1&object=HDAC1&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">3</a>)<li/>SUMO1 ubiquitinates HDAC1(<a href=\"https://db.indra.bio/statements/from_agents?subject=SUMO1&object=HDAC1&type=Ubiquitination&format=html&expand_all=true\" target=\"INDRA_Evidence\">3</a>)<li/>SUMO1 sumoylates HDAC1(<a href=\"https://db.indra.bio/statements/from_agents?subject=SUMO1&object=HDAC1&type=Sumoylation&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 2.6390573296152584,
+                    "__directed": true,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 266,
+                "s": 1,
+                "t": 4,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=HDAC1&agent1=XPO1&format=html&expand_all=false\" target=\"INDRA_Evidence\">9</a>)<ul><li/>HDAC1 binds XPO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=HDAC1&object=XPO1&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">9</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 2.1972245773362196,
+                    "__directed": false,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 267,
+                "s": 2,
+                "t": 12,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=HDAC4&agent1=SUMO1&format=html&expand_all=false\" target=\"INDRA_Evidence\">3</a>)<ul><li/>HDAC4 activates SUMO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=HDAC4&object=SUMO1&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)<li/>SUMO1 binds HDAC4(<a href=\"https://db.indra.bio/statements/from_agents?subject=SUMO1&object=HDAC4&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">1</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 1.0986122886681098,
+                    "__directed": true,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 268,
+                "s": 12,
+                "t": 14,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=SUMO1&agent1=MDM2&format=html&expand_all=false\" target=\"INDRA_Evidence\">14</a>)<ul><li/>SUMO1 binds MDM2(<a href=\"https://db.indra.bio/statements/from_agents?subject=SUMO1&object=MDM2&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">7</a>)<li/>SUMO1 inhibits MDM2(<a href=\"https://db.indra.bio/statements/from_agents?subject=SUMO1&object=MDM2&type=Inhibition&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)<li/>SUMO1 deubiquitinates MDM2(<a href=\"https://db.indra.bio/statements/from_agents?subject=SUMO1&object=MDM2&type=Deubiquitination&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)<li/>SUMO1 increases the amount of MDM2(<a href=\"https://db.indra.bio/statements/from_agents?subject=SUMO1&object=MDM2&type=IncreaseAmount&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)<li/>SUMO1 activates MDM2(<a href=\"https://db.indra.bio/statements/from_agents?subject=SUMO1&object=MDM2&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">1</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 2.6390573296152584,
+                    "__directed": true,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 269,
+                "s": 6,
+                "t": 7,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=NUP210&agent1=NUP153&format=html&expand_all=false\" target=\"INDRA_Evidence\">2</a>)<ul><li/>NUP210 binds NUP153(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP210&object=NUP153&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 0.6931471805599453,
+                    "__directed": false,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 270,
+                "s": 6,
+                "t": 8,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=NUP214&agent1=NUP153&format=html&expand_all=false\" target=\"INDRA_Evidence\">1</a>)<ul><li/>NUP214 binds NUP153(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP214&object=NUP153&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">1</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 0.0,
+                    "__directed": false,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 271,
+                "s": 6,
+                "t": 9,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=NUP62&agent1=NUP153&format=html&expand_all=false\" target=\"INDRA_Evidence\">17</a>)<ul><li/>NUP153 binds NUP62(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP153&object=NUP62&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">14</a>)<li/>NUP62 inhibits NUP153(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP62&object=NUP153&type=Inhibition&format=html&expand_all=true\" target=\"INDRA_Evidence\">3</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 2.833213344056216,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 272,
+                "s": 6,
+                "t": 10,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=RANBP2&agent1=NUP153&format=html&expand_all=false\" target=\"INDRA_Evidence\">13</a>)<ul><li/>RANBP2 binds NUP153(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=NUP153&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">13</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 2.5649493574615367,
+                    "__directed": false,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 273,
+                "s": 6,
+                "t": 11,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=NUP153&agent1=RANGAP1&format=html&expand_all=false\" target=\"INDRA_Evidence\">2</a>)<ul><li/>NUP153 binds RANGAP1(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP153&object=RANGAP1&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 0.6931471805599453,
+                    "__directed": false,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 274,
+                "s": 3,
+                "t": 6,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=NUP153&agent1=RAN&format=html&expand_all=false\" target=\"INDRA_Evidence\">21</a>)<ul><li/>RAN binds NUP153(<a href=\"https://db.indra.bio/statements/from_agents?subject=RAN&object=NUP153&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">15</a>)<li/>NUP153 activates RAN(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP153&object=RAN&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">4</a>)<li/>NUP153 inhibits RAN(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP153&object=RAN&type=Inhibition&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 3.044522437723423,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 275,
+                "s": 6,
+                "t": 12,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=NUP153&agent1=SUMO1&format=html&expand_all=false\" target=\"INDRA_Evidence\">2</a>)<ul><li/>NUP153 binds SUMO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP153&object=SUMO1&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 0.6931471805599453,
+                    "__directed": true,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 276,
+                "s": 6,
+                "t": 13,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=NUP153&agent1=UBE2I&format=html&expand_all=false\" target=\"INDRA_Evidence\">1</a>)<ul><li/>NUP153 binds UBE2I(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP153&object=UBE2I&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">1</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 0.0,
+                    "__directed": false,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 277,
+                "s": 4,
+                "t": 6,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=NUP153&agent1=XPO1&format=html&expand_all=false\" target=\"INDRA_Evidence\">8</a>)<ul><li/>NUP153 binds XPO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP153&object=XPO1&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">8</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 2.0794415416798357,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 278,
+                "s": 7,
+                "t": 13,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=NUP210&agent1=UBE2I&format=html&expand_all=false\" target=\"INDRA_Evidence\">1</a>)<ul><li/>NUP210 binds UBE2I(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP210&object=UBE2I&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">1</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 0.0,
+                    "__directed": false,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 279,
+                "s": 1,
+                "t": 8,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=NUP214&agent1=HDAC1&format=html&expand_all=false\" target=\"INDRA_Evidence\">3</a>)<ul><li/>NUP214 binds HDAC1(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP214&object=HDAC1&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">3</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 1.0986122886681098,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 280,
+                "s": 2,
+                "t": 8,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=NUP214&agent1=HDAC4&format=html&expand_all=false\" target=\"INDRA_Evidence\">1</a>)<ul><li/>NUP214 binds HDAC4(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP214&object=HDAC4&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">1</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 0.0,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 281,
+                "s": 8,
+                "t": 14,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=MDM2&agent1=NUP214&format=html&expand_all=false\" target=\"INDRA_Evidence\">9</a>)<ul><li/>NUP214 binds MDM2(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP214&object=MDM2&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">5</a>)<li/>MDM2 ubiquitinates NUP214(<a href=\"https://db.indra.bio/statements/from_agents?subject=MDM2&object=NUP214&type=Ubiquitination&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)<li/>MDM2 inhibits NUP214(<a href=\"https://db.indra.bio/statements/from_agents?subject=MDM2&object=NUP214&type=Inhibition&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 2.1972245773362196,
+                    "__directed": true,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 282,
+                "s": 8,
+                "t": 9,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=NUP214&agent1=NUP62&format=html&expand_all=false\" target=\"INDRA_Evidence\">17</a>)<ul><li/>NUP214 binds NUP62(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP214&object=NUP62&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">17</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 2.833213344056216,
+                    "__directed": false,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 283,
+                "s": 8,
+                "t": 10,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=NUP214&agent1=RANBP2&format=html&expand_all=false\" target=\"INDRA_Evidence\">16</a>)<ul><li/>RANBP2 binds NUP214(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=NUP214&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">12</a>)<li/>NUP214 inhibits RANBP2(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP214&object=RANBP2&type=Inhibition&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)<li/>NUP214 activates RANBP2(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP214&object=RANBP2&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 2.772588722239781,
+                    "__directed": true,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 284,
+                "s": 3,
+                "t": 8,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=NUP214&agent1=RAN&format=html&expand_all=false\" target=\"INDRA_Evidence\">1</a>)<ul><li/>NUP214 binds RAN(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP214&object=RAN&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">1</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 0.0,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 285,
+                "s": 8,
+                "t": 12,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=NUP214&agent1=SUMO1&format=html&expand_all=false\" target=\"INDRA_Evidence\">2</a>)<ul><li/>NUP214 binds SUMO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP214&object=SUMO1&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 0.6931471805599453,
+                    "__directed": true,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 286,
+                "s": 8,
+                "t": 13,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=NUP214&agent1=UBE2I&format=html&expand_all=false\" target=\"INDRA_Evidence\">3</a>)<ul><li/>NUP214 binds UBE2I(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP214&object=UBE2I&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">3</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 1.0986122886681098,
+                    "__directed": false,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 287,
+                "s": 4,
+                "t": 8,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=NUP214&agent1=XPO1&format=html&expand_all=false\" target=\"INDRA_Evidence\">38</a>)<ul><li/>NUP214 binds XPO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP214&object=XPO1&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">33</a>)<li/>NUP214 inhibits XPO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP214&object=XPO1&type=Inhibition&format=html&expand_all=true\" target=\"INDRA_Evidence\">5</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 3.6375861597263857,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 288,
+                "s": 9,
+                "t": 10,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=RANBP2&agent1=NUP62&format=html&expand_all=false\" target=\"INDRA_Evidence\">5</a>)<ul><li/>RANBP2 binds NUP62(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=NUP62&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">5</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 1.6094379124341003,
+                    "__directed": false,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 289,
+                "s": 3,
+                "t": 9,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=RAN&agent1=NUP62&format=html&expand_all=false\" target=\"INDRA_Evidence\">1</a>)<ul><li/>RAN binds NUP62(<a href=\"https://db.indra.bio/statements/from_agents?subject=RAN&object=NUP62&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">1</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 0.0,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 290,
+                "s": 4,
+                "t": 9,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=NUP62&agent1=XPO1&format=html&expand_all=false\" target=\"INDRA_Evidence\">7</a>)<ul><li/>NUP62 binds XPO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=NUP62&object=XPO1&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">7</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 1.9459101490553132,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 291,
+                "s": 14,
+                "t": 15,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=PIAS1&agent1=MDM2&format=html&expand_all=false\" target=\"INDRA_Evidence\">5</a>)<ul><li/>PIAS1 sumoylates MDM2(<a href=\"https://db.indra.bio/statements/from_agents?subject=PIAS1&object=MDM2&type=Sumoylation&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)<li/>PIAS1 binds MDM2(<a href=\"https://db.indra.bio/statements/from_agents?subject=PIAS1&object=MDM2&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)<li/>PIAS1 activates MDM2(<a href=\"https://db.indra.bio/statements/from_agents?subject=PIAS1&object=MDM2&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">1</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 1.6094379124341003,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 292,
+                "s": 12,
+                "t": 15,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=PIAS1&agent1=SUMO1&format=html&expand_all=false\" target=\"INDRA_Evidence\">44</a>)<ul><li/>PIAS1 binds SUMO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=PIAS1&object=SUMO1&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">25</a>)<li/>PIAS1 activates SUMO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=PIAS1&object=SUMO1&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">17</a>)<li/>PIAS1 inhibits SUMO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=PIAS1&object=SUMO1&type=Inhibition&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 3.784189633918261,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 293,
+                "s": 14,
+                "t": 16,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=PIAS2&agent1=MDM2&format=html&expand_all=false\" target=\"INDRA_Evidence\">2</a>)<ul><li/>PIAS2 activates MDM2(<a href=\"https://db.indra.bio/statements/from_agents?subject=PIAS2&object=MDM2&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">1</a>)<li/>PIAS2 sumoylates MDM2(<a href=\"https://db.indra.bio/statements/from_agents?subject=PIAS2&object=MDM2&type=Sumoylation&format=html&expand_all=true\" target=\"INDRA_Evidence\">1</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 0.6931471805599453,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 294,
+                "s": 12,
+                "t": 16,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=SUMO1&agent1=PIAS2&format=html&expand_all=false\" target=\"INDRA_Evidence\">11</a>)<ul><li/>SUMO1 binds PIAS2(<a href=\"https://db.indra.bio/statements/from_agents?subject=SUMO1&object=PIAS2&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">11</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 2.3978952727983707,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 295,
+                "s": 2,
+                "t": 10,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=RANBP2&agent1=HDAC4&format=html&expand_all=false\" target=\"INDRA_Evidence\">9</a>)<ul><li/>RANBP2 sumoylates HDAC4(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=HDAC4&type=Sumoylation&format=html&expand_all=true\" target=\"INDRA_Evidence\">4</a>)<li/>RANBP2 activates HDAC4(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=HDAC4&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">3</a>)<li/>RANBP2 binds HDAC4(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=HDAC4&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 2.1972245773362196,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 296,
+                "s": 10,
+                "t": 14,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=RANBP2&agent1=MDM2&format=html&expand_all=false\" target=\"INDRA_Evidence\">6</a>)<ul><li/>RANBP2 sumoylates MDM2(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=MDM2&type=Sumoylation&format=html&expand_all=true\" target=\"INDRA_Evidence\">4</a>)<li/>RANBP2 binds MDM2(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=MDM2&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 1.791759469228055,
+                    "__directed": true,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 297,
+                "s": 10,
+                "t": 11,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=RANGAP1&agent1=RANBP2&format=html&expand_all=false\" target=\"INDRA_Evidence\">196</a>)<ul><li/>RANBP2 binds RANGAP1(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=RANGAP1&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">172</a>)<li/>RANBP2 sumoylates RANGAP1(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=RANGAP1&type=Sumoylation&format=html&expand_all=true\" target=\"INDRA_Evidence\">8</a>)<li/>RANBP2 activates RANGAP1(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=RANGAP1&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">8</a>)<li/>RANBP2 decreases the amount of RANGAP1(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=RANGAP1&type=DecreaseAmount&format=html&expand_all=true\" target=\"INDRA_Evidence\">4</a>)<li/>RANBP2 inhibits RANGAP1(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=RANGAP1&type=Inhibition&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)<li/>RANGAP1 activates RANBP2(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANGAP1&object=RANBP2&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 5.278114659230517,
+                    "__directed": true,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 298,
+                "s": 3,
+                "t": 10,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=RANBP2&agent1=RAN&format=html&expand_all=false\" target=\"INDRA_Evidence\">33</a>)<ul><li/>RANBP2 binds RAN(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=RAN&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">29</a>)<li/>RANBP2 activates RAN(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=RAN&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)<li/>RANBP2 sumoylates RAN(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=RAN&type=Sumoylation&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 3.4965075614664802,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 299,
+                "s": 10,
+                "t": 12,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=RANBP2&agent1=SUMO1&format=html&expand_all=false\" target=\"INDRA_Evidence\">55</a>)<ul><li/>RANBP2 binds SUMO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=SUMO1&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">48</a>)<li/>RANBP2 activates SUMO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=SUMO1&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">7</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 4.007333185232471,
+                    "__directed": true,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 300,
+                "s": 10,
+                "t": 13,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=RANBP2&agent1=UBE2I&format=html&expand_all=false\" target=\"INDRA_Evidence\">85</a>)<ul><li/>RANBP2 binds UBE2I(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=UBE2I&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">83</a>)<li/>RANBP2 inhibits UBE2I(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=UBE2I&type=Inhibition&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 4.442651256490317,
+                    "__directed": true,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 301,
+                "s": 4,
+                "t": 10,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=XPO1&agent1=RANBP2&format=html&expand_all=false\" target=\"INDRA_Evidence\">35</a>)<ul><li/>RANBP2 binds XPO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=XPO1&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">31</a>)<li/>RANBP2 inhibits XPO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANBP2&object=XPO1&type=Inhibition&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)<li/>XPO1 activates RANBP2(<a href=\"https://db.indra.bio/statements/from_agents?subject=XPO1&object=RANBP2&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 3.5553480614894135,
+                    "__directed": true,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 302,
+                "s": 1,
+                "t": 11,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=HDAC1&agent1=RANGAP1&format=html&expand_all=false\" target=\"INDRA_Evidence\">9</a>)<ul><li/>HDAC1 activates RANGAP1(<a href=\"https://db.indra.bio/statements/from_agents?subject=HDAC1&object=RANGAP1&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">9</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 2.1972245773362196,
+                    "__directed": true,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 303,
+                "s": 3,
+                "t": 11,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=RANGAP1&agent1=RAN&format=html&expand_all=false\" target=\"INDRA_Evidence\">36</a>)<ul><li/>RAN binds RANGAP1(<a href=\"https://db.indra.bio/statements/from_agents?subject=RAN&object=RANGAP1&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">19</a>)<li/>RAN activates RANGAP1(<a href=\"https://db.indra.bio/statements/from_agents?subject=RAN&object=RANGAP1&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)<li/>RANGAP1 activates RAN(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANGAP1&object=RAN&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">10</a>)<li/>RANGAP1 inhibits RAN(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANGAP1&object=RAN&type=Inhibition&format=html&expand_all=true\" target=\"INDRA_Evidence\">4</a>)<li/>RANGAP1 is a GAP for RAN(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANGAP1&object=RAN&type=Gap&format=html&expand_all=true\" target=\"INDRA_Evidence\">1</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 3.58351893845611,
+                    "__directed": true,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 304,
+                "s": 11,
+                "t": 12,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=RANGAP1&agent1=SUMO1&format=html&expand_all=false\" target=\"INDRA_Evidence\">70</a>)<ul><li/>SUMO1 binds RANGAP1(<a href=\"https://db.indra.bio/statements/from_agents?subject=SUMO1&object=RANGAP1&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">45</a>)<li/>SUMO1 activates RANGAP1(<a href=\"https://db.indra.bio/statements/from_agents?subject=SUMO1&object=RANGAP1&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">19</a>)<li/>SUMO1 sumoylates RANGAP1(<a href=\"https://db.indra.bio/statements/from_agents?subject=SUMO1&object=RANGAP1&type=Sumoylation&format=html&expand_all=true\" target=\"INDRA_Evidence\">3</a>)<li/>RANGAP1 activates SUMO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANGAP1&object=SUMO1&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">3</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 4.248495242049359,
+                    "__directed": true,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 305,
+                "s": 11,
+                "t": 13,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=UBE2I&agent1=RANGAP1&format=html&expand_all=false\" target=\"INDRA_Evidence\">89</a>)<ul><li/>RANGAP1 binds UBE2I(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANGAP1&object=UBE2I&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">86</a>)<li/>UBE2I sumoylates RANGAP1(<a href=\"https://db.indra.bio/statements/from_agents?subject=UBE2I&object=RANGAP1&type=Sumoylation&format=html&expand_all=true\" target=\"INDRA_Evidence\">3</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 4.48863636973214,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 306,
+                "s": 4,
+                "t": 11,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=XPO1&agent1=RANGAP1&format=html&expand_all=false\" target=\"INDRA_Evidence\">10</a>)<ul><li/>XPO1 activates RANGAP1(<a href=\"https://db.indra.bio/statements/from_agents?subject=XPO1&object=RANGAP1&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">6</a>)<li/>XPO1 inhibits RANGAP1(<a href=\"https://db.indra.bio/statements/from_agents?subject=XPO1&object=RANGAP1&type=Inhibition&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)<li/>RANGAP1 binds XPO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=RANGAP1&object=XPO1&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 2.302585092994046,
+                    "__directed": true,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 307,
+                "s": 3,
+                "t": 4,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=XPO1&agent1=RAN&format=html&expand_all=false\" target=\"INDRA_Evidence\">77</a>)<ul><li/>RAN binds XPO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=RAN&object=XPO1&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">73</a>)<li/>XPO1 activates RAN(<a href=\"https://db.indra.bio/statements/from_agents?subject=XPO1&object=RAN&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">4</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 4.343805421853684,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 308,
+                "s": 12,
+                "t": 13,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=UBE2I&agent1=SUMO1&format=html&expand_all=false\" target=\"INDRA_Evidence\">241</a>)<ul><li/>SUMO1 binds UBE2I(<a href=\"https://db.indra.bio/statements/from_agents?subject=SUMO1&object=UBE2I&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">214</a>)<li/>SUMO1 activates UBE2I(<a href=\"https://db.indra.bio/statements/from_agents?subject=SUMO1&object=UBE2I&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">6</a>)<li/>UBE2I activates SUMO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=UBE2I&object=SUMO1&type=Activation&format=html&expand_all=true\" target=\"INDRA_Evidence\">13</a>)<li/>UBE2I inhibits SUMO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=UBE2I&object=SUMO1&type=Inhibition&format=html&expand_all=true\" target=\"INDRA_Evidence\">5</a>)<li/>UBE2I increases the amount of SUMO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=UBE2I&object=SUMO1&type=IncreaseAmount&format=html&expand_all=true\" target=\"INDRA_Evidence\">3</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 5.484796933490655,
+                    "__directed": true,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 309,
+                "s": 1,
+                "t": 13,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=UBE2I&agent1=HDAC1&format=html&expand_all=false\" target=\"INDRA_Evidence\">3</a>)<ul><li/>HDAC1 binds UBE2I(<a href=\"https://db.indra.bio/statements/from_agents?subject=HDAC1&object=UBE2I&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)<li/>UBE2I sumoylates HDAC1(<a href=\"https://db.indra.bio/statements/from_agents?subject=UBE2I&object=HDAC1&type=Sumoylation&format=html&expand_all=true\" target=\"INDRA_Evidence\">1</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 1.0986122886681098,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 310,
+                "s": 2,
+                "t": 13,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=HDAC4&agent1=UBE2I&format=html&expand_all=false\" target=\"INDRA_Evidence\">14</a>)<ul><li/>HDAC4 binds UBE2I(<a href=\"https://db.indra.bio/statements/from_agents?subject=HDAC4&object=UBE2I&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">14</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 2.6390573296152584,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 311,
+                "s": 13,
+                "t": 14,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=UBE2I&agent1=MDM2&format=html&expand_all=false\" target=\"INDRA_Evidence\">14</a>)<ul><li/>MDM2 binds UBE2I(<a href=\"https://db.indra.bio/statements/from_agents?subject=MDM2&object=UBE2I&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">12</a>)<li/>UBE2I sumoylates MDM2(<a href=\"https://db.indra.bio/statements/from_agents?subject=UBE2I&object=MDM2&type=Sumoylation&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 2.6390573296152584,
+                    "__directed": true,
+                    "__reverse_directed": false,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 312,
+                "s": 3,
+                "t": 13,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=RAN&agent1=UBE2I&format=html&expand_all=false\" target=\"INDRA_Evidence\">2</a>)<ul><li/>RAN binds UBE2I(<a href=\"https://db.indra.bio/statements/from_agents?subject=RAN&object=UBE2I&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">2</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 0.6931471805599453,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            },
+            {
+                "id": 313,
+                "s": 4,
+                "t": 13,
+                "v": {
+                    "Relationships": "All Evidences (<a href=\"https://db.indra.bio/statements/from_agents?agent0=UBE2I&agent1=XPO1&format=html&expand_all=false\" target=\"INDRA_Evidence\">1</a>)<ul><li/>UBE2I binds XPO1(<a href=\"https://db.indra.bio/statements/from_agents?subject=UBE2I&object=XPO1&type=Complex&format=html&expand_all=true\" target=\"INDRA_Evidence\">1</a>)</ul>",
+                    "__edge_source": "INDRA + NCI-PID",
+                    "__relationship_score": 0.0,
+                    "__directed": false,
+                    "__reverse_directed": true,
+                    "i": "interacts with"
+                }
+            }
+        ]
+    },
+    {
+        "visualProperties": [
+            {
+                "default": {
+                    "edge": {
+                        "EDGE_SOURCE_ARROW_SIZE": 6.0,
+                        "EDGE_LABEL_OPACITY": 1.0,
+                        "EDGE_TARGET_ARROW_SHAPE": "none",
+                        "EDGE_WIDTH": 1.0,
+                        "EDGE_SOURCE_ARROW_SHAPE": "none",
+                        "EDGE_LINE_COLOR": "#999999",
+                        "EDGE_Z_ORDER": 0.0,
+                        "EDGE_LABEL_MAX_WIDTH": 200.0,
+                        "EDGE_OPACITY": 0.6862745098039216,
+                        "EDGE_LABEL_ROTATION": 0.0,
+                        "EDGE_LABEL_FONT_FACE": {
+                            "FONT_FAMILY": "sans-serif",
+                            "FONT_STYLE": "normal",
+                            "FONT_WEIGHT": "normal",
+                            "FONT_NAME": "Dialog"
+                        },
+                        "EDGE_VISIBILITY": "element",
+                        "EDGE_LABEL_FONT_SIZE": 10,
+                        "EDGE_LABEL_COLOR": "#000000",
+                        "EDGE_SELECTED_PAINT": "#FFFF00",
+                        "EDGE_STACKING": "AUTO_BEND",
+                        "EDGE_SELECTED": "false",
+                        "EDGE_STACKING_DENSITY": 0.5,
+                        "EDGE_SOURCE_ARROW_COLOR": "#999999",
+                        "EDGE_CURVED": true,
+                        "EDGE_LINE_STYLE": "solid",
+                        "EDGE_TARGET_ARROW_COLOR": "#999999",
+                        "EDGE_TARGET_ARROW_SIZE": 6.0
+                    },
+                    "network": {
+                        "NETWORK_BACKGROUND_COLOR": "#FFFFFF"
+                    },
+                    "node": {
+                        "NODE_IMAGE_9": "org.cytoscape.cg.model.NullCustomGraphics,0,[ Remove Graphics ],",
+                        "NODE_Y_LOCATION": "0.0",
+                        "NODE_IMAGE_1": "org.cytoscape.cg.model.NullCustomGraphics,0,[ Remove Graphics ],",
+                        "NODE_IMAGE_4_SIZE": {
+                            "WIDTH": 0.0,
+                            "HEIGHT": 0.0
+                        },
+                        "NODE_BACKGROUND_COLOR": "#E5E5E5",
+                        "NODE_IMAGE_2": "org.cytoscape.cg.model.NullCustomGraphics,0,[ Remove Graphics ],",
+                        "NODE_IMAGE_3": "org.cytoscape.cg.model.NullCustomGraphics,0,[ Remove Graphics ],",
+                        "NODE_IMAGE_4": "org.cytoscape.cg.model.NullCustomGraphics,0,[ Remove Graphics ],",
+                        "NODE_IMAGE_5": "org.cytoscape.cg.model.NullCustomGraphics,0,[ Remove Graphics ],",
+                        "NODE_IMAGE_6": "org.cytoscape.cg.model.NullCustomGraphics,0,[ Remove Graphics ],",
+                        "NODE_IMAGE_7": "org.cytoscape.cg.model.NullCustomGraphics,0,[ Remove Graphics ],",
+                        "NODE_IMAGE_8": "org.cytoscape.cg.model.NullCustomGraphics,0,[ Remove Graphics ],",
+                        "NODE_IMAGE_9_POSITION": {
+                            "HORIZONTAL_ALIGN": "center",
+                            "VERTICAL_ALIGN": "center",
+                            "HORIZONTAL_ANCHOR": "center",
+                            "VERTICAL_ANCHOR": "center",
+                            "MARGIN_X": 0.0,
+                            "MARGIN_Y": 0.0
+                        },
+                        "NODE_BORDER_STYLE": "solid",
+                        "NODE_IMAGE_5_SIZE": {
+                            "WIDTH": 0.0,
+                            "HEIGHT": 0.0
+                        },
+                        "NODE_VISIBILITY": "element",
+                        "NODE_BACKGROUND_OPACITY": 1.0,
+                        "NODE_LABEL_COLOR": "#262626",
+                        "NODE_IMAGE_8_POSITION": {
+                            "HORIZONTAL_ALIGN": "center",
+                            "VERTICAL_ALIGN": "center",
+                            "HORIZONTAL_ANCHOR": "center",
+                            "VERTICAL_ANCHOR": "center",
+                            "MARGIN_X": 0.0,
+                            "MARGIN_Y": 0.0
+                        },
+                        "NODE_IMAGE_6_SIZE": {
+                            "WIDTH": 0.0,
+                            "HEIGHT": 0.0
+                        },
+                        "NODE_IMAGE_9_SIZE": {
+                            "WIDTH": 0.0,
+                            "HEIGHT": 0.0
+                        },
+                        "NODE_SHAPE": "ellipse",
+                        "NODE_IMAGE_2_POSITION": {
+                            "HORIZONTAL_ALIGN": "center",
+                            "VERTICAL_ALIGN": "center",
+                            "HORIZONTAL_ANCHOR": "center",
+                            "VERTICAL_ANCHOR": "center",
+                            "MARGIN_X": 0.0,
+                            "MARGIN_Y": 0.0
+                        },
+                        "NODE_BORDER_OPACITY": 1.0,
+                        "NODE_LABEL_ROTATION": 0.0,
+                        "NODE_IMAGE_3_POSITION": {
+                            "HORIZONTAL_ALIGN": "center",
+                            "VERTICAL_ALIGN": "center",
+                            "HORIZONTAL_ANCHOR": "center",
+                            "VERTICAL_ANCHOR": "center",
+                            "MARGIN_X": 0.0,
+                            "MARGIN_Y": 0.0
+                        },
+                        "COMPOUND_NODE_PADDING": "10.0",
+                        "NODE_LABEL_FONT_FACE": {
+                            "FONT_FAMILY": "sans-serif",
+                            "FONT_STYLE": "normal",
+                            "FONT_WEIGHT": "normal",
+                            "FONT_NAME": "Dialog"
+                        },
+                        "NODE_LABEL_MAX_WIDTH": 200.0,
+                        "NODE_IMAGE_3_SIZE": {
+                            "WIDTH": 0.0,
+                            "HEIGHT": 0.0
+                        },
+                        "NODE_IMAGE_4_POSITION": {
+                            "HORIZONTAL_ALIGN": "center",
+                            "VERTICAL_ALIGN": "center",
+                            "HORIZONTAL_ANCHOR": "center",
+                            "VERTICAL_ANCHOR": "center",
+                            "MARGIN_X": 0.0,
+                            "MARGIN_Y": 0.0
+                        },
+                        "NODE_IMAGE_7_SIZE": {
+                            "WIDTH": 0.0,
+                            "HEIGHT": 0.0
+                        },
+                        "NODE_IMAGE_1_POSITION": {
+                            "HORIZONTAL_ALIGN": "center",
+                            "VERTICAL_ALIGN": "center",
+                            "HORIZONTAL_ANCHOR": "center",
+                            "VERTICAL_ANCHOR": "center",
+                            "MARGIN_X": 0.0,
+                            "MARGIN_Y": 0.0
+                        },
+                        "NODE_WIDTH": 40.0,
+                        "COMPOUND_NODE_SHAPE": "ROUND_RECTANGLE",
+                        "NODE_IMAGE_8_SIZE": {
+                            "WIDTH": 0.0,
+                            "HEIGHT": 0.0
+                        },
+                        "NODE_LABEL_POSITION": {
+                            "HORIZONTAL_ALIGN": "center",
+                            "VERTICAL_ALIGN": "center",
+                            "HORIZONTAL_ANCHOR": "center",
+                            "VERTICAL_ANCHOR": "center",
+                            "MARGIN_X": 0.0,
+                            "MARGIN_Y": 0.0,
+                            "JUSTIFICATION": "center"
+                        },
+                        "NODE_Z_LOCATION": "0.0",
+                        "NODE_IMAGE_2_SIZE": {
+                            "WIDTH": 0.0,
+                            "HEIGHT": 0.0
+                        },
+                        "NODE_IMAGE_1_SIZE": {
+                            "WIDTH": 0.0,
+                            "HEIGHT": 0.0
+                        },
+                        "NODE_IMAGE_7_POSITION": {
+                            "HORIZONTAL_ALIGN": "center",
+                            "VERTICAL_ALIGN": "center",
+                            "HORIZONTAL_ANCHOR": "center",
+                            "VERTICAL_ANCHOR": "center",
+                            "MARGIN_X": 0.0,
+                            "MARGIN_Y": 0.0
+                        },
+                        "NODE_SELECTED": false,
+                        "NODE_BORDER_COLOR": "#666666",
+                        "NODE_LABEL_FONT_SIZE": 10,
+                        "NODE_X_LOCATION": "0.0",
+                        "NODE_IMAGE_5_POSITION": {
+                            "HORIZONTAL_ALIGN": "center",
+                            "VERTICAL_ALIGN": "center",
+                            "HORIZONTAL_ANCHOR": "center",
+                            "VERTICAL_ANCHOR": "center",
+                            "MARGIN_X": 0.0,
+                            "MARGIN_Y": 0.0
+                        },
+                        "NODE_BORDER_WIDTH": 0.0,
+                        "NODE_IMAGE_6_POSITION": {
+                            "HORIZONTAL_ALIGN": "center",
+                            "VERTICAL_ALIGN": "center",
+                            "HORIZONTAL_ANCHOR": "center",
+                            "VERTICAL_ANCHOR": "center",
+                            "MARGIN_X": 0.0,
+                            "MARGIN_Y": 0.0
+                        },
+                        "NODE_HEIGHT": 40.0,
+                        "NODE_LABEL_OPACITY": 1.0,
+                        "NODE_SELECTED_PAINT": "#FFFF00"
+                    }
+                },
+                "edgeMapping": {
+                    "EDGE_TARGET_ARROW_SHAPE": {
+                        "type": "DISCRETE",
+                        "definition": {
+                            "map": [
+                                {
+                                    "v": true,
+                                    "vp": "triangle"
+                                }
+                            ],
+                            "attribute": "__directed"
+                        }
+                    },
+                    "EDGE_WIDTH": {
+                        "type": "CONTINUOUS",
+                        "definition": {
+                            "map": [
+                                {
+                                    "max": 0.0,
+                                    "maxVPValue": 1.0,
+                                    "includeMin": false,
+                                    "includeMax": false
+                                },
+                                {
+                                    "min": 0.0,
+                                    "max": 5.484796933490655,
+                                    "maxVPValue": 10.0,
+                                    "minVPValue": 2.0,
+                                    "includeMin": true,
+                                    "includeMax": true
+                                },
+                                {
+                                    "min": 5.484796933490655,
+                                    "minVPValue": 1.0,
+                                    "includeMin": false,
+                                    "includeMax": false
+                                }
+                            ],
+                            "attribute": "__relationship_score"
+                        }
+                    },
+                    "EDGE_SOURCE_ARROW_SHAPE": {
+                        "type": "DISCRETE",
+                        "definition": {
+                            "map": [
+                                {
+                                    "v": true,
+                                    "vp": "triangle"
+                                }
+                            ],
+                            "attribute": "__reverse_directed"
+                        }
+                    },
+                    "EDGE_LINE_COLOR": {
+                        "type": "DISCRETE",
+                        "definition": {
+                            "map": [
+                                {
+                                    "v": "INDRA",
+                                    "vp": "#0099FF"
+                                },
+                                {
+                                    "v": "INDRA + NCI-PID",
+                                    "vp": "#CC0033"
+                                }
+                            ],
+                            "attribute": "__edge_source"
+                        }
+                    },
+                    "EDGE_SOURCE_ARROW_COLOR": {
+                        "type": "DISCRETE",
+                        "definition": {
+                            "map": [
+                                {
+                                    "v": "INDRA",
+                                    "vp": "#0099FF"
+                                },
+                                {
+                                    "v": "INDRA + NCI-PID",
+                                    "vp": "#CC0033"
+                                }
+                            ],
+                            "attribute": "__edge_source"
+                        }
+                    },
+                    "EDGE_TARGET_ARROW_COLOR": {
+                        "type": "DISCRETE",
+                        "definition": {
+                            "map": [
+                                {
+                                    "v": "INDRA",
+                                    "vp": "#0099FF"
+                                },
+                                {
+                                    "v": "INDRA + NCI-PID",
+                                    "vp": "#CC0033"
+                                }
+                            ],
+                            "attribute": "__edge_source"
+                        }
+                    }
+                },
+                "nodeMapping": {
+                    "NODE_BORDER_WIDTH": {
+                        "type": "DISCRETE",
+                        "definition": {
+                            "map": [
+                                {
+                                    "v": "disease",
+                                    "vp": 3.0
+                                },
+                                {
+                                    "v": "antibody",
+                                    "vp": 2.0
+                                },
+                                {
+                                    "v": "gene",
+                                    "vp": 4.0
+                                },
+                                {
+                                    "v": "proteinfamily",
+                                    "vp": 4.0
+                                },
+                                {
+                                    "v": "stimulus",
+                                    "vp": 0.0
+                                },
+                                {
+                                    "v": "biologicalprocess",
+                                    "vp": 0.0
+                                },
+                                {
+                                    "v": "tissue",
+                                    "vp": 8.0
+                                },
+                                {
+                                    "v": "mrna",
+                                    "vp": 2.0
+                                },
+                                {
+                                    "v": "cellularcomponent",
+                                    "vp": 0.0
+                                },
+                                {
+                                    "v": "molecularfunction",
+                                    "vp": 0.0
+                                },
+                                {
+                                    "v": "smallmolecule",
+                                    "vp": 1.0
+                                },
+                                {
+                                    "v": "geneproduct",
+                                    "vp": 2.0
+                                },
+                                {
+                                    "v": "complex",
+                                    "vp": 8.0
+                                },
+                                {
+                                    "v": "variant",
+                                    "vp": 4.0
+                                },
+                                {
+                                    "v": "pathway",
+                                    "vp": 4.0
+                                },
+                                {
+                                    "v": "miRNA",
+                                    "vp": 2.0
+                                },
+                                {
+                                    "v": "signal",
+                                    "vp": 3.0
+                                }
+                            ],
+                            "attribute": "type"
+                        }
+                    },
+                    "NODE_LABEL": {
+                        "type": "PASSTHROUGH",
+                        "definition": {
+                            "attribute": "name"
+                        }
+                    },
+                    "NODE_LABEL_COLOR": {
+                        "type": "DISCRETE",
+                        "definition": {
+                            "map": [
+                                {
+                                    "v": "phenotype",
+                                    "vp": "#191919"
+                                },
+                                {
+                                    "v": "molecularfunction",
+                                    "vp": "#FFFFFF"
+                                },
+                                {
+                                    "v": "complex",
+                                    "vp": "#000000"
+                                },
+                                {
+                                    "v": "protein",
+                                    "vp": "#000000"
+                                },
+                                {
+                                    "v": "variant",
+                                    "vp": "#000000"
+                                },
+                                {
+                                    "v": "biologicalprocess",
+                                    "vp": "#FFFFFF"
+                                },
+                                {
+                                    "v": "cellularcomponent",
+                                    "vp": "#FFFFFF"
+                                }
+                            ],
+                            "attribute": "type"
+                        }
+                    },
+                    "NODE_LABEL_POSITION": {
+                        "type": "DISCRETE",
+                        "definition": {
+                            "map": [
+                                {
+                                    "v": "antibody",
+                                    "vp": {
+                                        "HORIZONTAL_ALIGN": "left",
+                                        "VERTICAL_ALIGN": "top",
+                                        "HORIZONTAL_ANCHOR": "center",
+                                        "VERTICAL_ANCHOR": "bottom",
+                                        "MARGIN_X": 0.0,
+                                        "MARGIN_Y": 0.0,
+                                        "JUSTIFICATION": "center"
+                                    }
+                                },
+                                {
+                                    "v": "smallmolecule",
+                                    "vp": {
+                                        "HORIZONTAL_ALIGN": "left",
+                                        "VERTICAL_ALIGN": "top",
+                                        "HORIZONTAL_ANCHOR": "center",
+                                        "VERTICAL_ANCHOR": "bottom",
+                                        "MARGIN_X": 0.0,
+                                        "MARGIN_Y": 0.0,
+                                        "JUSTIFICATION": "center"
+                                    }
+                                },
+                                {
+                                    "v": "rna",
+                                    "vp": {
+                                        "HORIZONTAL_ALIGN": "center",
+                                        "VERTICAL_ALIGN": "bottom",
+                                        "HORIZONTAL_ANCHOR": "center",
+                                        "VERTICAL_ANCHOR": "top",
+                                        "MARGIN_X": 0.0,
+                                        "MARGIN_Y": 0.0,
+                                        "JUSTIFICATION": "center"
+                                    }
+                                },
+                                {
+                                    "v": "chemical",
+                                    "vp": {
+                                        "HORIZONTAL_ALIGN": "left",
+                                        "VERTICAL_ALIGN": "top",
+                                        "HORIZONTAL_ANCHOR": "right",
+                                        "VERTICAL_ANCHOR": "bottom",
+                                        "MARGIN_X": 0.0,
+                                        "MARGIN_Y": 0.0,
+                                        "JUSTIFICATION": "center"
+                                    }
+                                },
+                                {
+                                    "v": "stimulus",
+                                    "vp": {
+                                        "HORIZONTAL_ALIGN": "left",
+                                        "VERTICAL_ALIGN": "top",
+                                        "HORIZONTAL_ANCHOR": "center",
+                                        "VERTICAL_ANCHOR": "bottom",
+                                        "MARGIN_X": 0.0,
+                                        "MARGIN_Y": 0.0,
+                                        "JUSTIFICATION": "center"
+                                    }
+                                },
+                                {
+                                    "v": "miRNA",
+                                    "vp": {
+                                        "HORIZONTAL_ALIGN": "center",
+                                        "VERTICAL_ALIGN": "bottom",
+                                        "HORIZONTAL_ANCHOR": "center",
+                                        "VERTICAL_ANCHOR": "top",
+                                        "MARGIN_X": 0.0,
+                                        "MARGIN_Y": 0.0,
+                                        "JUSTIFICATION": "center"
+                                    }
+                                },
+                                {
+                                    "v": "mrna",
+                                    "vp": {
+                                        "HORIZONTAL_ALIGN": "center",
+                                        "VERTICAL_ALIGN": "bottom",
+                                        "HORIZONTAL_ANCHOR": "center",
+                                        "VERTICAL_ANCHOR": "top",
+                                        "MARGIN_X": 0.0,
+                                        "MARGIN_Y": 0.0,
+                                        "JUSTIFICATION": "center"
+                                    }
+                                },
+                                {
+                                    "v": "signal",
+                                    "vp": {
+                                        "HORIZONTAL_ALIGN": "left",
+                                        "VERTICAL_ALIGN": "top",
+                                        "HORIZONTAL_ANCHOR": "center",
+                                        "VERTICAL_ANCHOR": "bottom",
+                                        "MARGIN_X": 0.0,
+                                        "MARGIN_Y": 0.0,
+                                        "JUSTIFICATION": "center"
+                                    }
+                                },
+                                {
+                                    "v": "drug",
+                                    "vp": {
+                                        "HORIZONTAL_ALIGN": "left",
+                                        "VERTICAL_ALIGN": "top",
+                                        "HORIZONTAL_ANCHOR": "center",
+                                        "VERTICAL_ANCHOR": "bottom",
+                                        "MARGIN_X": 0.0,
+                                        "MARGIN_Y": 0.0,
+                                        "JUSTIFICATION": "center"
+                                    }
+                                }
+                            ],
+                            "attribute": "type"
+                        }
+                    },
+                    "NODE_BORDER_COLOR": {
+                        "type": "DISCRETE",
+                        "definition": {
+                            "map": [
+                                {
+                                    "v": "geneproduct",
+                                    "vp": "#0099CC"
+                                },
+                                {
+                                    "v": "antibody",
+                                    "vp": "#333333"
+                                },
+                                {
+                                    "v": "gene",
+                                    "vp": "#467CA8"
+                                },
+                                {
+                                    "v": "proteinfamily",
+                                    "vp": "#285FF0"
+                                },
+                                {
+                                    "v": "complex",
+                                    "vp": "#0099FF"
+                                },
+                                {
+                                    "v": "variant",
+                                    "vp": "#80DFCD"
+                                },
+                                {
+                                    "v": "pathway",
+                                    "vp": "#666666"
+                                },
+                                {
+                                    "v": "miRNA",
+                                    "vp": "#F46761"
+                                },
+                                {
+                                    "v": "tissue",
+                                    "vp": "#FFCCCC"
+                                },
+                                {
+                                    "v": "mrna",
+                                    "vp": "#F46761"
+                                }
+                            ],
+                            "attribute": "type"
+                        }
+                    },
+                    "NODE_HEIGHT": {
+                        "type": "DISCRETE",
+                        "definition": {
+                            "map": [
+                                {
+                                    "v": "cellularcompartment",
+                                    "vp": 75.0
+                                },
+                                {
+                                    "v": "disease",
+                                    "vp": 50.0
+                                },
+                                {
+                                    "v": "rna",
+                                    "vp": 8.0
+                                },
+                                {
+                                    "v": "gene",
+                                    "vp": 25.0
+                                },
+                                {
+                                    "v": "proteinfamily",
+                                    "vp": 65.0
+                                },
+                                {
+                                    "v": "stimulus",
+                                    "vp": 60.0
+                                },
+                                {
+                                    "v": "biologicalprocess",
+                                    "vp": 20.0
+                                },
+                                {
+                                    "v": "tissue",
+                                    "vp": 60.0
+                                },
+                                {
+                                    "v": "mrna",
+                                    "vp": 8.0
+                                },
+                                {
+                                    "v": "cellularcomponent",
+                                    "vp": 20.0
+                                },
+                                {
+                                    "v": "drug",
+                                    "vp": 20.0
+                                },
+                                {
+                                    "v": "molecularfunction",
+                                    "vp": 20.0
+                                },
+                                {
+                                    "v": "smallmolecule",
+                                    "vp": 15.0
+                                },
+                                {
+                                    "v": "geneproduct",
+                                    "vp": 25.0
+                                },
+                                {
+                                    "v": "chemical",
+                                    "vp": 15.0
+                                },
+                                {
+                                    "v": "complex",
+                                    "vp": 50.0
+                                },
+                                {
+                                    "v": "protein",
+                                    "vp": 35.0
+                                },
+                                {
+                                    "v": "mirna",
+                                    "vp": 8.0
+                                },
+                                {
+                                    "v": "variant",
+                                    "vp": 15.0
+                                },
+                                {
+                                    "v": "pathway",
+                                    "vp": 55.0
+                                },
+                                {
+                                    "v": "miRNA",
+                                    "vp": 8.0
+                                },
+                                {
+                                    "v": "signal",
+                                    "vp": 20.0
+                                }
+                            ],
+                            "attribute": "type"
+                        }
+                    },
+                    "NODE_BACKGROUND_COLOR": {
+                        "type": "DISCRETE",
+                        "definition": {
+                            "map": [
+                                {
+                                    "v": "phenotype",
+                                    "vp": "#CCCCCC"
+                                },
+                                {
+                                    "v": "antibody",
+                                    "vp": "#FFFFFF"
+                                },
+                                {
+                                    "v": "disease",
+                                    "vp": "#FFFFFF"
+                                },
+                                {
+                                    "v": "rna",
+                                    "vp": "#F46761"
+                                },
+                                {
+                                    "v": "gene",
+                                    "vp": "#FFFFFF"
+                                },
+                                {
+                                    "v": "proteinfamily",
+                                    "vp": "#FFFFFF"
+                                },
+                                {
+                                    "v": "stimulus",
+                                    "vp": "#666666"
+                                },
+                                {
+                                    "v": "biologicalprocess",
+                                    "vp": "#009999"
+                                },
+                                {
+                                    "v": "tissue",
+                                    "vp": "#FFFFFF"
+                                },
+                                {
+                                    "v": "mrna",
+                                    "vp": "#FFFFFF"
+                                },
+                                {
+                                    "v": "cellularcomponent",
+                                    "vp": "#009999"
+                                },
+                                {
+                                    "v": "drug",
+                                    "vp": "#DAE10E"
+                                },
+                                {
+                                    "v": "molecularfunction",
+                                    "vp": "#009999"
+                                },
+                                {
+                                    "v": "geneproduct",
+                                    "vp": "#FFFFFF"
+                                },
+                                {
+                                    "v": "smallmolecule",
+                                    "vp": "#FFCC00"
+                                },
+                                {
+                                    "v": "chemical",
+                                    "vp": "#97CC2C"
+                                },
+                                {
+                                    "v": "protein",
+                                    "vp": "#94EFFD"
+                                },
+                                {
+                                    "v": "complex",
+                                    "vp": "#FFFFFF"
+                                },
+                                {
+                                    "v": "mirna",
+                                    "vp": "#EF7F23"
+                                },
+                                {
+                                    "v": "variant",
+                                    "vp": "#FFFFFF"
+                                },
+                                {
+                                    "v": "pathway",
+                                    "vp": "#FFFFFF"
+                                },
+                                {
+                                    "v": "miRNA",
+                                    "vp": "#EF7F23"
+                                },
+                                {
+                                    "v": "signal",
+                                    "vp": "#FFFFFF"
+                                }
+                            ],
+                            "attribute": "type"
+                        }
+                    },
+                    "NODE_SHAPE": {
+                        "type": "DISCRETE",
+                        "definition": {
+                            "map": [
+                                {
+                                    "v": "phenotype",
+                                    "vp": "round-rectangle"
+                                },
+                                {
+                                    "v": "antibody",
+                                    "vp": "vee"
+                                },
+                                {
+                                    "v": "disease",
+                                    "vp": "hexagon"
+                                },
+                                {
+                                    "v": "rna",
+                                    "vp": "rectangle"
+                                },
+                                {
+                                    "v": "gene",
+                                    "vp": "round-rectangle"
+                                },
+                                {
+                                    "v": "stimulus",
+                                    "vp": "triangle"
+                                },
+                                {
+                                    "v": "biologicalprocess",
+                                    "vp": "round-rectangle"
+                                },
+                                {
+                                    "v": "tissue",
+                                    "vp": "diamond"
+                                },
+                                {
+                                    "v": "mrna",
+                                    "vp": "rectangle"
+                                },
+                                {
+                                    "v": "cellularcomponent",
+                                    "vp": "round-rectangle"
+                                },
+                                {
+                                    "v": "drug",
+                                    "vp": "diamond"
+                                },
+                                {
+                                    "v": "molecularfunction",
+                                    "vp": "round-rectangle"
+                                },
+                                {
+                                    "v": "geneproduct",
+                                    "vp": "round-rectangle"
+                                },
+                                {
+                                    "v": "smallmolecule",
+                                    "vp": "rectangle"
+                                },
+                                {
+                                    "v": "chemical",
+                                    "vp": "ellipse"
+                                },
+                                {
+                                    "v": "mirna",
+                                    "vp": "rectangle"
+                                },
+                                {
+                                    "v": "variant",
+                                    "vp": "round-rectangle"
+                                },
+                                {
+                                    "v": "pathway",
+                                    "vp": "round-rectangle"
+                                },
+                                {
+                                    "v": "miRNA",
+                                    "vp": "rectangle"
+                                },
+                                {
+                                    "v": "signal",
+                                    "vp": "triangle"
+                                }
+                            ],
+                            "attribute": "type"
+                        }
+                    },
+                    "NODE_LABEL_FONT_SIZE": {
+                        "type": "DISCRETE",
+                        "definition": {
+                            "map": [
+                                {
+                                    "v": "phenotype",
+                                    "vp": 16
+                                },
+                                {
+                                    "v": "complex",
+                                    "vp": 14
+                                },
+                                {
+                                    "v": "protein",
+                                    "vp": 12
+                                },
+                                {
+                                    "v": "variant",
+                                    "vp": 8
+                                },
+                                {
+                                    "v": "tissue",
+                                    "vp": 12
+                                }
+                            ],
+                            "attribute": "type"
+                        }
+                    },
+                    "NODE_LABEL_MAX_WIDTH": {
+                        "type": "DISCRETE",
+                        "definition": {
+                            "map": [
+                                {
+                                    "v": "cellularcompartment",
+                                    "vp": 50.0
+                                },
+                                {
+                                    "v": "disease",
+                                    "vp": 60.0
+                                },
+                                {
+                                    "v": "pathway",
+                                    "vp": 140.0
+                                },
+                                {
+                                    "v": "tissue",
+                                    "vp": 100.0
+                                }
+                            ],
+                            "attribute": "type"
+                        }
+                    },
+                    "NODE_BACKGROUND_OPACITY": {
+                        "type": "DISCRETE",
+                        "definition": {
+                            "map": [
+                                {
+                                    "v": "phenotype",
+                                    "vp": 0.39215686274509803
+                                }
+                            ],
+                            "attribute": "type"
+                        }
+                    },
+                    "NODE_WIDTH": {
+                        "type": "DISCRETE",
+                        "definition": {
+                            "map": [
+                                {
+                                    "v": "phenotype",
+                                    "vp": 120.0
+                                },
+                                {
+                                    "v": "cellularcompartment",
+                                    "vp": 75.0
+                                },
+                                {
+                                    "v": "antibody",
+                                    "vp": 30.0
+                                },
+                                {
+                                    "v": "disease",
+                                    "vp": 80.0
+                                },
+                                {
+                                    "v": "rna",
+                                    "vp": 100.0
+                                },
+                                {
+                                    "v": "gene",
+                                    "vp": 60.0
+                                },
+                                {
+                                    "v": "proteinfamily",
+                                    "vp": 70.0
+                                },
+                                {
+                                    "v": "stimulus",
+                                    "vp": 15.0
+                                },
+                                {
+                                    "v": "biologicalprocess",
+                                    "vp": 60.0
+                                },
+                                {
+                                    "v": "tissue",
+                                    "vp": 110.0
+                                },
+                                {
+                                    "v": "mrna",
+                                    "vp": 100.0
+                                },
+                                {
+                                    "v": "cellularcomponent",
+                                    "vp": 60.0
+                                },
+                                {
+                                    "v": "drug",
+                                    "vp": 20.0
+                                },
+                                {
+                                    "v": "molecularfunction",
+                                    "vp": 60.0
+                                },
+                                {
+                                    "v": "smallmolecule",
+                                    "vp": 15.0
+                                },
+                                {
+                                    "v": "geneproduct",
+                                    "vp": 120.0
+                                },
+                                {
+                                    "v": "chemical",
+                                    "vp": 15.0
+                                },
+                                {
+                                    "v": "complex",
+                                    "vp": 120.0
+                                },
+                                {
+                                    "v": "protein",
+                                    "vp": 60.0
+                                },
+                                {
+                                    "v": "mirna",
+                                    "vp": 45.0
+                                },
+                                {
+                                    "v": "variant",
+                                    "vp": 60.0
+                                },
+                                {
+                                    "v": "pathway",
+                                    "vp": 160.0
+                                },
+                                {
+                                    "v": "miRNA",
+                                    "vp": 45.0
+                                },
+                                {
+                                    "v": "signal",
+                                    "vp": 30.0
+                                }
+                            ],
+                            "attribute": "type"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    {
+        "visualEditorProperties": [
+            {
+                "properties": {
+                    "nodeSizeLocked": false,
+                    "arrowColorMatchesEdge": true,
+                    "NETWORK_CENTER_Y_LOCATION": 1575.067,
+                    "nodeCustomGraphicsSizeSync": true,
+                    "NETWORK_CENTER_X_LOCATION": 1474.352,
+                    "NETWORK_SCALE_FACTOR": 0.7650185
+                }
+            }
+        ]
+    },
+    {
+        "status": [
+            {
+                "success": true
+            }
+        ]
+    }
+]
