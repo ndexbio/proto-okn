@@ -205,7 +205,7 @@ def edge_signature(new_src, new_tgt, v):
 
 
 def merge_cx2_files(input_dir, output_path, slim=True, collapse=True,
-                    add_pathway_nodes=False):
+                    add_pathway_nodes=False, uuid_map=None):
     cx2_files = sorted(glob.glob(os.path.join(input_dir, "*.cx2")))
     if not cx2_files:
         print(f"No .cx2 files found in {input_dir}")
@@ -405,12 +405,20 @@ def merge_cx2_files(input_dir, output_path, slim=True, collapse=True,
     # every unified node that came from that file. A node appearing in multiple
     # files therefore receives an edge from each pathway node. These membership
     # edges carry NO 'Relationships' field and a distinct interaction
-    # ("in_pathway"), so bio-cx2-to-rdf parses no INDRA triples from them and
-    # they are easy to filter downstream.
+    # ("participates in"), so bio-cx2-to-rdf parses no INDRA triples from them
+    # and they are easy to filter downstream.
     if add_pathway_nodes:
         # Compute fresh id maxima (collapse reassigned edge ids from 0).
         next_nid = (max((n["id"] for n in unified_nodes.values()), default=-1) + 1)
         next_eid = (max((e["id"] for e in unified_edges), default=-1) + 1)
+
+        def lookup_uuid(fname):
+            """Resolve a source filename to its NDEx UUID via uuid_map.
+            Tries the full filename and the basename without extension."""
+            if not uuid_map:
+                return None
+            base = os.path.splitext(fname)[0]
+            return uuid_map.get(fname) or uuid_map.get(base)
 
         pathway_node_ids = {}  # file_idx -> pathway node id
         # Spread pathway nodes in a ring around the existing layout so they are
@@ -423,12 +431,16 @@ def merge_cx2_files(input_dir, output_path, slim=True, collapse=True,
         span = max(max(xs) - min(xs), max(ys) - min(ys), 1.0)
         radius = span * 0.75
         n_files = len(source_names)
+        missing_uuids = []
         for file_idx, fname in enumerate(source_names):
             pname = os.path.splitext(fname)[0]
-            pnode = {
-                "id": next_nid,
-                "v": {"n": pname, "r": f"pathway:{pname}", "type": "pathway"},
-            }
+            pv = {"n": pname, "r": f"pathway:{pname}", "type": "pathway"}
+            uuid = lookup_uuid(fname)
+            if uuid:
+                pv["ndex_id"] = f"ndex:{uuid}"
+            else:
+                missing_uuids.append(fname)
+            pnode = {"id": next_nid, "v": pv}
             unified_nodes[f"__pathway__{file_idx}"] = pnode
             pathway_node_ids[file_idx] = next_nid
             angle = (2 * math.pi * file_idx) / max(n_files, 1)
@@ -446,13 +458,17 @@ def merge_cx2_files(input_dir, output_path, slim=True, collapse=True,
                     "id": next_eid,
                     "s": pathway_node_ids[file_idx],
                     "t": unode_id,
-                    "v": {"i": "in_pathway", "interaction": "in_pathway"},
+                    "v": {"i": "participates in"},
                 })
                 next_eid += 1
                 membership_edges += 1
 
         print(f"  Added {len(source_names)} pathway nodes and "
               f"{membership_edges} membership edges")
+        if uuid_map and missing_uuids:
+            print(f"  WARNING: no UUID found for {len(missing_uuids)} file(s): "
+                  f"{', '.join(missing_uuids[:5])}"
+                  f"{' ...' if len(missing_uuids) > 5 else ''}")
 
     # Build the merged CX2 document (spec-compliant aspect order).
     # CRITICAL: 'status' MUST be the LAST aspect; placing it second terminates
@@ -544,15 +560,25 @@ def merge_cx2_files(input_dir, output_path, slim=True, collapse=True,
             net_decls[k] = {"d": "string"}
             net_known.add(k)
 
-    cx2_out = []
-    cx2_out.append({"CXVersion": "2.0", "hasFragments": False})
-    cx2_out.append({"metaData": [
+    meta = [
         {"name": "attributeDeclarations", "elementCount": 1},
         {"name": "networkAttributes", "elementCount": 1},
         {"name": "nodes", "elementCount": len(node_list)},
         {"name": "edges", "elementCount": len(unified_edges)},
         {"name": "cartesianLayout", "elementCount": len(cartesian_layout)},
-    ]})
+    ]
+    if base_visual_properties:
+        meta.append({"name": "visualProperties",
+                     "elementCount": len(base_visual_properties)
+                     if isinstance(base_visual_properties, list) else 1})
+    if base_visual_editor_properties:
+        meta.append({"name": "visualEditorProperties",
+                     "elementCount": len(base_visual_editor_properties)
+                     if isinstance(base_visual_editor_properties, list) else 1})
+
+    cx2_out = []
+    cx2_out.append({"CXVersion": "2.0", "hasFragments": False})
+    cx2_out.append({"metaData": meta})
     cx2_out.append({"attributeDeclarations": [{
         "nodes": dict(node_decls),
         "edges": dict(edge_decls),
@@ -584,6 +610,7 @@ if __name__ == "__main__":
     slim = True
     collapse = True
     add_pathway_nodes = False
+    uuid_map = None
     if "--no-slim" in args:
         slim = False
         args = [a for a in args if a != "--no-slim"]
@@ -593,6 +620,16 @@ if __name__ == "__main__":
     if "--pathway-nodes" in args:
         add_pathway_nodes = True
         args = [a for a in args if a != "--pathway-nodes"]
+    if "--uuid-map" in args:
+        i = args.index("--uuid-map")
+        try:
+            map_path = args[i + 1]
+        except IndexError:
+            print("--uuid-map requires a path to a JSON file")
+            sys.exit(1)
+        with open(map_path) as f:
+            uuid_map = json.load(f)
+        del args[i:i + 2]
 
     if len(args) == 2:
         input_dir, output_path = args[0], args[1]
@@ -600,8 +637,9 @@ if __name__ == "__main__":
         input_dir, output_path = "cx2_networks", "merged_ncipid.cx2"
     else:
         print(f"Usage: {sys.argv[0]} <input_dir> <output_file> "
-              f"[--no-slim] [--no-collapse] [--pathway-nodes]")
+              f"[--no-slim] [--no-collapse] [--pathway-nodes] "
+              f"[--uuid-map map.json]")
         sys.exit(1)
 
     merge_cx2_files(input_dir, output_path, slim=slim, collapse=collapse,
-                    add_pathway_nodes=add_pathway_nodes)
+                    add_pathway_nodes=add_pathway_nodes, uuid_map=uuid_map)
