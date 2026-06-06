@@ -1,1 +1,0 @@
-{"version":3,"file":"index.d.ts","sourceRoot":"","sources":["../../../src/adapters/nci-pid/index.ts"],"names":[],"mappings":"AAAA;;;GAGG;AAEH,OAAO,KAAK,EACV,SAAS,EAIT,SAAS,EACV,MAAM,qBAAqB,CAAC;AAQ7B;;GAEG;AACH,wBAAgB,YAAY,CAAC,MAAM,EAAE,SAAS,GAAG,SAAS,CAWzD;AAwFD,OAAO,EAAE,kBAAkB,EAAE,qBAAqB,EAAE,MAAM,0BAA0B,CAAC;AACrF,OAAO,EAAE,aAAa,EAAE,eAAe,EAAE,iBAAiB,EAAE,MAAM,wBAAwB,CAAC"}
