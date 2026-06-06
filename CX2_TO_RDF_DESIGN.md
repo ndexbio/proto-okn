@@ -78,27 +78,60 @@ Based on analysis of sample NCI-PID 2.0 network files in CX2 format:
 
 ### 3.2 Relevant CX2 Aspects for Conversion
 
+Attribute names below are given by their **canonical full names** (`name`, `represents`,
+`interaction`, …). In a CX2 file these may be stored under a short alias or omitted in favor
+of a declared default; the converter resolves both to the canonical name during parsing — see
+[3.2.1 Attribute Declarations](#321-attribute-declarations-aliases-and-defaults).
+
 #### Node Attributes:
 - **id**: Numeric identifier (CX2 internal)
 - **x, y**: Visual coordinates (not needed for RDF)
-- **v.n** (aliased from "name"): Display label (gene symbol for proteins)
-- **v.r** (aliased from "represents"): Entity identifier (e.g., `uniprot:Q13547`)
-- **v.type**: Entity type (default: "protein" from attributeDeclarations)
-- **v.alias**: List of alternative identifiers (can be omitted in RDF export)
+- **name** (alias `n`): Display label (gene symbol for proteins)
+- **represents** (alias `r`): Entity identifier (e.g., `uniprot:Q13547`)
+- **type** (may declare a default, e.g. "protein"): Entity type
+- **alias**: List of alternative identifiers (used as `owl:sameAs` targets)
 
 #### Edge Attributes:
 - **id**: Numeric identifier (CX2 internal, used for generating relationship URIs)
 - **s**: Source node ID (maps to subject entity)
 - **t**: Target node ID (maps to object entity)
-- **v.i** (aliased from "interaction"): ~~Simple interaction type~~ **[IGNORED]** - Too generic; use detailed relationships from Relationships attribute
-- **v.Relationships**: HTML-formatted list of detailed relationship types with evidence links **[PRIMARY SOURCE]**
-- **v.__edge_source**: Evidence source ("INDRA" or "INDRA + NCI-PID") **[EXPORTED]**
-- **v.__relationship_score**: ~~Confidence score (natural log of total evidence count)~~ **[IGNORED]** - Redundant; derive from evidence count if needed
-- **v.__directed**: Boolean indicating if edge is directed **[IGNORED]**
-- **v.__reverse_directed**: Boolean indicating if direction should be reversed **[IGNORED]**
+- **interaction** (alias `i`): ~~Simple interaction type~~ **[IGNORED for INDRA edges]** - Too generic for INDRA evidence; detailed relationships come from the Relationships attribute. (Pathway-membership edges are an exception handled by a separate design.)
+- **Relationships**: HTML-formatted list of detailed relationship types with evidence links **[PRIMARY SOURCE]**
+- **__edge_source** (may declare default "INDRA"): Evidence source ("INDRA" or "INDRA + NCI-PID") **[EXPORTED]**
+- **__relationship_score**: ~~Confidence score (natural log of total evidence count)~~ **[IGNORED]** - Redundant; derive from evidence count if needed
+- **__directed** (may declare default false): Boolean indicating if edge is directed **[IGNORED]**
+- **__reverse_directed** (may declare default false): Boolean indicating if direction should be reversed **[IGNORED]**
 
 #### Network Attributes:
 - **@context**: Stringified JSON object defining namespace prefixes **[USED]**
+
+### 3.2.1 Attribute Declarations (aliases and defaults)
+
+Per the [CX2 v2 specification](https://cytoscape.org/cx/cx2/specification/cytoscape-exchange-format-specification-(version-2)/),
+the `attributeDeclarations` aspect declares, per aspect (`nodes`, `edges`, `networkAttributes`),
+a map of `fullName -> { d, a?, v? }`:
+
+- **`d`** — data type (`string`, `integer`, `double`, `boolean`, `long`, or their `list_of_*` forms).
+- **`a`** — optional alias. *"If an alias is declared, the full attribute name can no longer be
+  used in the nodes or edges data blocks; the alias must be used instead."* Aliases are **not**
+  permitted for `networkAttributes`.
+- **`v`** — optional default. *"If an element is missing this attribute, it will be automatically
+  assigned the default value."*
+
+Because the same logical attribute can appear in a file as a short alias (e.g. `r`), as its full
+name (`represents`), or omitted in favor of a default, the converter performs a **declaration-aware
+normalization pass** before any RDF mapping. For each node/edge it rewrites the `v` bag to canonical
+full-name keys:
+
+1. The data key for attribute `X` is `decl.a ?? X`; the value is read from there (with a lenient
+   fallback to the full name if a non-conforming file used it anyway).
+2. If that key is absent and the declaration carries a default `v`, the default is materialized
+   onto the element.
+3. Undeclared keys are passed through unchanged.
+
+This makes the converter independent of how a given file was serialized. In practice, NDEx
+single-pathway exports use short aliases (`n`, `r`, `i`), whereas Cytoscape re-exports of a merged
+network use long names and omit aliases — both normalize to the same canonical attributes.
 
 ### 3.3 Relationship HTML Parsing
 
@@ -437,7 +470,7 @@ SELECT ?subject ?object WHERE {
 - Load JSON file as JSON array
 - **Get network UUID** (optional): Accept as input parameter (e.g., from NDEx download metadata or command-line argument)
 - Extract `attributeDeclarations` to understand aliases and defaults for node/edge attributes
-- **Apply defaults** from `attributeDeclarations` to all `nodes`, `edges`, and `networkAttributes` before conversion
+- **Normalize attributes** (see [3.2.1](#321-attribute-declarations-aliases-and-defaults)): resolve each declared attribute's alias to its canonical full name and **apply declared defaults** to every `nodes`, `edges`, and `networkAttributes` element before conversion, so downstream steps read canonical names (`represents`, `name`, `interaction`) uniformly
 - Extract `nodes` array (semantic data only)
 - Extract `edges` array (semantic data only)
 - Extract `networkAttributes` for metadata (name, description, version, reference)
@@ -448,11 +481,11 @@ SELECT ?subject ?object WHERE {
 - **Skip spatial data**: Ignore node `x`, `y`, `z` coordinates
 
 #### Step 2: Process Nodes
-For each node:
-1. Get identifier from `v.r` (represents) attribute
+For each node (attributes already normalized to canonical full names in Step 1):
+1. Get identifier from `represents` attribute
 2. Parse identifier to extract namespace and ID (e.g., `uniprot:Q13547`)
-3. Get entity type from `v.type` or use default
-4. Get display label from `v.n` (name)
+3. Get entity type from `type` (declared default applied if the node omitted it)
+4. Get display label from `name`
 5. Create RDF entity with:
    - URI: Based on identifier namespace
    - Type: `rdf:type SIO:010043` (protein)

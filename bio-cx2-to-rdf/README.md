@@ -80,11 +80,12 @@ bio-cx2-to-rdf/
 │   ├── cli/
 │   │   └── index.ts              # CLI entry point
 │   ├── core/
-│   │   ├── types.ts              # Type definitions
-│   │   ├── cx2-parser.ts         # CX2 JSON parser
-│   │   ├── namespace-manager.ts  # RDF namespace handling
-│   │   ├── turtle-writer.ts      # RDF to Turtle serialization
-│   │   └── uri-builder.ts        # URI construction utilities
+│   │   ├── types.ts                  # Type definitions
+│   │   ├── attribute-declarations.ts # CX2 attributeDeclarations parsing + alias/default normalization
+│   │   ├── cx2-parser.ts             # CX2 JSON parser (normalizes node/edge attributes)
+│   │   ├── namespace-manager.ts      # RDF namespace handling
+│   │   ├── turtle-writer.ts          # RDF to Turtle serialization
+│   │   └── uri-builder.ts            # URI construction utilities
 │   └── adapters/
 │       └── nci-pid/
 │           ├── index.ts                  # NCI-PID adapter entry
@@ -134,6 +135,26 @@ The tool generates RDF using the following standard ontologies:
 | SIO | http://semanticscience.org/resource/SIO_ | Semantic Science Ontology |
 | uniprot | http://identifiers.org/uniprot/ | UniProt protein identifiers |
 | chebi | http://identifiers.org/chebi/CHEBI: | Chemical Entities of Biological Interest |
+
+## CX2 Attribute Handling
+
+CX2 stores node and edge attributes under a `v` object whose keys are governed by the
+`attributeDeclarations` aspect. The converter is **declaration-aware**, so it reads the
+true value of every attribute regardless of how a particular file was written:
+
+- **Aliases (`a`)**: A declared attribute may define a short alias that the data block
+  must use in place of the full name (e.g. `represents` aliased to `r`, so a node stores
+  `{"r": "uniprot:Q13547"}`). Files that declare no alias instead store the full name
+  (`{"represents": "uniprot:Q13547"}`). The converter resolves both forms to the canonical
+  full name.
+- **Defaults (`v`)**: A declared attribute may define a default value. When an element omits
+  that attribute, the converter materializes the declared default onto it (e.g. an edge with
+  no `__edge_source` and a declared default of `"INDRA"` is read as `__edge_source = "INDRA"`).
+
+This normalization runs once in `cx2-parser.ts` (via `attribute-declarations.ts`), rewriting
+every node/edge `v` bag to canonical full-name keys before any RDF mapping. As a result the
+same network converts identically whether it was exported with short aliases (single-pathway
+NDEx files) or long names (e.g. Cytoscape re-exports of a merged network).
 
 ## Output Format
 

@@ -139,8 +139,9 @@ bio-cx2-to-rdf/
 ├── src/
 │   ├── core/                      # Platform-agnostic core library
 │   │   ├── parsers/
-│   │   │   ├── cx2-parser.ts      # Generic CX2 JSON parser
-│   │   │   └── context-parser.ts  # Parse @context namespaces
+│   │   │   ├── cx2-parser.ts             # Generic CX2 JSON parser (normalizes attributes)
+│   │   │   ├── attribute-declarations.ts # Parse attributeDeclarations; resolve aliases + defaults
+│   │   │   └── context-parser.ts         # Parse @context namespaces
 │   │   ├── adapters/
 │   │   │   ├── base-adapter.ts    # Abstract base adapter interface
 │   │   │   └── adapter-registry.ts # Adapter registration and selection
@@ -314,28 +315,52 @@ export class CX2ToRDFConverter {
 // src/core/parsers/cx2-parser.ts
 
 export interface ParsedCX2 {
-  attributeDeclarations: AttributeDeclaration[];
+  declarations: CX2Declarations;   // parsed attributeDeclarations (nodes/edges/networkAttributes)
   networkAttributes: NetworkAttribute[];
-  nodes: CX2Node[];
-  edges: CX2Edge[];
+  nodes: CX2Node[];                // attributes normalized to canonical full names
+  edges: CX2Edge[];                // attributes normalized to canonical full names
 }
 
 export class CX2Parser {
   /**
-   * Parse CX2 JSON data with validation
+   * Parse CX2 JSON data, then normalize every node/edge `v` bag to canonical
+   * full-name keys using the attributeDeclarations aspect.
    */
   parse(input: string | object): ParsedCX2 {}
-
-  /**
-   * Apply attribute defaults from declarations
-   */
-  applyDefaults(data: ParsedCX2): ParsedCX2 {}
 
   /**
    * Validate CX2 structure
    */
   validate(data: ParsedCX2): ValidationResult {}
 }
+```
+
+```typescript
+// src/core/parsers/attribute-declarations.ts
+
+export interface AttributeDeclaration { d: string; a?: string; v?: unknown }
+export type AspectDeclarations = Record<string /* fullName */, AttributeDeclaration>;
+export interface CX2Declarations {
+  nodes: AspectDeclarations;
+  edges: AspectDeclarations;
+  networkAttributes: AspectDeclarations;
+}
+
+/** Read the attributeDeclarations aspect into structured per-aspect maps. */
+export function parseAttributeDeclarations(aspects: unknown[]): CX2Declarations;
+
+/**
+ * Rewrite one element's `v` bag to canonical full-name keys:
+ *  - alias resolution: read `v[decl.a ?? fullName]` (per CX2 spec the data block
+ *    uses the alias when one is declared), with a lenient fallback to the full name;
+ *  - default materialization: if the attribute is absent and the declaration carries
+ *    a default `v`, assign that default;
+ *  - undeclared keys pass through unchanged.
+ */
+export function normalizeAttributes(
+  rawV: Record<string, unknown>,
+  decls: AspectDeclarations,
+): Record<string, unknown>;
 ```
 
 ### 5.3 NCI-PID Relationship Parser API

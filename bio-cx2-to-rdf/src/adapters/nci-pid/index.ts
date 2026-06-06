@@ -41,8 +41,8 @@ function processNodes(parsed: ParsedCX2): NodeDeclaration[] {
 
   for (const node of parsed.nodes) {
     declarations.push({
-      uri: node.v.r,
-      label: node.v.n,
+      uri: node.v.represents ?? '',
+      label: node.v.name ?? '',
       type: nodeTypeToSioUri(node.v.type),
       aliases: node.v.alias,
     });
@@ -70,8 +70,9 @@ function processEdges(parsed: ParsedCX2): {
       continue;
     }
 
-    // Parse relationships from HTML
-    const relationships = parseRelationships(edge.v.Relationships);
+    // Parse relationships from HTML (edges without a Relationships field, e.g.
+    // pathway-membership edges, yield no relationships here)
+    const relationships = parseRelationships(edge.v.Relationships ?? '');
 
     for (let i = 0; i < relationships.length; i++) {
       const rel = relationships[i];
@@ -111,8 +112,8 @@ function processEdges(parsed: ParsedCX2): {
  */
 function findNodeUriByName(parsed: ParsedCX2, name: string): string | undefined {
   for (const node of parsed.nodes) {
-    if (node.v.n === name) {
-      return node.v.r;
+    if (node.v.name === name) {
+      return node.v.represents;
     }
   }
   return undefined;
