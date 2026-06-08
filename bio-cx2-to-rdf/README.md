@@ -80,11 +80,12 @@ bio-cx2-to-rdf/
 │   ├── cli/
 │   │   └── index.ts              # CLI entry point
 │   ├── core/
-│   │   ├── types.ts              # Type definitions
-│   │   ├── cx2-parser.ts         # CX2 JSON parser
-│   │   ├── namespace-manager.ts  # RDF namespace handling
-│   │   ├── turtle-writer.ts      # RDF to Turtle serialization
-│   │   └── uri-builder.ts        # URI construction utilities
+│   │   ├── types.ts                  # Type definitions
+│   │   ├── attribute-declarations.ts # CX2 attributeDeclarations parsing + alias/default normalization
+│   │   ├── cx2-parser.ts             # CX2 JSON parser (normalizes node/edge attributes)
+│   │   ├── namespace-manager.ts      # RDF namespace handling
+│   │   ├── turtle-writer.ts          # RDF to Turtle serialization
+│   │   └── uri-builder.ts            # URI construction utilities
 │   └── adapters/
 │       └── nci-pid/
 │           ├── index.ts                  # NCI-PID adapter entry
@@ -129,11 +130,64 @@ The tool generates RDF using the following standard ontologies:
 
 | Prefix | Namespace | Description |
 |--------|-----------|-------------|
-| RO | http://purl.obolibrary.org/obo/RO_ | Relations Ontology |
+| RO | http://purl.obolibrary.org/obo/RO_ | Relations Ontology (incl. `RO:0000056` participates in) |
 | GO | http://purl.obolibrary.org/obo/GO_ | Gene Ontology |
 | SIO | http://semanticscience.org/resource/SIO_ | Semantic Science Ontology |
+| biolink | https://w3id.org/biolink/vocab/ | Biolink Model (`biolink:Pathway` node typing) |
 | uniprot | http://identifiers.org/uniprot/ | UniProt protein identifiers |
 | chebi | http://identifiers.org/chebi/CHEBI: | Chemical Entities of Biological Interest |
+
+## CX2 Attribute Handling
+
+CX2 stores node and edge attributes under a `v` object whose keys are governed by the
+`attributeDeclarations` aspect. The converter is **declaration-aware**, so it reads the
+true value of every attribute regardless of how a particular file was written:
+
+- **Aliases (`a`)**: A declared attribute may define a short alias that the data block
+  must use in place of the full name (e.g. `represents` aliased to `r`, so a node stores
+  `{"r": "uniprot:Q13547"}`). Files that declare no alias instead store the full name
+  (`{"represents": "uniprot:Q13547"}`). The converter resolves both forms to the canonical
+  full name.
+- **Defaults (`v`)**: A declared attribute may define a default value. When an element omits
+  that attribute, the converter materializes the declared default onto it (e.g. an edge with
+  no `__edge_source` and a declared default of `"INDRA"` is read as `__edge_source = "INDRA"`).
+
+This normalization runs once in `cx2-parser.ts` (via `attribute-declarations.ts`), rewriting
+every node/edge `v` bag to canonical full-name keys before any RDF mapping. As a result the
+same network converts identically whether it was exported with short aliases (single-pathway
+NDEx files) or long names (e.g. Cytoscape re-exports of a merged network).
+
+## Merged Networks & Pathway Provenance
+
+Individual NCI-PID pathway networks can be merged into one network (e.g. by `merge_cx2.py`) that
+adds **pathway provenance nodes** (`type: "pathway"`) and **membership edges**
+(`interaction: "participates in"`) recording which pathway each protein came from. The converter
+turns these into RDF — adding triples only, leaving protein/edge/evidence conversion and
+single-pathway files untouched. Full design: [CX2_TO_RDF_DESIGN.md §4.8](../CX2_TO_RDF_DESIGN.md).
+
+- **Pathway nodes** → minted IRI `okn:pathway/<slug|uuid>`, typed `biolink:Pathway`
+  (`owl:equivalentClass PW:0000001`), labelled with the pathway name. The non-resolvable CX2
+  `represents:"pathway:…"` value is discarded.
+- **Node membership** → `protein RO:0000056 pathway` (participates in), flipped to protein-subject;
+  a direct triple, no reification.
+- **Edge → pathway** → each reified interaction statement gets `okn:inPathway <pathway>` for every
+  pathway in which **both** endpoints participate.
+
+```turtle
+okn:pathway/IL5-mediated-signaling-events a biolink:Pathway ;
+    rdfs:label "IL5-mediated signaling events" .
+
+uniprot:A0AVQ5 RO:0000056 okn:pathway/IL5-mediated-signaling-events .   # LYN participates_in IL5
+
+okn:statement_582_0 a rdf:Statement ;
+    rdf:subject uniprot:A8K1D9 ; rdf:predicate RO:0002629 ; rdf:object uniprot:A0AVQ5 ;
+    okn:evidenceCount 6 ; okn:evidenceUrl <…> ;
+    okn:inPathway okn:pathway/IL5-mediated-signaling-events .
+```
+
+> **Note:** `okn:inPathway` is a **co-membership heuristic** (both endpoints in the pathway), which
+> yields a *superset* of true edge memberships — the merge drops exact per-edge pathway provenance.
+> It is intended for pathway-scoped queries; exact provenance is a planned `merge_cx2.py` follow-up.
 
 ## Output Format
 
