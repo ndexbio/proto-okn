@@ -61,7 +61,9 @@ export function parseAttributeDeclarations(aspects: unknown[]): CX2Declarations 
 
     const decl = aspectObj.attributeDeclarations[0];
     if (typeof decl !== 'object' || decl === null) {
-      return empty;
+      // Malformed entry: keep scanning for a later valid declarations aspect
+      // rather than giving up on the whole file.
+      continue;
     }
 
     const declObj = decl as Record<string, unknown>;

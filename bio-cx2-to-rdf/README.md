@@ -130,9 +130,10 @@ The tool generates RDF using the following standard ontologies:
 
 | Prefix | Namespace | Description |
 |--------|-----------|-------------|
-| RO | http://purl.obolibrary.org/obo/RO_ | Relations Ontology |
+| RO | http://purl.obolibrary.org/obo/RO_ | Relations Ontology (incl. `RO:0000056` participates in) |
 | GO | http://purl.obolibrary.org/obo/GO_ | Gene Ontology |
 | SIO | http://semanticscience.org/resource/SIO_ | Semantic Science Ontology |
+| biolink | https://w3id.org/biolink/vocab/ | Biolink Model (`biolink:Pathway` node typing) |
 | uniprot | http://identifiers.org/uniprot/ | UniProt protein identifiers |
 | chebi | http://identifiers.org/chebi/CHEBI: | Chemical Entities of Biological Interest |
 
@@ -155,6 +156,38 @@ This normalization runs once in `cx2-parser.ts` (via `attribute-declarations.ts`
 every node/edge `v` bag to canonical full-name keys before any RDF mapping. As a result the
 same network converts identically whether it was exported with short aliases (single-pathway
 NDEx files) or long names (e.g. Cytoscape re-exports of a merged network).
+
+## Merged Networks & Pathway Provenance
+
+Individual NCI-PID pathway networks can be merged into one network (e.g. by `merge_cx2.py`) that
+adds **pathway provenance nodes** (`type: "pathway"`) and **membership edges**
+(`interaction: "participates in"`) recording which pathway each protein came from. The converter
+turns these into RDF — adding triples only, leaving protein/edge/evidence conversion and
+single-pathway files untouched. Full design: [CX2_TO_RDF_DESIGN.md §4.8](../CX2_TO_RDF_DESIGN.md).
+
+- **Pathway nodes** → minted IRI `okn:pathway/<slug|uuid>`, typed `biolink:Pathway`
+  (`owl:equivalentClass PW:0000001`), labelled with the pathway name. The non-resolvable CX2
+  `represents:"pathway:…"` value is discarded.
+- **Node membership** → `protein RO:0000056 pathway` (participates in), flipped to protein-subject;
+  a direct triple, no reification.
+- **Edge → pathway** → each reified interaction statement gets `okn:inPathway <pathway>` for every
+  pathway in which **both** endpoints participate.
+
+```turtle
+okn:pathway/IL5-mediated-signaling-events a biolink:Pathway ;
+    rdfs:label "IL5-mediated signaling events" .
+
+uniprot:A0AVQ5 RO:0000056 okn:pathway/IL5-mediated-signaling-events .   # LYN participates_in IL5
+
+okn:statement_582_0 a rdf:Statement ;
+    rdf:subject uniprot:A8K1D9 ; rdf:predicate RO:0002629 ; rdf:object uniprot:A0AVQ5 ;
+    okn:evidenceCount 6 ; okn:evidenceUrl <…> ;
+    okn:inPathway okn:pathway/IL5-mediated-signaling-events .
+```
+
+> **Note:** `okn:inPathway` is a **co-membership heuristic** (both endpoints in the pathway), which
+> yields a *superset* of true edge memberships — the merge drops exact per-edge pathway provenance.
+> It is intended for pathway-scoped queries; exact provenance is a planned `merge_cx2.py` follow-up.
 
 ## Output Format
 

@@ -40,9 +40,16 @@ function processNodes(parsed: ParsedCX2): NodeDeclaration[] {
   const declarations: NodeDeclaration[] = [];
 
   for (const node of parsed.nodes) {
+    // A node without a `represents` identifier cannot form a valid RDF subject
+    // URI; skip it rather than emit an empty IRI (which would crash the writer).
+    if (!node.v.represents) {
+      console.warn(`Skipping node ${node.id}: missing 'represents' identifier`);
+      continue;
+    }
+
     declarations.push({
-      uri: node.v.represents ?? '',
-      label: node.v.name ?? '',
+      uri: node.v.represents,
+      label: node.v.name,
       type: nodeTypeToSioUri(node.v.type),
       aliases: node.v.alias,
     });

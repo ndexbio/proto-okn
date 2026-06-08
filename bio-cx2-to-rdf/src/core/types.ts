@@ -137,7 +137,7 @@ export interface ReifiedStatement {
  */
 export interface NodeDeclaration {
   uri: string;
-  label: string;
+  label?: string;
   type: string;
   aliases?: string[];
 }

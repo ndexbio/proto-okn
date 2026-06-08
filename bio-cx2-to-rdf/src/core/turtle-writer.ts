@@ -85,12 +85,14 @@ function writeNodeDeclaration(
     namedNode(node.type)
   );
 
-  // Label triple
-  writer.addQuad(
-    namedNode(subjectUri),
-    namedNode(RDFS_LABEL),
-    literal(node.label)
-  );
+  // Label triple (only when a label is present; avoid emitting empty literals)
+  if (node.label) {
+    writer.addQuad(
+      namedNode(subjectUri),
+      namedNode(RDFS_LABEL),
+      literal(node.label)
+    );
+  }
 
   // Alias triples (owl:sameAs)
   if (node.aliases) {

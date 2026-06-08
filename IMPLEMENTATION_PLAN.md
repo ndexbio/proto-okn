@@ -134,11 +134,20 @@ converter.downloadAsFile(rdfTurtle, 'network.ttl');
 
 ## 4. Project Structure
 
+> **Note — target vs. current layout.** The tree below is the *aspirational, fully
+> modular* structure (with `parsers/`, `processors/`, `models/`, `rdf/`, `config/`, … sub-folders).
+> The **current implementation is flatter**: core modules live directly under `src/core/` (e.g.
+> `src/core/cx2-parser.ts`, `src/core/attribute-declarations.ts`, `src/core/types.ts`,
+> `src/core/namespace-manager.ts`, `src/core/turtle-writer.ts`, `src/core/uri-builder.ts`), with the
+> dataset adapter under `src/adapters/nci-pid/` and the CLI under `src/cli/`. The
+> [README Project Structure](bio-cx2-to-rdf/README.md#project-structure) reflects the actual tree;
+> the sub-folders below are introduced only as the codebase grows.
+
 ```
 bio-cx2-to-rdf/
 ├── src/
 │   ├── core/                      # Platform-agnostic core library
-│   │   ├── parsers/
+│   │   ├── parsers/                       # (target layout; currently flat under src/core/)
 │   │   │   ├── cx2-parser.ts             # Generic CX2 JSON parser (normalizes attributes)
 │   │   │   ├── attribute-declarations.ts # Parse attributeDeclarations; resolve aliases + defaults
 │   │   │   └── context-parser.ts         # Parse @context namespaces
@@ -841,6 +850,21 @@ HTML parsing for NCI-PID adapter uses platform-appropriate APIs:
 - [ ] Implement INDRA type to RO/GO mapping
 - [ ] Platform-agnostic HTML parsing (DOMParser/linkedom)
 - [ ] Write unit tests for NCI-PID adapter
+
+### Phase 1.6: Merged-Network Pathway Support (NCI-PID)
+Handle merged NCI-PID networks that carry pathway provenance nodes and membership edges
+(see [CX2_TO_RDF_DESIGN.md §4.8](CX2_TO_RDF_DESIGN.md)). Adds triples only; protein/edge/evidence
+conversion and single-pathway files are unaffected.
+- [ ] Type `type: "pathway"` nodes as `biolink:Pathway`; mint `okn:pathway/<slug|uuid>` IRIs
+      (discard the non-IRI `represents:"pathway:…"`); add `biolink:` to the namespace map
+- [ ] Build the `proteinURI → {pathwayURI}` membership map from pathway nodes/edges
+- [ ] Convert `interaction == "participates in"` edges to `protein RO:0000056 pathway` direct
+      triples (flip pathway→protein to protein-subject; no reification)
+- [ ] Attach `okn:inPathway` to each reified statement via endpoint intersection
+      `pathways(subject) ∩ pathways(object)` (heuristic / co-membership-derived superset)
+- [ ] Emit `biolink:Pathway owl:equivalentClass PW:0000001` and the `okn:inPathway` property axiom
+- [ ] Verify evidence conversion unchanged; `small_example`/`Ephri_B` outputs stay byte-identical
+- [ ] (Follow-up) exact edge→pathway provenance via per-edge source tracking in `merge_cx2.py`
 
 ### Phase 2: RDF Generation (Week 2-3)
 - [ ] Implement namespace manager

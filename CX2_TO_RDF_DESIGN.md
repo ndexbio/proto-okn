@@ -176,6 +176,7 @@ All Evidences (<a href="...">49</a>)
 @prefix SIO: <http://semanticscience.org/resource/SIO_> .
 @prefix RO: <http://purl.obolibrary.org/obo/RO_> .
 @prefix GO: <http://purl.obolibrary.org/obo/GO_> .
+@prefix biolink: <https://w3id.org/biolink/vocab/> .  # pathway node typing (FRINK harmonization)
 @prefix SO: <http://purl.obolibrary.org/obo/SO_> .
 @prefix CHEBI: <http://purl.obolibrary.org/obo/CHEBI_> .
 @prefix MONDO: <http://purl.obolibrary.org/obo/MONDO_> .
@@ -224,7 +225,7 @@ This eliminates custom relationship predicates (`oknr:*`) entirely, using only:
 | cellularcomponent | `GO:0005575` (cellular component) | Gene Ontology |
 | biologicalprocess | `GO:0008150` (biological process) | Gene Ontology |
 | molecularfunction | `GO:0003674` (molecular function) | Gene Ontology |
-| pathway | `PW:0000001` (pathway) | Pathway Ontology |
+| pathway | `biolink:Pathway` (pathway) | Biolink Model, for FRINK harmonization; asserted `owl:equivalentClass PW:0000001` (Pathway Ontology) to retain the OBO link. Used to type merged-network pathway provenance nodes (see [4.8](#48-merged-network-handling-pathway-provenance)). |
 | tissue | `UBERON:0000479` (tissue) | Uberon anatomy ontology |
 | signal | `SIO:000552` (signal) | Semanticscience Integrated Ontology |
 | stimulus | `NCIT:C53415` (stimulus) | NCI Thesaurus |
@@ -323,6 +324,17 @@ All other metadata uses standard vocabularies:
 - `dcterms:source` - Evidence source database(s)
 - `prov:wasDerivedFrom` - Link to detailed evidence
 
+One additional custom property links a reified statement to the pathway(s) it belongs to in
+a merged network (see [4.8](#48-merged-network-handling-pathway-provenance)):
+
+```turtle
+okn:inPathway a owl:ObjectProperty ;
+    rdfs:label "in pathway" ;
+    rdfs:comment "The pathway(s) this reified interaction belongs to, derived from co-membership of its endpoints (both subject and object participate in the pathway)." ;
+    rdfs:domain rdf:Statement ;
+    rdfs:range biolink:Pathway .
+```
+
 ### 4.5 Ontology Term Reference
 
 #### Relations Ontology (RO) - Used Directly as Predicates
@@ -333,6 +345,14 @@ All other metadata uses standard vocabularies:
 | `RO:0002578` | directly regulates | PTM relationships (with GO typing) |
 | `RO:0002629` | directly positively regulates | Activation, increase amount |
 | `RO:0002630` | directly negatively regulates | Inhibition, decrease amount |
+| `RO:0000056` | participates in | Protein → pathway membership (merged networks, see [4.8](#48-merged-network-handling-pathway-provenance)) |
+
+#### Biolink Model & custom OKN terms (merged-network pathway provenance)
+
+| Term | Label | Usage |
+|------|-------|-------|
+| `biolink:Pathway` | pathway | Type for pathway provenance nodes (`owl:equivalentClass PW:0000001`) |
+| `okn:inPathway` | in pathway | Reified statement → pathway membership (heuristic, both endpoints participate) |
 
 #### Gene Ontology (GO) - Used as Statement Types for PTMs
 
@@ -433,6 +453,85 @@ SELECT ?subject ?object WHERE {
 - Reification pattern enables both generic and specific queries
 - No loss of specificity compared to custom predicates
 
+### 4.8 Merged Network Handling (Pathway Provenance)
+
+Individual NCI-PID pathway networks can be merged into a single network (e.g. by `merge_cx2.py`,
+optionally re-exported through Cytoscape) so that a gene shared by several pathways becomes one
+node and redundant edges collapse. To preserve *which pathway each entity and interaction came
+from*, the merge adds **pathway provenance nodes** (`type: "pathway"`) and **membership edges**
+(`interaction: "participates in"`) from each pathway node to every protein that appeared in it.
+This section defines how those are converted to RDF. It only *adds* triples — the protein/edge/
+evidence conversion of §4.1–4.7 is unchanged, and networks without pathway nodes are unaffected.
+
+#### 4.8.1 Pathway nodes
+
+A pathway node carries only a name (and, in newer merges, an NDEx network UUID). Its CX2
+`represents` value (e.g. `pathway:IL5-mediated signaling events _v2_0_`) is **not** a valid IRI
+(spaces, non-resolvable scheme), so it is discarded. Instead the converter mints an IRI under the
+graph namespace and types it with `biolink:Pathway`:
+
+```turtle
+okn:pathway/IL5-mediated-signaling-events a biolink:Pathway ;
+    rdfs:label "IL5-mediated signaling events" .
+```
+
+- **IRI:** `okn:pathway/<slug>` where `<slug>` is derived from the pathway name; when the pathway
+  node carries an NDEx UUID, `<uuid>` is used instead for a stable identifier.
+- **Type:** `biolink:Pathway` (`owl:equivalentClass PW:0000001`).
+- **Label:** the original pathway name.
+
+#### 4.8.2 Node membership (`participates in`)
+
+Each `participates in` edge runs pathway → protein and carries no `Relationships`/evidence. It is
+emitted as a single **direct triple, flipped to protein-as-subject** (the Biolink-natural
+direction), using `RO:0000056` (participates in). No reification is produced.
+
+```turtle
+uniprot:A0AVQ5 RO:0000056 okn:pathway/IL5-mediated-signaling-events .   # LYN participates_in IL5
+```
+
+#### 4.8.3 Edge → pathway membership (`okn:inPathway`)
+
+Because each interaction is already reified as an `rdf:Statement` node (§4.4), the pathway context
+of an interaction can be attached directly to that node. The converter assigns a statement to a
+pathway when **both** of its endpoints participate in that pathway:
+
+> `statement(A,B) ∈ pathway P` ⟺ `A participates_in P` **and** `B participates_in P`
+
+```turtle
+okn:statement_582_0 a rdf:Statement ;
+    rdf:subject uniprot:A8K1D9 ; rdf:predicate RO:0002629 ; rdf:object uniprot:A0AVQ5 ;
+    okn:evidenceCount 6 ; okn:evidenceUrl <https://db.indra.bio/...> ;
+    okn:inPathway okn:pathway/IL5-mediated-signaling-events,
+                  okn:pathway/IL4-mediated-signaling-events .
+```
+
+Implementation: build a `proteinURI → {pathwayURI}` map from the membership edges, then for each
+reified statement add `okn:inPathway` for every pathway in `pathways(subject) ∩ pathways(object)`.
+
+**Caveat — this is an over-approximation, not curated provenance.** In a source pathway,
+*edge A–B in P ⟹ A,B both in P* is always true, but the **converse is not**: A and B can both be
+in P while their interaction was only curated in pathway Q. The merge collapses edges and drops
+per-edge pathway provenance, and INDRA evidence URLs are identical across pathways, so edge
+membership cannot be recovered exactly from the merged file alone. `okn:inPathway` therefore yields
+a **superset** of true edge memberships (over-assigning for pathways that share both endpoints).
+This is acceptable for pathway-scoped subgraph queries; the deliberately distinct, non-curated
+predicate name signals that it is co-membership-derived. The exact alternative is to have the merge
+record per-edge source pathways and emit them directly — a planned follow-up.
+
+#### 4.8.4 Example pathway queries
+
+```sparql
+# Proteins participating in a pathway
+SELECT ?protein WHERE { ?protein RO:0000056 okn:pathway/IL5-mediated-signaling-events }
+
+# All interactions (with evidence) belonging to a pathway
+SELECT ?s ?p ?o ?evidence WHERE {
+    ?stmt okn:inPathway okn:pathway/IL5-mediated-signaling-events ;
+          rdf:subject ?s ; rdf:predicate ?p ; rdf:object ?o ; okn:evidenceCount ?evidence .
+}
+```
+
 ## 5. Conversion Architecture
 
 ### 5.1 System Components
@@ -487,6 +586,9 @@ For each node (attributes already normalized to canonical full names in Step 1):
 3. Get entity type from `type` (declared default applied if the node omitted it)
 4. Get display label from `name`
 5. Create RDF entity with:
+   - **If `type == "pathway"`** (merged-network provenance node, see [4.8.1](#481-pathway-nodes)):
+     mint `okn:pathway/<slug|uuid>`, type `biolink:Pathway`, label from `name`; skip the
+     `represents`/identifier logic above. Also record `proteinURI → {pathwayURI}` membership.
    - URI: Based on identifier namespace
    - Type: `rdf:type SIO:010043` (protein)
    - Label: `rdfs:label "HDAC1"`
@@ -495,7 +597,10 @@ For each node (attributes already normalized to canonical full names in Step 1):
 #### Step 3: Process Edges
 For each edge:
 1. Identify source and target nodes by ID, map to entity URIs
-2. Parse HTML in `Relationships` attribute:
+2. **If `interaction == "participates in"`** (pathway-membership edge, see [4.8.2](#482-node-membership-participates-in)):
+   emit one direct triple `protein RO:0000056 pathway` (flip the pathway→protein direction so the
+   protein is the subject), no reification, and continue to the next edge.
+3. Parse HTML in `Relationships` attribute:
    - Extract total evidence count from "All Evidences" line
    - Extract individual relationship items from `<li/>` elements
 3. Get edge-level metadata:
@@ -512,6 +617,10 @@ For each edge:
        - Type: `rdf:Statement` (plus GO process type for PTMs, e.g., `GO:0016925`)
        - Properties: `rdf:subject`, `rdf:predicate`, `rdf:object`, `okn:evidenceCount`
        - Provenance: `dcterms:source`, `prov:wasDerivedFrom`
+       - **Pathway membership** (merged networks, see [4.8.3](#483-edge--pathway-membership-okninpathway)):
+         add `okn:inPathway <pathway>` for every pathway in
+         `pathways(subject) ∩ pathways(object)`, using the `proteinURI → {pathwayURI}` map built
+         in Step 2
 
 #### Step 4: Generate RDF
 - Write namespace declarations
