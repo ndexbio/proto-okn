@@ -41,7 +41,7 @@ python merge_cx2.py cx2_networks/ merged_ncipid.cx2 --pathway-nodes
 |---|---|---|
 | `--no-slim` | slimming **on** | Keep the full original `Relationships` HTML instead of reducing it to converter-relevant items. Produces a larger file; output is otherwise identical. Useful for an RDF before/after diff. |
 | `--no-collapse` | collapse **on** | Skip the direction-aware edge collapse. Edges are still deduplicated by full content, but redundant same-direction edges are not merged and the ≤2-edges-per-pair rule is not enforced. |
-| `--pathway-nodes` | **off** | Add one `type: "pathway"` node per source file, plus an `in_pathway` edge from each pathway node to every node that came from that file. A node in multiple files receives an edge from each. These edges carry no `Relationships`, so they produce zero INDRA triples in RDF conversion. |
+| `--pathway-nodes` | **off** | Add one `type: "pathway"` node per source file, plus a `participates in` edge from each pathway node to every node that came from that file. A node in multiple files receives an edge from each. These edges carry no `Relationships`, so they produce no INDRA evidence; the `bio-cx2-to-rdf` converter turns them into `protein RO:0000056 pathway` (participates in) triples. |
 
 ## How it works — the passes
 
@@ -84,7 +84,7 @@ Runs after collapse, on the final merged evidence. The `bio-cx2-to-rdf` converte
 
 ### Pass 6 — Pathway-provenance nodes (optional, `--pathway-nodes`)
 
-Creates one `type: "pathway"` node per source file (named after the file, positioned on a ring around the existing layout) and one `in_pathway` edge from each pathway node to every unified node in `node_file_membership`. A node present in N files receives N such edges. Membership edges have no `Relationships`, so they contribute nothing to RDF output and are trivially filterable.
+Creates one `type: "pathway"` node per source file (named after the file with any trailing version marker like ` _v2_0_` stripped, positioned on a ring around the existing layout) and one `participates in` edge from each pathway node to every unified node in `node_file_membership`. A node present in N files receives N such edges. Membership edges have no `Relationships`, so they contribute no INDRA evidence; in RDF they become `participates in` (`RO:0000056`) triples and are trivially filterable.
 
 ### Output assembly
 

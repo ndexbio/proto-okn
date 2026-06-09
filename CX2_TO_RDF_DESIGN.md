@@ -161,8 +161,14 @@ All Evidences (<a href="...">49</a>)
 
 ### 4.1 Namespace Definitions
 
+Note: `biolink:`, `PW:`, and `pathway:` below are emitted **only for merged networks that contain
+pathway provenance nodes** (see [4.8](#48-merged-network-handling-pathway-provenance)); pathway-free
+networks keep an unchanged prefix block. `pathway:` (= `…/okn/pathway/`) exists so pathway IRIs
+compact (the trailing slash is not a valid CURIE local-name character under `okn:`).
+
 ```turtle
 @prefix okn: <http://purl.org/okn/> .
+@prefix pathway: <http://purl.org/okn/pathway/> .  # merged networks only; compacts pathway IRIs
 @prefix uniprot: <http://purl.uniprot.org/uniprot/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -201,6 +207,40 @@ This converter uses a **hybrid approach** to minimize maintenance overhead while
 This eliminates custom relationship predicates (`oknr:*`) entirely, using only:
 - `okn:` namespace for network-specific entities (statements, networks)
 - Standard ontologies (RO, GO) for all relationship semantics
+
+### 4.1.1 Identifier Canonicalization (Bioregistry)
+
+Source CX2 networks declare their namespace prefixes in `networkAttributes.@context`, but those
+often point at **non-preferred IRI bases** — e.g. `uniprot` → `https://identifiers.org/uniprot/`
+rather than the OKN/Bioregistry-canonical `http://purl.uniprot.org/uniprot/`. The converter
+**canonicalizes each `@context` prefix against [Bioregistry](https://bioregistry.io)** before
+building entity IRIs (`createNamespaceMap` → `canonicalizeContext`):
+
+- A prefix that Bioregistry exposes with an **`rdf_uri_format`** (a proper RDF identity IRI) is
+  rewritten to that canonical stem — e.g. `uniprot` → `http://purl.uniprot.org/uniprot/`,
+  `chebi` → `http://purl.obolibrary.org/obo/CHEBI_`.
+- A prefix **without** an `rdf_uri_format` (Bioregistry's canonical is only a provider webpage —
+  e.g. `cas`, `hgnc.symbol`, `hprd`, `kegg.compound`) is **left as the network's `@context`
+  value**, since a webpage URL is a poor RDF subject IRI.
+
+**Build-time, not conversion-time.** The canonical stems are vendored in
+`src/core/bioregistry-prefixes.ts`, regenerated on demand by `scripts/refresh-bioregistry.js`
+(`npm run refresh:bioregistry`), which queries the Bioregistry API. A pinned snapshot keeps
+conversion **deterministic and offline** (important for a reproducible KG pipeline and for
+browser/Cytoscape-Web use).
+
+> **Future — live resolution.** As this becomes a more general cx2→RDF tool for *arbitrary*
+> networks, the vendored snapshot won't cover every prefix a network might declare. The plan is to
+> optionally resolve unknown `@context` prefixes against the **live Bioregistry API during
+> conversion**, with caching, falling back to the snapshot/`@context`. Trade-off: live resolution is
+> general but adds a network dependency and non-determinism; the build-time snapshot is deterministic
+> and offline but limited to vendored prefixes. The split is by design — see this section.
+
+**Scope.** This solves *namespace/base* canonicalization (same identifier, canonical IRI base). It
+does **not** resolve *entity equivalence* — e.g. a non-canonical UniProt isoform accession, or a
+gene symbol vs Entrez ID. Those are emitted with `owl:sameAs` links (from the node `alias` list) and
+left to a downstream node normalizer (FRINK), which is the appropriate tool for open-ended
+cross-identifier equivalence.
 
 ### 4.2 Entity Type Mapping
 
@@ -467,18 +507,21 @@ evidence conversion of §4.1–4.7 is unchanged, and networks without pathway no
 
 A pathway node carries only a name (and, in newer merges, an NDEx network UUID). Its CX2
 `represents` value (e.g. `pathway:IL5-mediated signaling events _v2_0_`) is **not** a valid IRI
-(spaces, non-resolvable scheme), so it is discarded. Instead the converter mints an IRI under the
-graph namespace and types it with `biolink:Pathway`:
+(spaces, non-resolvable scheme), so it is discarded. The name is first cleaned of a trailing
+version marker left by the source filename (e.g. ` _v2_0_`), then the converter mints an IRI under
+the graph namespace and types it with `biolink:Pathway`:
 
 ```turtle
-okn:pathway/IL5-mediated-signaling-events a biolink:Pathway ;
+pathway:IL5-mediated-signaling-events a biolink:Pathway ;
     rdfs:label "IL5-mediated signaling events" .
 ```
 
-- **IRI:** `okn:pathway/<slug>` where `<slug>` is derived from the pathway name; when the pathway
-  node carries an NDEx UUID, `<uuid>` is used instead for a stable identifier.
+- **IRI:** `http://example.org/okn/pathway/<slug>` where `<slug>` is derived from the cleaned
+  pathway name; when the pathway node carries an NDEx UUID, `<uuid>` is used instead for a stable
+  identifier. Serialized with the dedicated `pathway:` prefix (= `…/okn/pathway/`) so it compacts
+  (the trailing slash is not a valid CURIE local-name character under `okn:`).
 - **Type:** `biolink:Pathway` (`owl:equivalentClass PW:0000001`).
-- **Label:** the original pathway name.
+- **Label:** the cleaned pathway name (version marker stripped).
 
 #### 4.8.2 Node membership (`participates in`)
 
@@ -487,7 +530,7 @@ emitted as a single **direct triple, flipped to protein-as-subject** (the Biolin
 direction), using `RO:0000056` (participates in). No reification is produced.
 
 ```turtle
-uniprot:A0AVQ5 RO:0000056 okn:pathway/IL5-mediated-signaling-events .   # LYN participates_in IL5
+uniprot:A0AVQ5 RO:0000056 pathway:IL5-mediated-signaling-events .   # LYN participates_in IL5
 ```
 
 #### 4.8.3 Edge → pathway membership (`okn:inPathway`)
@@ -502,8 +545,8 @@ pathway when **both** of its endpoints participate in that pathway:
 okn:statement_582_0 a rdf:Statement ;
     rdf:subject uniprot:A8K1D9 ; rdf:predicate RO:0002629 ; rdf:object uniprot:A0AVQ5 ;
     okn:evidenceCount 6 ; okn:evidenceUrl <https://db.indra.bio/...> ;
-    okn:inPathway okn:pathway/IL5-mediated-signaling-events,
-                  okn:pathway/IL4-mediated-signaling-events .
+    okn:inPathway pathway:IL5-mediated-signaling-events,
+                  pathway:IL4-mediated-signaling-events .
 ```
 
 Implementation: build a `proteinURI → {pathwayURI}` map from the membership edges, then for each
@@ -523,11 +566,11 @@ record per-edge source pathways and emit them directly — a planned follow-up.
 
 ```sparql
 # Proteins participating in a pathway
-SELECT ?protein WHERE { ?protein RO:0000056 okn:pathway/IL5-mediated-signaling-events }
+SELECT ?protein WHERE { ?protein RO:0000056 pathway:IL5-mediated-signaling-events }
 
 # All interactions (with evidence) belonging to a pathway
 SELECT ?s ?p ?o ?evidence WHERE {
-    ?stmt okn:inPathway okn:pathway/IL5-mediated-signaling-events ;
+    ?stmt okn:inPathway pathway:IL5-mediated-signaling-events ;
           rdf:subject ?s ; rdf:predicate ?p ; rdf:object ?o ; okn:evidenceCount ?evidence .
 }
 ```
@@ -587,8 +630,9 @@ For each node (attributes already normalized to canonical full names in Step 1):
 4. Get display label from `name`
 5. Create RDF entity with:
    - **If `type == "pathway"`** (merged-network provenance node, see [4.8.1](#481-pathway-nodes)):
-     mint `okn:pathway/<slug|uuid>`, type `biolink:Pathway`, label from `name`; skip the
-     `represents`/identifier logic above. Also record `proteinURI → {pathwayURI}` membership.
+     strip the version marker from `name`, mint `pathway:<slug|uuid>` (= `…/okn/pathway/<slug|uuid>`),
+     type `biolink:Pathway`, label from the cleaned `name`; skip the `represents`/identifier logic
+     above. Also record `proteinURI → {pathwayURI}` membership.
    - URI: Based on identifier namespace
    - Type: `rdf:type SIO:010043` (protein)
    - Label: `rdfs:label "HDAC1"`

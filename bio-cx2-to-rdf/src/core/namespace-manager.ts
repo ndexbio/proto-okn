@@ -3,6 +3,7 @@
  */
 
 import type { NamespaceMap } from './types.js';
+import { BIOREGISTRY_PREFIXES } from './bioregistry-prefixes.js';
 
 /**
  * Standard RDF and ontology prefixes
@@ -21,12 +22,30 @@ export const STANDARD_PREFIXES: NamespaceMap = {
 };
 
 /**
- * Create merged namespace map from CX2 context and standard prefixes
+ * Canonicalize a network's @context prefixes against the vendored Bioregistry map.
+ *
+ * A prefix Bioregistry exposes with an RDF identity IRI (e.g. `uniprot` ->
+ * `http://purl.uniprot.org/uniprot/`, `chebi` -> OBO) is rewritten to that
+ * canonical stem; any prefix Bioregistry does not canonicalize keeps its original
+ * @context value. This aligns entity IRIs with OKN-preferred identifiers without
+ * a hand-maintained table. See `scripts/refresh-bioregistry.js`.
+ */
+export function canonicalizeContext(cx2Context: NamespaceMap): NamespaceMap {
+  const out: NamespaceMap = {};
+  for (const [prefix, uri] of Object.entries(cx2Context)) {
+    out[prefix] = BIOREGISTRY_PREFIXES[prefix] ?? uri;
+  }
+  return out;
+}
+
+/**
+ * Create merged namespace map from CX2 context and standard prefixes.
+ * The @context is first canonicalized via Bioregistry.
  */
 export function createNamespaceMap(cx2Context: NamespaceMap): NamespaceMap {
   // Standard prefixes take precedence to ensure consistency
   return {
-    ...cx2Context,
+    ...canonicalizeContext(cx2Context),
     ...STANDARD_PREFIXES,
   };
 }

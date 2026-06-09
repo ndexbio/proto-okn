@@ -90,6 +90,30 @@ export function buildSioUri(sioId: string): string {
 }
 
 /**
+ * Biolink Model class for pathway provenance nodes (merged networks)
+ */
+export const BIOLINK_PATHWAY = 'https://w3id.org/biolink/vocab/Pathway';
+
+/**
+ * Slugify a label into a URI-safe path segment
+ */
+export function slugify(text: string): string {
+  return text
+    .trim()
+    .replace(/[^A-Za-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/**
+ * Mint a pathway IRI under the graph namespace.
+ * Prefers a stable NDEx UUID when available, otherwise a slug of the name.
+ */
+export function buildPathwayUri(base: string, name: string, uuid?: string): string {
+  const id = uuid && uuid.trim() ? uuid.trim() : slugify(name);
+  return `${base}pathway/${id}`;
+}
+
+/**
  * Map node type to SIO URI
  */
 export function nodeTypeToSioUri(nodeType: string | undefined): string {

@@ -83,9 +83,12 @@ bio-cx2-to-rdf/
 │   │   ├── types.ts                  # Type definitions
 │   │   ├── attribute-declarations.ts # CX2 attributeDeclarations parsing + alias/default normalization
 │   │   ├── cx2-parser.ts             # CX2 JSON parser (normalizes node/edge attributes)
-│   │   ├── namespace-manager.ts      # RDF namespace handling
+│   │   ├── namespace-manager.ts      # RDF namespaces + Bioregistry @context canonicalization
+│   │   ├── bioregistry-prefixes.ts   # Vendored Bioregistry canonical prefix map (generated)
 │   │   ├── turtle-writer.ts          # RDF to Turtle serialization
 │   │   └── uri-builder.ts            # URI construction utilities
+├── scripts/
+│   └── refresh-bioregistry.js        # Build-time: regenerate bioregistry-prefixes.ts
 │   └── adapters/
 │       └── nci-pid/
 │           ├── index.ts                  # NCI-PID adapter entry
@@ -134,8 +137,31 @@ The tool generates RDF using the following standard ontologies:
 | GO | http://purl.obolibrary.org/obo/GO_ | Gene Ontology |
 | SIO | http://semanticscience.org/resource/SIO_ | Semantic Science Ontology |
 | biolink | https://w3id.org/biolink/vocab/ | Biolink Model (`biolink:Pathway` node typing) |
-| uniprot | http://identifiers.org/uniprot/ | UniProt protein identifiers |
-| chebi | http://identifiers.org/chebi/CHEBI: | Chemical Entities of Biological Interest |
+| uniprot | http://purl.uniprot.org/uniprot/ | UniProt protein identifiers (Bioregistry-canonical) |
+| chebi | http://purl.obolibrary.org/obo/CHEBI_ | Chemical Entities of Biological Interest (Bioregistry-canonical) |
+
+## Identifier Canonicalization (Bioregistry)
+
+CX2 networks declare their prefixes in `networkAttributes.@context`, but those often point at
+non-preferred IRI bases (e.g. `uniprot` → `https://identifiers.org/uniprot/`). Before building
+entity IRIs, the converter **canonicalizes each `@context` prefix against
+[Bioregistry](https://bioregistry.io)**:
+
+- A prefix with a Bioregistry **`rdf_uri_format`** (a real RDF identity IRI) is rewritten to the
+  canonical stem — `uniprot` → `http://purl.uniprot.org/uniprot/`, `chebi` → `…/obo/CHEBI_`.
+- A prefix without one (Bioregistry's canonical is just a provider webpage — `cas`, `hgnc.symbol`,
+  `hprd`, `kegg.compound`) keeps its `@context` value.
+
+The canonical stems are **vendored at build time** in `src/core/bioregistry-prefixes.ts`, regenerated
+by `npm run refresh:bioregistry` (queries the Bioregistry API). A pinned snapshot keeps conversion
+deterministic and offline.
+
+> **Future:** as this becomes a general cx2→RDF tool, unknown prefixes may instead be resolved
+> against the **live Bioregistry API during conversion** (with caching) — see
+> [CX2_TO_RDF_DESIGN.md §4.1.1](../CX2_TO_RDF_DESIGN.md).
+
+This handles namespace canonicalization only; entity *equivalence* (e.g. a non-canonical UniProt
+isoform accession) is left to `owl:sameAs` links plus a downstream node normalizer (FRINK).
 
 ## CX2 Attribute Handling
 
@@ -165,8 +191,9 @@ adds **pathway provenance nodes** (`type: "pathway"`) and **membership edges**
 turns these into RDF — adding triples only, leaving protein/edge/evidence conversion and
 single-pathway files untouched. Full design: [CX2_TO_RDF_DESIGN.md §4.8](../CX2_TO_RDF_DESIGN.md).
 
-- **Pathway nodes** → minted IRI `okn:pathway/<slug|uuid>`, typed `biolink:Pathway`
-  (`owl:equivalentClass PW:0000001`), labelled with the pathway name. The non-resolvable CX2
+- **Pathway nodes** → minted IRI `…/okn/pathway/<slug|uuid>` (serialized with the `pathway:`
+  prefix), typed `biolink:Pathway` (`owl:equivalentClass PW:0000001`), labelled with the pathway
+  name (a trailing version marker like ` _v2_0_` is stripped). The non-resolvable CX2
   `represents:"pathway:…"` value is discarded.
 - **Node membership** → `protein RO:0000056 pathway` (participates in), flipped to protein-subject;
   a direct triple, no reification.
@@ -174,15 +201,15 @@ single-pathway files untouched. Full design: [CX2_TO_RDF_DESIGN.md §4.8](../CX2
   pathway in which **both** endpoints participate.
 
 ```turtle
-okn:pathway/IL5-mediated-signaling-events a biolink:Pathway ;
+pathway:IL5-mediated-signaling-events a biolink:Pathway ;
     rdfs:label "IL5-mediated signaling events" .
 
-uniprot:A0AVQ5 RO:0000056 okn:pathway/IL5-mediated-signaling-events .   # LYN participates_in IL5
+uniprot:A0AVQ5 RO:0000056 pathway:IL5-mediated-signaling-events .   # LYN participates_in IL5
 
 okn:statement_582_0 a rdf:Statement ;
     rdf:subject uniprot:A8K1D9 ; rdf:predicate RO:0002629 ; rdf:object uniprot:A0AVQ5 ;
     okn:evidenceCount 6 ; okn:evidenceUrl <…> ;
-    okn:inPathway okn:pathway/IL5-mediated-signaling-events .
+    okn:inPathway pathway:IL5-mediated-signaling-events .
 ```
 
 > **Note:** `okn:inPathway` is a **co-membership heuristic** (both endpoints in the pathway), which
@@ -194,7 +221,7 @@ okn:statement_582_0 a rdf:Statement ;
 The tool generates Turtle (`.ttl`) format RDF. Example output:
 
 ```turtle
-@prefix uniprot: <http://identifiers.org/uniprot/>.
+@prefix uniprot: <http://purl.uniprot.org/uniprot/>.
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
 @prefix RO: <http://purl.obolibrary.org/obo/RO_>.

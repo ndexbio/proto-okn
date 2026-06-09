@@ -433,7 +433,10 @@ def merge_cx2_files(input_dir, output_path, slim=True, collapse=True,
         n_files = len(source_names)
         missing_uuids = []
         for file_idx, fname in enumerate(source_names):
-            pname = os.path.splitext(fname)[0]
+            # Strip a trailing version marker from the filename, e.g.
+            # "IL5-mediated signaling events _v2_0_" -> "IL5-mediated signaling events".
+            pname = re.sub(r"\s*_v\d+(?:[._]\d+)*_?\s*$", "",
+                           os.path.splitext(fname)[0]).strip()
             pv = {"n": pname, "r": f"pathway:{pname}", "type": "pathway"}
             uuid = lookup_uuid(fname)
             if uuid:

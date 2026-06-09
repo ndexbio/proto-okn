@@ -130,6 +130,8 @@ export interface ReifiedStatement {
   evidenceCount: number;
   evidenceUrl: string;
   processType?: string;
+  /** Pathway IRIs this interaction belongs to (both endpoints participate) */
+  inPathways?: string[];
 }
 
 /**
