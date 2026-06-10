@@ -313,6 +313,17 @@ Post-translational modifications don't have direct RO predicates. We use:
 
 Each relationship gets both a **direct triple** (for easy querying) and a **reified statement** (for metadata).
 
+**Self-loops are dropped:** a relationship whose subject and object resolve to the *same* IRI
+(neither the direct triple nor the reified statement is emitted). These are non-informational and
+arise mainly from protein-family nodes (§4.9) — e.g. several member gene names in one edge all fall
+back to the same family endpoint.
+
+**Direct triples are de-duplicated** by `(subject, predicate, object)`, since RDF is a set. Several
+relationships in one edge can resolve to the same direct triple (again common with family
+endpoints); the **reified statements are *not* de-duplicated** — each keeps its own
+`statement_<edge>_<i>` URI and per-evidence metadata, so no provenance is lost and the collapsed
+direct triple is recoverable from any of them.
+
 #### 4.4.1 Simple Relationships (binds, activates, inhibits)
 
 ```turtle
@@ -363,6 +374,12 @@ All other metadata uses standard vocabularies:
 - `rdf:subject`, `rdf:predicate`, `rdf:object` - Standard RDF reification
 - `dcterms:source` - Evidence source database(s)
 - `prov:wasDerivedFrom` - Link to detailed evidence
+
+**Evidence URL encoding:** the `okn:evidenceUrl` value is a free-form INDRA URL and can contain
+IRI-illegal characters (notably spaces, e.g. `subject=phosphatidic acid`). Such characters are
+percent-encoded at serialization time (only the RFC 3987-forbidden set — space, control chars, and
+`< > " { } | \ ^ \``) so the emitted IRI is valid Turtle and still dereferences/round-trips.
+Existing `%XX` escapes are left intact (no double-encoding).
 
 One additional custom property links a reified statement to the pathway(s) it belongs to in
 a merged network (see [4.8](#48-merged-network-handling-pathway-provenance)):
@@ -505,23 +522,26 @@ evidence conversion of §4.1–4.7 is unchanged, and networks without pathway no
 
 #### 4.8.1 Pathway nodes
 
-A pathway node carries only a name (and, in newer merges, an NDEx network UUID). Its CX2
-`represents` value (e.g. `pathway:IL5-mediated signaling events _v2_0_`) is **not** a valid IRI
-(spaces, non-resolvable scheme), so it is discarded. The name is first cleaned of a trailing
-version marker left by the source filename (e.g. ` _v2_0_`), then the converter mints an IRI under
-the graph namespace and types it with `biolink:Pathway`:
+A pathway node carries a name and a `represents` identifier. A merged network sets `represents` to
+the source NDEx network as `ndex:<uuid>`, which resolves through the network `@context`
+(`ndex` → `https://www.ndexbio.org/v3/networks/`) to a stable, dereferenceable IRI. The converter
+**uses `represents` as the pathway IRI** and types it with `biolink:Pathway`:
 
 ```turtle
-pathway:IL5-mediated-signaling-events a biolink:Pathway ;
+ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf a biolink:Pathway ;
     rdfs:label "IL5-mediated signaling events" .
 ```
 
-- **IRI:** `http://example.org/okn/pathway/<slug>` where `<slug>` is derived from the cleaned
-  pathway name; when the pathway node carries an NDEx UUID, `<uuid>` is used instead for a stable
-  identifier. Serialized with the dedicated `pathway:` prefix (= `…/okn/pathway/`) so it compacts
-  (the trailing slash is not a valid CURIE local-name character under `okn:`).
+- **IRI:** the node's `represents`, expanded through the network `@context` — e.g.
+  `ndex:<uuid>` → `https://www.ndexbio.org/v3/networks/<uuid>`. **Fallback:** when `represents`
+  is absent or its prefix is undeclared (e.g. an older merge's non-resolvable
+  `pathway:IL5-mediated signaling events _v2_0_` placeholder, emitted when no NDEx UUID was
+  available), the converter mints `http://example.org/okn/pathway/<slug|uuid>` from the cleaned
+  name (or the node's `uuid`), serialized with the dedicated `pathway:` prefix so it compacts (the
+  trailing slash is not a valid CURIE local-name character under `okn:`).
 - **Type:** `biolink:Pathway` (`owl:equivalentClass PW:0000001`).
-- **Label:** the cleaned pathway name (version marker stripped).
+- **Label:** the pathway name, cleaned of a trailing version marker left by the source filename
+  (e.g. ` _v2_0_`).
 
 #### 4.8.2 Node membership (`participates in`)
 
@@ -530,7 +550,7 @@ emitted as a single **direct triple, flipped to protein-as-subject** (the Biolin
 direction), using `RO:0000056` (participates in). No reification is produced.
 
 ```turtle
-uniprot:A0AVQ5 RO:0000056 pathway:IL5-mediated-signaling-events .   # LYN participates_in IL5
+uniprot:A0AVQ5 RO:0000056 ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf .   # LYN participates_in IL5
 ```
 
 #### 4.8.3 Edge → pathway membership (`okn:inPathway`)
@@ -545,8 +565,8 @@ pathway when **both** of its endpoints participate in that pathway:
 okn:statement_582_0 a rdf:Statement ;
     rdf:subject uniprot:A8K1D9 ; rdf:predicate RO:0002629 ; rdf:object uniprot:A0AVQ5 ;
     okn:evidenceCount 6 ; okn:evidenceUrl <https://db.indra.bio/...> ;
-    okn:inPathway pathway:IL5-mediated-signaling-events,
-                  pathway:IL4-mediated-signaling-events .
+    okn:inPathway ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf,
+                  ndex:7bc65b82-2a2f-11ed-ac45-0ac135e8bacf .
 ```
 
 Implementation: build a `proteinURI → {pathwayURI}` map from the membership edges, then for each
@@ -566,14 +586,69 @@ record per-edge source pathways and emit them directly — a planned follow-up.
 
 ```sparql
 # Proteins participating in a pathway
-SELECT ?protein WHERE { ?protein RO:0000056 pathway:IL5-mediated-signaling-events }
+SELECT ?protein WHERE { ?protein RO:0000056 ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf }
 
 # All interactions (with evidence) belonging to a pathway
 SELECT ?s ?p ?o ?evidence WHERE {
-    ?stmt okn:inPathway pathway:IL5-mediated-signaling-events ;
+    ?stmt okn:inPathway ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf ;
           rdf:subject ?s ; rdf:predicate ?p ; rdf:object ?o ; okn:evidenceCount ?evidence .
 }
 ```
+
+### 4.9 Protein/gene family nodes (`type: "proteinfamily"`)
+
+NCI-PID networks include **protein family** nodes (e.g. "RAS family", "Gq family") that stand in
+for a set of paralogous gene products. Their CX2 `represents` is a **non-resolvable bare name**
+(e.g. `"RAS family"`) — emitting it as an IRI yields an invalid relative IRI (spaces) and, worse,
+conflates the per-file family nodes the merge deliberately keeps distinct. So a family node is
+handled specially.
+
+#### 4.9.1 Family IRI
+
+The IRI identity is derived from the family's **member set**, not the display name, so families
+with identical membership converge to a single IRI across pathways while families that merely share
+a name but differ in members stay distinct:
+
+```
+http://example.org/okn/family/<name-slug>-<hash8(sorted members)>
+```
+
+- `<name-slug>` is a readable slug of the family name (e.g. `RAS-family`).
+- `<hash8>` is a deterministic FNV-1a hash (8 hex chars) of the normalized, sorted member CURIEs.
+- Serialized with a dedicated `family:` prefix (= `…/okn/family/`).
+- Fallback: a family with no members mints `family:<slug>`.
+
+The minted IRI also **replaces the family node's entry in the id→IRI map**, so interaction edges
+that touch the family resolve to the family IRI (not the bare name).
+
+#### 4.9.2 Type
+
+`biolink:GeneFamily` (`https://w3id.org/biolink/vocab/GeneFamily`) — Biolink's class for a grouping
+of genes/gene products related by common descent, with **"protein family" as an explicit alias**.
+
+#### 4.9.3 Member links (`RO:0002351` has member)
+
+Each entry of the node's `member` list (`hgnc.symbol:` CURIEs) becomes a direct triple using
+**`RO:0002351` (has member)** — the relation `biolink:has_member` maps to exactly (`RO:0002351`,
+`skos:member`). The family is the subject (collection), the gene the object (item):
+
+```turtle
+family:Gq-family-57a2b211 a biolink:GeneFamily ;
+    rdfs:label "Gq family" ;
+    RO:0002351 hgnc.symbol:GNA11, hgnc.symbol:GNA14, hgnc.symbol:GNA15, hgnc.symbol:GNAQ .
+```
+
+```sparql
+# Genes in a family, and families a gene belongs to
+SELECT ?gene WHERE { family:Gq-family-57a2b211 RO:0002351 ?gene }
+SELECT ?family WHERE { ?family a biolink:GeneFamily ; RO:0002351 hgnc.symbol:GNAQ }
+```
+
+> **Note:** family members (`hgnc.symbol:` references) appear only as objects of `has member`; they
+> are not themselves typed as nodes. Family-internal interactions in the source would otherwise
+> surface as `family → family` self-loops on the interaction predicates (member gene names fall back
+> to the same family endpoint); **the converter drops any interaction whose subject and object
+> resolve to the same IRI** (§4.4), so no self-loops are emitted.
 
 ## 5. Conversion Architecture
 

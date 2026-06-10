@@ -133,10 +133,10 @@ The tool generates RDF using the following standard ontologies:
 
 | Prefix | Namespace | Description |
 |--------|-----------|-------------|
-| RO | http://purl.obolibrary.org/obo/RO_ | Relations Ontology (incl. `RO:0000056` participates in) |
+| RO | http://purl.obolibrary.org/obo/RO_ | Relations Ontology (incl. `RO:0000056` participates in, `RO:0002351` has member) |
 | GO | http://purl.obolibrary.org/obo/GO_ | Gene Ontology |
 | SIO | http://semanticscience.org/resource/SIO_ | Semantic Science Ontology |
-| biolink | https://w3id.org/biolink/vocab/ | Biolink Model (`biolink:Pathway` node typing) |
+| biolink | https://w3id.org/biolink/vocab/ | Biolink Model (`biolink:Pathway`, `biolink:GeneFamily` node typing) |
 | uniprot | http://purl.uniprot.org/uniprot/ | UniProt protein identifiers (Bioregistry-canonical) |
 | chebi | http://purl.obolibrary.org/obo/CHEBI_ | Chemical Entities of Biological Interest (Bioregistry-canonical) |
 
@@ -191,30 +191,51 @@ adds **pathway provenance nodes** (`type: "pathway"`) and **membership edges**
 turns these into RDF — adding triples only, leaving protein/edge/evidence conversion and
 single-pathway files untouched. Full design: [CX2_TO_RDF_DESIGN.md §4.8](../CX2_TO_RDF_DESIGN.md).
 
-- **Pathway nodes** → minted IRI `…/okn/pathway/<slug|uuid>` (serialized with the `pathway:`
-  prefix), typed `biolink:Pathway` (`owl:equivalentClass PW:0000001`), labelled with the pathway
-  name (a trailing version marker like ` _v2_0_` is stripped). The non-resolvable CX2
-  `represents:"pathway:…"` value is discarded.
+- **Pathway nodes** → IRI taken from the node's own `represents`, resolved through the network
+  `@context`. A merged network sets it to the source NDEx network (`ndex:<uuid>` →
+  `https://www.ndexbio.org/v3/networks/<uuid>`). Typed `biolink:Pathway`
+  (`owl:equivalentClass PW:0000001`) and labelled with the pathway name (a trailing version marker
+  like ` _v2_0_` is stripped). When `represents` is absent or its prefix is undeclared (e.g. the
+  merge's non-resolvable `pathway:<name>` placeholder, emitted when no NDEx UUID was available), the
+  converter falls back to a minted `…/okn/pathway/<slug|uuid>` IRI (the `pathway:` prefix).
 - **Node membership** → `protein RO:0000056 pathway` (participates in), flipped to protein-subject;
   a direct triple, no reification.
 - **Edge → pathway** → each reified interaction statement gets `okn:inPathway <pathway>` for every
   pathway in which **both** endpoints participate.
 
 ```turtle
-pathway:IL5-mediated-signaling-events a biolink:Pathway ;
+ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf a biolink:Pathway ;
     rdfs:label "IL5-mediated signaling events" .
 
-uniprot:A0AVQ5 RO:0000056 pathway:IL5-mediated-signaling-events .   # LYN participates_in IL5
+uniprot:A0AVQ5 RO:0000056 ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf .   # LYN participates_in IL5
 
 okn:statement_582_0 a rdf:Statement ;
     rdf:subject uniprot:A8K1D9 ; rdf:predicate RO:0002629 ; rdf:object uniprot:A0AVQ5 ;
     okn:evidenceCount 6 ; okn:evidenceUrl <…> ;
-    okn:inPathway pathway:IL5-mediated-signaling-events .
+    okn:inPathway ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf .
 ```
 
 > **Note:** `okn:inPathway` is a **co-membership heuristic** (both endpoints in the pathway), which
 > yields a *superset* of true edge memberships — the merge drops exact per-edge pathway provenance.
 > It is intended for pathway-scoped queries; exact provenance is a planned `merge_cx2.py` follow-up.
+
+## Protein/Gene Families
+
+NCI-PID networks include **protein family** nodes (`type: "proteinfamily"`, e.g. "RAS family")
+whose CX2 `represents` is a non-resolvable bare name. The converter mints a stable IRI from the
+family's **member set** (so identical-membership families converge to one IRI; same-name/different-
+members stay distinct), types it `biolink:GeneFamily`, and turns each `member` (an `hgnc.symbol:`
+CURIE) into an `RO:0002351` (**has member**) triple — `biolink:has_member` maps exactly to
+`RO:0002351`. Full design: [CX2_TO_RDF_DESIGN.md §4.9](../CX2_TO_RDF_DESIGN.md).
+
+```turtle
+family:Gq-family-57a2b211 a biolink:GeneFamily ;
+    rdfs:label "Gq family" ;
+    RO:0002351 hgnc.symbol:GNA11, hgnc.symbol:GNA14, hgnc.symbol:GNA15, hgnc.symbol:GNAQ .
+```
+
+The minted IRI (`family:` = `…/okn/family/<slug>-<hash>`) also replaces the family's id→IRI entry,
+so interaction edges touching the family resolve to it rather than the bare name.
 
 ## Output Format
 

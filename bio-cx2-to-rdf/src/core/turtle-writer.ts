@@ -11,6 +11,7 @@ import type {
   NamespaceMap,
 } from './types.js';
 import { expandUri } from './namespace-manager.js';
+import { toSafeIri } from './uri-builder.js';
 
 const { namedNode, literal } = DataFactory;
 
@@ -153,11 +154,12 @@ function writeReifiedStatement(
     literal(statement.evidenceCount.toString(), namedNode('http://www.w3.org/2001/XMLSchema#integer'))
   );
 
-  // Evidence URL
+  // Evidence URL (free-form INDRA URL; percent-encode IRI-illegal chars such as
+  // spaces so the emitted IRI is valid Turtle)
   writer.addQuad(
     statementNode,
     namedNode(OKN_EVIDENCE_URL),
-    namedNode(statement.evidenceUrl)
+    namedNode(toSafeIri(statement.evidenceUrl))
   );
 
   // Process type (if present)

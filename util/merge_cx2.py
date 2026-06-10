@@ -17,9 +17,18 @@ items the bio-cx2-to-rdf converter's regex consumes
 wrapper and other chrome the converter ignores. RDF output is unchanged; the
 file shrinks for Cytoscape.js. Pass --no-slim to keep full HTML.
 
+The merged network is named "merged nci-pid 2.0 network" and inherits the
+description and reference of the first source network. Its @context unions every
+source network's @context (conflicting prefix->URI mappings are reported, first
+wins) plus an `ndex` prefix (https://www.ndexbio.org/v3/networks/) used by
+pathway-node represents IRIs. With --pathway-nodes and a --uuid-map, each pathway
+node's represents is ndex:<uuid>.
+
 Usage:
     python merge_cx2.py cx2_networks/ merged_ncipid.cx2
     python merge_cx2.py cx2_networks/ merged_ncipid.cx2 --no-slim
+    python merge_cx2.py cx2_networks/ merged_ncipid.cx2 \\
+        --pathway-nodes --uuid-map data_files/download-manifest.json
 """
 
 import json
@@ -176,6 +185,27 @@ def parse_cx2(filepath):
     return aspects
 
 
+def parse_context(network_attrs_aspect):
+    """Extract the @context prefix map from a networkAttributes aspect.
+
+    The aspect is a list of attribute dicts; @context is stored as a JSON string
+    (occasionally already a dict). Returns {} when absent or unparseable.
+    """
+    if not isinstance(network_attrs_aspect, list):
+        return {}
+    for attrs in network_attrs_aspect:
+        if isinstance(attrs, dict) and "@context" in attrs:
+            ctx = attrs["@context"]
+            if isinstance(ctx, dict):
+                return ctx
+            if isinstance(ctx, str):
+                try:
+                    return json.loads(ctx)
+                except json.JSONDecodeError:
+                    return {}
+    return {}
+
+
 def get_node_key(node, file_idx):
     """
     Return a dedup key for a node. Namespaced represents values (containing ':')
@@ -241,6 +271,14 @@ def merge_cx2_files(input_dir, output_path, slim=True, collapse=True,
     # unified_node_id -> {"node": id, "x":, "y":, "z"?} for cartesianLayout
     unified_coords = {}
 
+    # Merged @context for the output network, seeded with the `ndex` prefix so
+    # pathway-node represents IRIs (ndex:<uuid>) resolve to the NDEx network URL.
+    # Each source network's @context is folded in below; a prefix that maps to
+    # conflicting URIs across networks is reported rather than silently clobbered.
+    merged_context = {"ndex": "https://www.ndexbio.org/v3/networks/"}
+    context_source = {"ndex": "(merged network default)"}  # prefix -> network that set it
+    context_conflicts = []  # (prefix, kept_uri, kept_src, other_uri, other_src)
+
     source_names = []
 
     for file_idx, filepath in enumerate(cx2_files):
@@ -256,6 +294,17 @@ def merge_cx2_files(input_dir, output_path, slim=True, collapse=True,
             base_visual_editor_properties = aspects["visualEditorProperties"]
         if not base_network_attrs and "networkAttributes" in aspects:
             base_network_attrs = aspects["networkAttributes"]
+
+        # Fold this network's @context prefixes into the merged @context. A new
+        # prefix is added; an existing prefix mapped to a different URI is
+        # recorded as a conflict (first network to define it wins).
+        for prefix, uri in parse_context(aspects.get("networkAttributes")).items():
+            if prefix not in merged_context:
+                merged_context[prefix] = uri
+                context_source[prefix] = fname
+            elif merged_context[prefix] != uri:
+                context_conflicts.append(
+                    (prefix, merged_context[prefix], context_source[prefix], uri, fname))
 
         # Accumulate attribute declarations (first declaration of a key wins).
         decl_aspect = aspects.get("attributeDeclarations")
@@ -361,6 +410,16 @@ def merge_cx2_files(input_dir, output_path, slim=True, collapse=True,
     if skipped_edges:
         print(f"  Skipped {skipped_edges} edges with unmapped nodes")
 
+    # Report @context prefix conflicts (same prefix, different URI across networks).
+    print(f"  Merged @context: {len(merged_context)} prefixes "
+          f"({', '.join(sorted(merged_context))})")
+    if context_conflicts:
+        print(f"  WARNING: {len(context_conflicts)} @context prefix conflict(s) "
+              f"(same prefix mapped to different URIs); kept the first:")
+        for prefix, kept_uri, kept_src, other_uri, other_src in context_conflicts:
+            print(f"    '{prefix}': \"{kept_uri}\" (from {kept_src}) "
+                  f"vs \"{other_uri}\" (from {other_src})")
+
     # Collapse redundant edges sharing the same directed endpoints so that a
     # node pair never has more than 2 edges (one per direction). Runs before
     # slimming because unioning differing evidence needs the original items.
@@ -437,12 +496,17 @@ def merge_cx2_files(input_dir, output_path, slim=True, collapse=True,
             # "IL5-mediated signaling events _v2_0_" -> "IL5-mediated signaling events".
             pname = re.sub(r"\s*_v\d+(?:[._]\d+)*_?\s*$", "",
                            os.path.splitext(fname)[0]).strip()
-            pv = {"n": pname, "r": f"pathway:{pname}", "type": "pathway"}
+            # Use the source NDEx network as the pathway node's represents IRI:
+            # ndex:<uuid>, which the merged @context resolves to
+            # https://www.ndexbio.org/v3/networks/<uuid>. Fall back to a
+            # non-resolvable pathway:<name> when no UUID is known.
             uuid = lookup_uuid(fname)
             if uuid:
-                pv["ndex_id"] = f"ndex:{uuid}"
+                represents = f"ndex:{uuid}"
             else:
+                represents = f"pathway:{pname}"
                 missing_uuids.append(fname)
+            pv = {"n": pname, "r": represents, "type": "pathway"}
             pnode = {"id": next_nid, "v": pv}
             unified_nodes[f"__pathway__{file_idx}"] = pnode
             pathway_node_ids[file_idx] = next_nid
@@ -478,16 +542,17 @@ def merge_cx2_files(input_dir, output_path, slim=True, collapse=True,
     # the stream early and triggers NDEx's "End of array expected" error.
     net_attrs = (base_network_attrs if isinstance(base_network_attrs, list)
                  else [base_network_attrs])
-    merged_attrs = net_attrs[0] if net_attrs else {}
-    merged_attrs["name"] = "NCI-PID Merged Network"
-    merged_attrs["description"] = (
-        f"Merged from {len(cx2_files)} NCI-PID CX2 files. "
-        f"Nodes deduplicated by represents/name (bare names scoped per-file). "
-        f"Edges deduplicated by full content. "
-        + ("Relationships HTML slimmed to converter-relevant items. "
-           if slim else "")
-        + f"Sources: {', '.join(source_names)}"
-    )
+    first_attrs = net_attrs[0] if net_attrs else {}
+
+    # The merged network's identity: a fixed name, the first source network's
+    # description and reference, and the merged @context (which carries the
+    # `ndex` prefix plus every prefix the source networks declared).
+    merged_attrs = {"name": "merged nci-pid 2.0 network"}
+    if first_attrs.get("description") is not None:
+        merged_attrs["description"] = first_attrs["description"]
+    if first_attrs.get("reference") is not None:
+        merged_attrs["reference"] = first_attrs["reference"]
+    merged_attrs["@context"] = json.dumps(merged_context)
 
     node_list = list(unified_nodes.values())
 
@@ -631,7 +696,19 @@ if __name__ == "__main__":
             print("--uuid-map requires a path to a JSON file")
             sys.exit(1)
         with open(map_path) as f:
-            uuid_map = json.load(f)
+            raw = json.load(f)
+        # Accept either a direct {filename: uuid} map, or a download-manifest.json
+        # ({uuid: {"file": ..., "name": ...}}), which is inverted to filename->uuid
+        # (keyed by both the full filename and the extensionless basename).
+        if raw and all(isinstance(v, dict) and "file" in v for v in raw.values()):
+            uuid_map = {}
+            for u, entry in raw.items():
+                fname = entry.get("file")
+                if fname:
+                    uuid_map[fname] = u
+                    uuid_map[os.path.splitext(fname)[0]] = u
+        else:
+            uuid_map = raw
         del args[i:i + 2]
 
     if len(args) == 2:
