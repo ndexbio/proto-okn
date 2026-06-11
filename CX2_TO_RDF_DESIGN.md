@@ -705,13 +705,20 @@ For each node (attributes already normalized to canonical full names in Step 1):
 4. Get display label from `name`
 5. Create RDF entity with:
    - **If `type == "pathway"`** (merged-network provenance node, see [4.8.1](#481-pathway-nodes)):
-     strip the version marker from `name`, mint `pathway:<slug|uuid>` (= `…/okn/pathway/<slug|uuid>`),
-     type `biolink:Pathway`, label from the cleaned `name`; skip the `represents`/identifier logic
-     above. Also record `proteinURI → {pathwayURI}` membership.
-   - URI: Based on identifier namespace
-   - Type: `rdf:type SIO:010043` (protein)
-   - Label: `rdfs:label "HDAC1"`
-   - Additional properties as needed
+     use the node's `represents` resolved through the `@context` as the pathway IRI — a merged
+     network sets it to `ndex:<uuid>`; **fall back** to minting `pathway:<slug|uuid>`
+     (= `…/okn/pathway/<slug|uuid>`) only when `represents` is absent or its prefix is undeclared.
+     Type `biolink:Pathway`, label from the cleaned `name` (version marker stripped). Also record
+     `proteinURI → {pathwayURI}` membership.
+   - **If `type == "proteinfamily"`** (see [4.9](#49-proteingene-family-nodes-type-proteinfamily)):
+     the bare-name `represents` is not usable, so mint `family:<slug>-<hash(members)>`, type
+     `biolink:GeneFamily`, label from `name`, and emit `family RO:0002351 member` (has member) for
+     each `member` gene. The minted IRI also replaces this node's id→IRI entry.
+   - Otherwise (proteins, small molecules, …):
+     - URI: Based on identifier namespace
+     - Type: `rdf:type SIO:010043` (protein)
+     - Label: `rdfs:label "HDAC1"`
+     - Additional properties as needed
 
 #### Step 3: Process Edges
 For each edge:
@@ -730,6 +737,8 @@ For each edge:
    - Resolve subject/object to node URIs using the parsed names or evidence URL params
    - Extract evidence count and URL for this specific relationship
    - Use parsed subject/object order for the triple direction (A → B)
+   - **Skip self-loops**: if subject and object resolve to the same IRI, emit neither the direct
+     triple nor the reified statement (see [4.4](#44-reification-pattern-for-relationship-metadata))
    - Generate:
      * **Direct triple**: `subject RO-predicate object` (e.g., `uniprot:O75928 RO:0002578 uniprot:Q13547`)
      * **Reified statement**: URI like `okn:e231_1` with:
@@ -743,10 +752,13 @@ For each edge:
 
 #### Step 4: Generate RDF
 - Write namespace declarations
+- Write entity declarations (nodes), **merging declarations that share an IRI** (e.g. paralogs
+  mapping to one UniProt accession) so type/label/`owl:sameAs` are emitted once
 - Write network-level metadata
-- Write entity declarations (nodes)
-- Write direct relationship triples (for easy querying)
-- Write relation objects with metadata (for evidence tracking)
+- Write **de-duplicated** direct relationship triples (RDF is a set; collapse identical
+  `(subject, predicate, object)` — reified statements are kept distinct, see [4.4](#44-reification-pattern-for-relationship-metadata))
+- Write relation objects with metadata (for evidence tracking); percent-encode IRI-illegal
+  characters in free-form IRIs such as evidence URLs (see [4.4.3](#443-reification-metadata-properties))
 - Ensure proper formatting and syntax
 
 ## 6. Detailed Conversion Mapping

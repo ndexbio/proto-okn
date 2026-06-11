@@ -152,9 +152,21 @@ entity IRIs, the converter **canonicalizes each `@context` prefix against
 - A prefix without one (Bioregistry's canonical is just a provider webpage — `cas`, `hgnc.symbol`,
   `hprd`, `kegg.compound`) keeps its `@context` value.
 
-The canonical stems are **vendored at build time** in `src/core/bioregistry-prefixes.ts`, regenerated
-by `npm run refresh:bioregistry` (queries the Bioregistry API). A pinned snapshot keeps conversion
-deterministic and offline.
+The canonical stems are **vendored as a committed snapshot** in `src/core/bioregistry-prefixes.ts`.
+This file is generated, but it is **checked into the repo** (not produced at build time): it is a
+compile-time `import`, and pinning a snapshot of the live Bioregistry API is what keeps conversion
+**deterministic and offline** — builds need no network access and every checkout produces identical
+IRIs.
+
+To refresh the snapshot (e.g. to pick up new/changed canonical IRIs), run:
+
+```bash
+npm run refresh:bioregistry   # queries the Bioregistry API and rewrites bioregistry-prefixes.ts
+```
+
+then **commit the regenerated file** (its header records the fetch date). Do not delete it expecting
+the build to regenerate it — `npm run build` is just `tsc` and will fail with a missing-module error
+if the snapshot is absent.
 
 > **Future:** as this becomes a general cx2→RDF tool, unknown prefixes may instead be resolved
 > against the **live Bioregistry API during conversion** (with caching) — see
