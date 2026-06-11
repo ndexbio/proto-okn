@@ -161,8 +161,14 @@ All Evidences (<a href="...">49</a>)
 
 ### 4.1 Namespace Definitions
 
+Note: `biolink:`, `PW:`, and `pathway:` below are emitted **only for merged networks that contain
+pathway provenance nodes** (see [4.8](#48-merged-network-handling-pathway-provenance)); pathway-free
+networks keep an unchanged prefix block. `pathway:` (= `…/okn/pathway/`) exists so pathway IRIs
+compact (the trailing slash is not a valid CURIE local-name character under `okn:`).
+
 ```turtle
 @prefix okn: <http://purl.org/okn/> .
+@prefix pathway: <http://purl.org/okn/pathway/> .  # merged networks only; compacts pathway IRIs
 @prefix uniprot: <http://purl.uniprot.org/uniprot/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -201,6 +207,40 @@ This converter uses a **hybrid approach** to minimize maintenance overhead while
 This eliminates custom relationship predicates (`oknr:*`) entirely, using only:
 - `okn:` namespace for network-specific entities (statements, networks)
 - Standard ontologies (RO, GO) for all relationship semantics
+
+### 4.1.1 Identifier Canonicalization (Bioregistry)
+
+Source CX2 networks declare their namespace prefixes in `networkAttributes.@context`, but those
+often point at **non-preferred IRI bases** — e.g. `uniprot` → `https://identifiers.org/uniprot/`
+rather than the OKN/Bioregistry-canonical `http://purl.uniprot.org/uniprot/`. The converter
+**canonicalizes each `@context` prefix against [Bioregistry](https://bioregistry.io)** before
+building entity IRIs (`createNamespaceMap` → `canonicalizeContext`):
+
+- A prefix that Bioregistry exposes with an **`rdf_uri_format`** (a proper RDF identity IRI) is
+  rewritten to that canonical stem — e.g. `uniprot` → `http://purl.uniprot.org/uniprot/`,
+  `chebi` → `http://purl.obolibrary.org/obo/CHEBI_`.
+- A prefix **without** an `rdf_uri_format` (Bioregistry's canonical is only a provider webpage —
+  e.g. `cas`, `hgnc.symbol`, `hprd`, `kegg.compound`) is **left as the network's `@context`
+  value**, since a webpage URL is a poor RDF subject IRI.
+
+**Build-time, not conversion-time.** The canonical stems are vendored in
+`src/core/bioregistry-prefixes.ts`, regenerated on demand by `scripts/refresh-bioregistry.js`
+(`npm run refresh:bioregistry`), which queries the Bioregistry API. A pinned snapshot keeps
+conversion **deterministic and offline** (important for a reproducible KG pipeline and for
+browser/Cytoscape-Web use).
+
+> **Future — live resolution.** As this becomes a more general cx2→RDF tool for *arbitrary*
+> networks, the vendored snapshot won't cover every prefix a network might declare. The plan is to
+> optionally resolve unknown `@context` prefixes against the **live Bioregistry API during
+> conversion**, with caching, falling back to the snapshot/`@context`. Trade-off: live resolution is
+> general but adds a network dependency and non-determinism; the build-time snapshot is deterministic
+> and offline but limited to vendored prefixes. The split is by design — see this section.
+
+**Scope.** This solves *namespace/base* canonicalization (same identifier, canonical IRI base). It
+does **not** resolve *entity equivalence* — e.g. a non-canonical UniProt isoform accession, or a
+gene symbol vs Entrez ID. Those are emitted with `owl:sameAs` links (from the node `alias` list) and
+left to a downstream node normalizer (FRINK), which is the appropriate tool for open-ended
+cross-identifier equivalence.
 
 ### 4.2 Entity Type Mapping
 
@@ -273,6 +313,17 @@ Post-translational modifications don't have direct RO predicates. We use:
 
 Each relationship gets both a **direct triple** (for easy querying) and a **reified statement** (for metadata).
 
+**Self-loops are dropped:** a relationship whose subject and object resolve to the *same* IRI
+(neither the direct triple nor the reified statement is emitted). These are non-informational and
+arise mainly from protein-family nodes (§4.9) — e.g. several member gene names in one edge all fall
+back to the same family endpoint.
+
+**Direct triples are de-duplicated** by `(subject, predicate, object)`, since RDF is a set. Several
+relationships in one edge can resolve to the same direct triple (again common with family
+endpoints); the **reified statements are *not* de-duplicated** — each keeps its own
+`statement_<edge>_<i>` URI and per-evidence metadata, so no provenance is lost and the collapsed
+direct triple is recoverable from any of them.
+
 #### 4.4.1 Simple Relationships (binds, activates, inhibits)
 
 ```turtle
@@ -323,6 +374,12 @@ All other metadata uses standard vocabularies:
 - `rdf:subject`, `rdf:predicate`, `rdf:object` - Standard RDF reification
 - `dcterms:source` - Evidence source database(s)
 - `prov:wasDerivedFrom` - Link to detailed evidence
+
+**Evidence URL encoding:** the `okn:evidenceUrl` value is a free-form INDRA URL and can contain
+IRI-illegal characters (notably spaces, e.g. `subject=phosphatidic acid`). Such characters are
+percent-encoded at serialization time (only the RFC 3987-forbidden set — space, control chars, and
+`< > " { } | \ ^ \``) so the emitted IRI is valid Turtle and still dereferences/round-trips.
+Existing `%XX` escapes are left intact (no double-encoding).
 
 One additional custom property links a reified statement to the pathway(s) it belongs to in
 a merged network (see [4.8](#48-merged-network-handling-pathway-provenance)):
@@ -465,20 +522,26 @@ evidence conversion of §4.1–4.7 is unchanged, and networks without pathway no
 
 #### 4.8.1 Pathway nodes
 
-A pathway node carries only a name (and, in newer merges, an NDEx network UUID). Its CX2
-`represents` value (e.g. `pathway:IL5-mediated signaling events _v2_0_`) is **not** a valid IRI
-(spaces, non-resolvable scheme), so it is discarded. Instead the converter mints an IRI under the
-graph namespace and types it with `biolink:Pathway`:
+A pathway node carries a name and a `represents` identifier. A merged network sets `represents` to
+the source NDEx network as `ndex:<uuid>`, which resolves through the network `@context`
+(`ndex` → `https://www.ndexbio.org/v3/networks/`) to a stable, dereferenceable IRI. The converter
+**uses `represents` as the pathway IRI** and types it with `biolink:Pathway`:
 
 ```turtle
-okn:pathway/IL5-mediated-signaling-events a biolink:Pathway ;
+ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf a biolink:Pathway ;
     rdfs:label "IL5-mediated signaling events" .
 ```
 
-- **IRI:** `okn:pathway/<slug>` where `<slug>` is derived from the pathway name; when the pathway
-  node carries an NDEx UUID, `<uuid>` is used instead for a stable identifier.
+- **IRI:** the node's `represents`, expanded through the network `@context` — e.g.
+  `ndex:<uuid>` → `https://www.ndexbio.org/v3/networks/<uuid>`. **Fallback:** when `represents`
+  is absent or its prefix is undeclared (e.g. an older merge's non-resolvable
+  `pathway:IL5-mediated signaling events _v2_0_` placeholder, emitted when no NDEx UUID was
+  available), the converter mints `http://example.org/okn/pathway/<slug|uuid>` from the cleaned
+  name (or the node's `uuid`), serialized with the dedicated `pathway:` prefix so it compacts (the
+  trailing slash is not a valid CURIE local-name character under `okn:`).
 - **Type:** `biolink:Pathway` (`owl:equivalentClass PW:0000001`).
-- **Label:** the original pathway name.
+- **Label:** the pathway name, cleaned of a trailing version marker left by the source filename
+  (e.g. ` _v2_0_`).
 
 #### 4.8.2 Node membership (`participates in`)
 
@@ -487,7 +550,7 @@ emitted as a single **direct triple, flipped to protein-as-subject** (the Biolin
 direction), using `RO:0000056` (participates in). No reification is produced.
 
 ```turtle
-uniprot:A0AVQ5 RO:0000056 okn:pathway/IL5-mediated-signaling-events .   # LYN participates_in IL5
+uniprot:A0AVQ5 RO:0000056 ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf .   # LYN participates_in IL5
 ```
 
 #### 4.8.3 Edge → pathway membership (`okn:inPathway`)
@@ -502,8 +565,8 @@ pathway when **both** of its endpoints participate in that pathway:
 okn:statement_582_0 a rdf:Statement ;
     rdf:subject uniprot:A8K1D9 ; rdf:predicate RO:0002629 ; rdf:object uniprot:A0AVQ5 ;
     okn:evidenceCount 6 ; okn:evidenceUrl <https://db.indra.bio/...> ;
-    okn:inPathway okn:pathway/IL5-mediated-signaling-events,
-                  okn:pathway/IL4-mediated-signaling-events .
+    okn:inPathway ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf,
+                  ndex:7bc65b82-2a2f-11ed-ac45-0ac135e8bacf .
 ```
 
 Implementation: build a `proteinURI → {pathwayURI}` map from the membership edges, then for each
@@ -523,14 +586,69 @@ record per-edge source pathways and emit them directly — a planned follow-up.
 
 ```sparql
 # Proteins participating in a pathway
-SELECT ?protein WHERE { ?protein RO:0000056 okn:pathway/IL5-mediated-signaling-events }
+SELECT ?protein WHERE { ?protein RO:0000056 ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf }
 
 # All interactions (with evidence) belonging to a pathway
 SELECT ?s ?p ?o ?evidence WHERE {
-    ?stmt okn:inPathway okn:pathway/IL5-mediated-signaling-events ;
+    ?stmt okn:inPathway ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf ;
           rdf:subject ?s ; rdf:predicate ?p ; rdf:object ?o ; okn:evidenceCount ?evidence .
 }
 ```
+
+### 4.9 Protein/gene family nodes (`type: "proteinfamily"`)
+
+NCI-PID networks include **protein family** nodes (e.g. "RAS family", "Gq family") that stand in
+for a set of paralogous gene products. Their CX2 `represents` is a **non-resolvable bare name**
+(e.g. `"RAS family"`) — emitting it as an IRI yields an invalid relative IRI (spaces) and, worse,
+conflates the per-file family nodes the merge deliberately keeps distinct. So a family node is
+handled specially.
+
+#### 4.9.1 Family IRI
+
+The IRI identity is derived from the family's **member set**, not the display name, so families
+with identical membership converge to a single IRI across pathways while families that merely share
+a name but differ in members stay distinct:
+
+```
+http://example.org/okn/family/<name-slug>-<hash8(sorted members)>
+```
+
+- `<name-slug>` is a readable slug of the family name (e.g. `RAS-family`).
+- `<hash8>` is a deterministic FNV-1a hash (8 hex chars) of the normalized, sorted member CURIEs.
+- Serialized with a dedicated `family:` prefix (= `…/okn/family/`).
+- Fallback: a family with no members mints `family:<slug>`.
+
+The minted IRI also **replaces the family node's entry in the id→IRI map**, so interaction edges
+that touch the family resolve to the family IRI (not the bare name).
+
+#### 4.9.2 Type
+
+`biolink:GeneFamily` (`https://w3id.org/biolink/vocab/GeneFamily`) — Biolink's class for a grouping
+of genes/gene products related by common descent, with **"protein family" as an explicit alias**.
+
+#### 4.9.3 Member links (`RO:0002351` has member)
+
+Each entry of the node's `member` list (`hgnc.symbol:` CURIEs) becomes a direct triple using
+**`RO:0002351` (has member)** — the relation `biolink:has_member` maps to exactly (`RO:0002351`,
+`skos:member`). The family is the subject (collection), the gene the object (item):
+
+```turtle
+family:Gq-family-57a2b211 a biolink:GeneFamily ;
+    rdfs:label "Gq family" ;
+    RO:0002351 hgnc.symbol:GNA11, hgnc.symbol:GNA14, hgnc.symbol:GNA15, hgnc.symbol:GNAQ .
+```
+
+```sparql
+# Genes in a family, and families a gene belongs to
+SELECT ?gene WHERE { family:Gq-family-57a2b211 RO:0002351 ?gene }
+SELECT ?family WHERE { ?family a biolink:GeneFamily ; RO:0002351 hgnc.symbol:GNAQ }
+```
+
+> **Note:** family members (`hgnc.symbol:` references) appear only as objects of `has member`; they
+> are not themselves typed as nodes. Family-internal interactions in the source would otherwise
+> surface as `family → family` self-loops on the interaction predicates (member gene names fall back
+> to the same family endpoint); **the converter drops any interaction whose subject and object
+> resolve to the same IRI** (§4.4), so no self-loops are emitted.
 
 ## 5. Conversion Architecture
 
@@ -587,12 +705,20 @@ For each node (attributes already normalized to canonical full names in Step 1):
 4. Get display label from `name`
 5. Create RDF entity with:
    - **If `type == "pathway"`** (merged-network provenance node, see [4.8.1](#481-pathway-nodes)):
-     mint `okn:pathway/<slug|uuid>`, type `biolink:Pathway`, label from `name`; skip the
-     `represents`/identifier logic above. Also record `proteinURI → {pathwayURI}` membership.
-   - URI: Based on identifier namespace
-   - Type: `rdf:type SIO:010043` (protein)
-   - Label: `rdfs:label "HDAC1"`
-   - Additional properties as needed
+     use the node's `represents` resolved through the `@context` as the pathway IRI — a merged
+     network sets it to `ndex:<uuid>`; **fall back** to minting `pathway:<slug|uuid>`
+     (= `…/okn/pathway/<slug|uuid>`) only when `represents` is absent or its prefix is undeclared.
+     Type `biolink:Pathway`, label from the cleaned `name` (version marker stripped). Also record
+     `proteinURI → {pathwayURI}` membership.
+   - **If `type == "proteinfamily"`** (see [4.9](#49-proteingene-family-nodes-type-proteinfamily)):
+     the bare-name `represents` is not usable, so mint `family:<slug>-<hash(members)>`, type
+     `biolink:GeneFamily`, label from `name`, and emit `family RO:0002351 member` (has member) for
+     each `member` gene. The minted IRI also replaces this node's id→IRI entry.
+   - Otherwise (proteins, small molecules, …):
+     - URI: Based on identifier namespace
+     - Type: `rdf:type SIO:010043` (protein)
+     - Label: `rdfs:label "HDAC1"`
+     - Additional properties as needed
 
 #### Step 3: Process Edges
 For each edge:
@@ -611,6 +737,8 @@ For each edge:
    - Resolve subject/object to node URIs using the parsed names or evidence URL params
    - Extract evidence count and URL for this specific relationship
    - Use parsed subject/object order for the triple direction (A → B)
+   - **Skip self-loops**: if subject and object resolve to the same IRI, emit neither the direct
+     triple nor the reified statement (see [4.4](#44-reification-pattern-for-relationship-metadata))
    - Generate:
      * **Direct triple**: `subject RO-predicate object` (e.g., `uniprot:O75928 RO:0002578 uniprot:Q13547`)
      * **Reified statement**: URI like `okn:e231_1` with:
@@ -624,10 +752,13 @@ For each edge:
 
 #### Step 4: Generate RDF
 - Write namespace declarations
+- Write entity declarations (nodes), **merging declarations that share an IRI** (e.g. paralogs
+  mapping to one UniProt accession) so type/label/`owl:sameAs` are emitted once
 - Write network-level metadata
-- Write entity declarations (nodes)
-- Write direct relationship triples (for easy querying)
-- Write relation objects with metadata (for evidence tracking)
+- Write **de-duplicated** direct relationship triples (RDF is a set; collapse identical
+  `(subject, predicate, object)` — reified statements are kept distinct, see [4.4](#44-reification-pattern-for-relationship-metadata))
+- Write relation objects with metadata (for evidence tracking); percent-encode IRI-illegal
+  characters in free-form IRIs such as evidence URLs (see [4.4.3](#443-reification-metadata-properties))
 - Ensure proper formatting and syntax
 
 ## 6. Detailed Conversion Mapping

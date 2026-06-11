@@ -1,5 +1,5 @@
-@prefix chebi: <http://identifiers.org/chebi/CHEBI:>.
-@prefix uniprot: <http://identifiers.org/uniprot/>.
+@prefix chebi: <http://purl.obolibrary.org/obo/CHEBI_>.
+@prefix uniprot: <http://purl.uniprot.org/uniprot/>.
 @prefix cas: <http://identifiers.org/cas/>.
 @prefix kegg.compound: <http://identifiers.org/kegg.compound/>.
 @prefix hgnc.symbol: <http://identifiers.org/hgnc.symbol/>.

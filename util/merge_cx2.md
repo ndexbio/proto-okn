@@ -41,7 +41,8 @@ python merge_cx2.py cx2_networks/ merged_ncipid.cx2 --pathway-nodes
 |---|---|---|
 | `--no-slim` | slimming **on** | Keep the full original `Relationships` HTML instead of reducing it to converter-relevant items. Produces a larger file; output is otherwise identical. Useful for an RDF before/after diff. |
 | `--no-collapse` | collapse **on** | Skip the direction-aware edge collapse. Edges are still deduplicated by full content, but redundant same-direction edges are not merged and the ≤2-edges-per-pair rule is not enforced. |
-| `--pathway-nodes` | **off** | Add one `type: "pathway"` node per source file, plus an `in_pathway` edge from each pathway node to every node that came from that file. A node in multiple files receives an edge from each. These edges carry no `Relationships`, so they produce zero INDRA triples in RDF conversion. |
+| `--pathway-nodes` | **off** | Add one `type: "pathway"` node per source file, plus a `participates in` edge from each pathway node to every node that came from that file. A node in multiple files receives an edge from each. These edges carry no `Relationships`, so they produce no INDRA evidence; the `bio-cx2-to-rdf` converter turns them into `protein RO:0000056 pathway` (participates in) triples. |
+| `--uuid-map <path>` | none | JSON map used (with `--pathway-nodes`) to give pathway nodes `ndex:<uuid>` represents IRIs. Accepts a `{filename: uuid}` map or the `download-manifest.json` from `download-networks.mjs` (`{uuid: {file, name}}`), inverted automatically. |
 
 ## How it works — the passes
 
@@ -84,12 +85,15 @@ Runs after collapse, on the final merged evidence. The `bio-cx2-to-rdf` converte
 
 ### Pass 6 — Pathway-provenance nodes (optional, `--pathway-nodes`)
 
-Creates one `type: "pathway"` node per source file (named after the file, positioned on a ring around the existing layout) and one `in_pathway` edge from each pathway node to every unified node in `node_file_membership`. A node present in N files receives N such edges. Membership edges have no `Relationships`, so they contribute nothing to RDF output and are trivially filterable.
+Creates one `type: "pathway"` node per source file (named after the file with any trailing version marker like ` _v2_0_` stripped, positioned on a ring around the existing layout) and one `participates in` edge from each pathway node to every unified node in `node_file_membership`. A node present in N files receives N such edges. Membership edges have no `Relationships`, so they contribute no INDRA evidence; in RDF they become `participates in` (`RO:0000056`) triples and are trivially filterable.
+
+Each pathway node's `represents` (`r`) is **`ndex:<uuid>`** — the source NDEx network, resolvable via the merged `@context` to `https://www.ndexbio.org/v3/networks/<uuid>`. The UUID comes from `--uuid-map` (a `{filename: uuid}` map, or the `download-manifest.json` from `download-networks.mjs`, which is inverted automatically). When no UUID is known, `represents` falls back to a non-resolvable `pathway:<name>` and the file is reported.
 
 ### Output assembly
 
 Finally the script:
 
+- Sets the merged `networkAttributes`: `name` = `"merged nci-pid 2.0 network"`; `description` and `reference` copied from the first source network; and a merged `@context` that unions every source network's `@context` plus an `ndex` prefix (`https://www.ndexbio.org/v3/networks/`). A prefix that maps to different URIs across networks is reported (first wins).
 - Reuses the accumulated source `attributeDeclarations`, synthesizing a declaration only for any attribute key no source declared (alias-aware, so it never double-declares a key already covered by an alias).
 - Builds a `cartesianLayout` aspect covering **every** node, assigning fallback grid positions to any node that lacked coordinates (NDEx rejects a layout that omits any node).
 - Emits aspects in spec order — `CXVersion`, `metaData`, `attributeDeclarations`, `networkAttributes`, `nodes`, `edges`, `cartesianLayout`, optional `visualProperties`/`visualEditorProperties` — with `metaData` listing every aspect actually present, and **`status` last** (a misplaced `status` terminates the CX2 stream early and triggers NDEx's "End of array expected" error).

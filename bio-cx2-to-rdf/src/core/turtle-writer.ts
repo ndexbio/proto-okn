@@ -11,6 +11,7 @@ import type {
   NamespaceMap,
 } from './types.js';
 import { expandUri } from './namespace-manager.js';
+import { toSafeIri } from './uri-builder.js';
 
 const { namedNode, literal } = DataFactory;
 
@@ -31,6 +32,7 @@ const OWL_SAMEAS = 'http://www.w3.org/2002/07/owl#sameAs';
 const OKN_EVIDENCE_COUNT = 'http://example.org/okn/evidenceCount';
 const OKN_EVIDENCE_URL = 'http://example.org/okn/evidenceUrl';
 const OKN_PROCESS_TYPE = 'http://example.org/okn/processType';
+const OKN_IN_PATHWAY = 'http://example.org/okn/inPathway';
 
 /**
  * Write RDF output to Turtle format
@@ -152,11 +154,12 @@ function writeReifiedStatement(
     literal(statement.evidenceCount.toString(), namedNode('http://www.w3.org/2001/XMLSchema#integer'))
   );
 
-  // Evidence URL
+  // Evidence URL (free-form INDRA URL; percent-encode IRI-illegal chars such as
+  // spaces so the emitted IRI is valid Turtle)
   writer.addQuad(
     statementNode,
     namedNode(OKN_EVIDENCE_URL),
-    namedNode(statement.evidenceUrl)
+    namedNode(toSafeIri(statement.evidenceUrl))
   );
 
   // Process type (if present)
@@ -166,6 +169,17 @@ function writeReifiedStatement(
       namedNode(OKN_PROCESS_TYPE),
       namedNode(statement.processType)
     );
+  }
+
+  // Pathway membership (if any): the pathway(s) this interaction belongs to
+  if (statement.inPathways) {
+    for (const pathwayUri of statement.inPathways) {
+      writer.addQuad(
+        statementNode,
+        namedNode(OKN_IN_PATHWAY),
+        namedNode(resolveUri(pathwayUri, namespaces))
+      );
+    }
   }
 }
 

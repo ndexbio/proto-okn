@@ -855,8 +855,10 @@ HTML parsing for NCI-PID adapter uses platform-appropriate APIs:
 Handle merged NCI-PID networks that carry pathway provenance nodes and membership edges
 (see [CX2_TO_RDF_DESIGN.md §4.8](CX2_TO_RDF_DESIGN.md)). Adds triples only; protein/edge/evidence
 conversion and single-pathway files are unaffected.
-- [ ] Type `type: "pathway"` nodes as `biolink:Pathway`; mint `okn:pathway/<slug|uuid>` IRIs
-      (discard the non-IRI `represents:"pathway:…"`); add `biolink:` to the namespace map
+- [ ] Type `type: "pathway"` nodes as `biolink:Pathway`; strip the filename version marker
+      (e.g. ` _v2_0_`) from the name; mint `pathway:<slug|uuid>` (= `…/okn/pathway/…`) IRIs
+      (discard the non-IRI `represents:"pathway:…"`); add `biolink:`/`PW:`/`pathway:` prefixes
+      (only when pathway nodes exist) so terms compact (`PW:0000001`, `pathway:…`)
 - [ ] Build the `proteinURI → {pathwayURI}` membership map from pathway nodes/edges
 - [ ] Convert `interaction == "participates in"` edges to `protein RO:0000056 pathway` direct
       triples (flip pathway→protein to protein-subject; no reification)
