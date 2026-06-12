@@ -17,18 +17,9 @@ items the bio-cx2-to-rdf converter's regex consumes
 wrapper and other chrome the converter ignores. RDF output is unchanged; the
 file shrinks for Cytoscape.js. Pass --no-slim to keep full HTML.
 
-The merged network is named "merged nci-pid 2.0 network" and inherits the
-description and reference of the first source network. Its @context unions every
-source network's @context (conflicting prefix->URI mappings are reported, first
-wins) plus an `ndex` prefix (https://www.ndexbio.org/v3/networks/) used by
-pathway-node represents IRIs. With --pathway-nodes and a --uuid-map, each pathway
-node's represents is ndex:<uuid>.
-
 Usage:
     python merge_cx2.py cx2_networks/ merged_ncipid.cx2
     python merge_cx2.py cx2_networks/ merged_ncipid.cx2 --no-slim
-    python merge_cx2.py cx2_networks/ merged_ncipid.cx2 \\
-        --pathway-nodes --uuid-map data_files/download-manifest.json
 """
 
 import json
@@ -59,21 +50,32 @@ def slim_relationships_html(html):
 
 
 _URL_AGENTS = re.compile(r'agent0=([^&]+)&agent1=([^&]+)')
+_URL_SUBJOBJ = re.compile(r'subject=([^&]+)&object=([^&]+)')
 
 
 def edge_direction_key(s, t, v):
     """
     Identity of an edge's relationship for collapse grouping.
 
-    Uses the INDRA agent0/agent1 order from the Relationships URL, which is the
-    true directional identity -- the CX2 s/t endpoint order is arbitrary
-    relative to the evidence (they disagree on ~half of edges). Falls back to
-    the node-id pair only when no INDRA URL is present.
+    Direction comes from the INDRA URL, not the CX2 s/t order (which is
+    arbitrary relative to the evidence). Two URL formats appear in the data:
+      - a wrapper link using agent0/agent1 (multi-statement edges), and
+      - per-item links using subject/object (always present on <li/> items).
+    We prefer the agent0/agent1 wrapper when present; otherwise we derive an
+    unordered+ordered key from the subject/object of the items. Only when
+    neither is present do we fall back to the node-id pair.
     """
     rel = (v or {}).get("Relationships", "") or ""
     m = _URL_AGENTS.search(rel)
     if m:
         return ("indra", m.group(1), m.group(2))
+    # No wrapper (e.g. single-statement edges): use the ordered gene pair from
+    # the first subject/object item. Ordered (not sorted) to stay consistent
+    # with the agent0/agent1 branch -- same direction collapses, opposite
+    # directions remain as separate edges (satisfying the <=2-per-pair rule).
+    m2 = _URL_SUBJOBJ.search(rel)
+    if m2:
+        return ("subjobj", m2.group(1), m2.group(2))
     return ("nodes", s, t)
 
 
@@ -90,63 +92,97 @@ def items_to_html(items):
     return "".join(f'<li/>{t}(<a href="{u}">{c}</a>)' for t, u, c in items)
 
 
-def collapse_directed_edges(unified_edges):
+def _item_direction(text_url_count, name_to_id):
     """
-    Collapse edges sharing the same relationship direction.
+    Given a (text, url, count) evidence item, return the directed unified
+    node-id pair (subj_id, obj_id) by mapping the item's subject/object gene
+    symbol to unified node ids. Returns None if it can't be resolved.
+    """
+    _, url, _ = text_url_count
+    m = _URL_SUBJOBJ.search(url) or _URL_AGENTS.search(url)
+    if not m:
+        return None
+    subj_id = name_to_id.get(m.group(1))
+    obj_id = name_to_id.get(m.group(2))
+    if subj_id is None or obj_id is None:
+        return None
+    return (subj_id, obj_id)
 
-    Direction identity comes from the INDRA agent0/agent1 order in the
-    Relationships URL (see edge_direction_key) -- NOT the CX2 s/t order, which
-    is arbitrary relative to the evidence. Keying on the ordered agent pair
-    keeps the two genuine directions of a pair separate while merging redundant
-    copies within a direction, yielding <=2 edges per node pair.
 
-    Within a direction:
-      - identical evidence (same <li/> item set)  -> keep one edge
-      - differing evidence                         -> union the items into one edge
-    The collapsed edge keeps the first member's s/t and non-Relationships
-    attributes (merge-incidental: source pathway, flags).
+def collapse_directed_edges(unified_edges, name_to_id=None):
+    """
+    Collapse edges so a node pair has at most two edges (one per direction),
+    unioning evidence losslessly.
+
+    Edges are grouped by the UNORDERED unified node pair {s, t}. This is the
+    key correctness point: node dedup merges proteins by UniProt accession, so
+    several gene symbols (e.g. CALM1/CALM2/CALM3, all P02593) collapse to one
+    node. Their separately-recorded interactions with a shared partner become
+    parallel edges on that merged node. Grouping by node pair gathers them all.
+
+    Within each pair group, evidence items are split by their biological
+    direction (subject->object, mapped to unified node ids via name_to_id) into
+    at most two buckets. Each non-empty direction becomes one output edge whose
+    Relationships is the union of that direction's items. Items whose direction
+    can't be resolved fall into the group's stored (s, t) direction bucket.
 
     Returns (collapsed_edges, stats_dict).
     """
-    groups = OrderedDict()  # direction_key -> list of edges
+    name_to_id = name_to_id or {}
+
+    groups = OrderedDict()  # frozenset({s,t}) -> list of edges
     for e in unified_edges:
-        k = edge_direction_key(e["s"], e["t"], e.get("v"))
-        groups.setdefault(k, []).append(e)
+        groups.setdefault(frozenset((e["s"], e["t"])), []).append(e)
 
     collapsed = []
     next_id = 0
-    n_dropped = 0          # exact-evidence duplicate copies removed
-    n_unioned_groups = 0   # groups whose differing evidence was merged
+    n_dropped = 0
+    n_unioned_groups = 0
 
-    for dir_key, edges in groups.items():
+    for pair_key, edges in groups.items():
+        # Single edge on this pair: keep as-is.
         if len(edges) == 1:
             e = dict(edges[0]); e["id"] = next_id
             collapsed.append(e); next_id += 1
             continue
 
-        # Collect the union of evidence items across the group, order-preserving,
-        # deduped by the full (text, url, count) tuple.
-        seen_items = OrderedDict()
-        per_edge_sets = []
+        # Bucket every evidence item by directed node pair.
+        # direction (subj_id, obj_id) -> OrderedDict of items (dedup, ordered)
+        dir_buckets = OrderedDict()
+        # remember a representative edge per direction to carry s/t + attrs
+        dir_repr = {}
+        default_dir = (edges[0]["s"], edges[0]["t"])
+
+        total_items_before = 0
         for e in edges:
-            its = extract_rel_items((e.get("v") or {}).get("Relationships"))
-            per_edge_sets.append(frozenset(its))
-            for it in its:
-                seen_items.setdefault(it, None)
+            items = extract_rel_items((e.get("v") or {}).get("Relationships"))
+            total_items_before += len(items)
+            for it in items:
+                d = _item_direction(it, name_to_id) or default_dir
+                dir_buckets.setdefault(d, OrderedDict())[it] = None
+                dir_repr.setdefault(d, e)
+            # an edge with no items at all still needs to survive
+            if not items:
+                dir_buckets.setdefault(default_dir, OrderedDict())
+                dir_repr.setdefault(default_dir, e)
 
-        distinct_payloads = len(set(per_edge_sets))
-        if distinct_payloads > 1:
+        # Emit one edge per direction bucket.
+        emitted_items = 0
+        for d, items in dir_buckets.items():
+            rep = dir_repr[d]
+            base = dict(rep)
+            base["id"] = next_id
+            v = dict(base.get("v") or {})
+            if items or "Relationships" in v:
+                v["Relationships"] = items_to_html(list(items.keys()))
+            base["v"] = v
+            collapsed.append(base)
+            next_id += 1
+            emitted_items += len(items)
+
+        n_dropped += len(edges) - len(dir_buckets)
+        if emitted_items < total_items_before:
             n_unioned_groups += 1
-        n_dropped += len(edges) - 1  # group becomes a single edge
-
-        base = dict(edges[0])
-        base["id"] = next_id
-        v = dict(base.get("v") or {})
-        if "Relationships" in v or seen_items:
-            v["Relationships"] = items_to_html(list(seen_items.keys()))
-        base["v"] = v
-        collapsed.append(base)
-        next_id += 1
 
     stats = {
         "groups": len(groups),
@@ -183,27 +219,6 @@ def parse_cx2(filepath):
             else:
                 aspects[key] = value
     return aspects
-
-
-def parse_context(network_attrs_aspect):
-    """Extract the @context prefix map from a networkAttributes aspect.
-
-    The aspect is a list of attribute dicts; @context is stored as a JSON string
-    (occasionally already a dict). Returns {} when absent or unparseable.
-    """
-    if not isinstance(network_attrs_aspect, list):
-        return {}
-    for attrs in network_attrs_aspect:
-        if isinstance(attrs, dict) and "@context" in attrs:
-            ctx = attrs["@context"]
-            if isinstance(ctx, dict):
-                return ctx
-            if isinstance(ctx, str):
-                try:
-                    return json.loads(ctx)
-                except json.JSONDecodeError:
-                    return {}
-    return {}
 
 
 def get_node_key(node, file_idx):
@@ -271,14 +286,6 @@ def merge_cx2_files(input_dir, output_path, slim=True, collapse=True,
     # unified_node_id -> {"node": id, "x":, "y":, "z"?} for cartesianLayout
     unified_coords = {}
 
-    # Merged @context for the output network, seeded with the `ndex` prefix so
-    # pathway-node represents IRIs (ndex:<uuid>) resolve to the NDEx network URL.
-    # Each source network's @context is folded in below; a prefix that maps to
-    # conflicting URIs across networks is reported rather than silently clobbered.
-    merged_context = {"ndex": "https://www.ndexbio.org/v3/networks/"}
-    context_source = {"ndex": "(merged network default)"}  # prefix -> network that set it
-    context_conflicts = []  # (prefix, kept_uri, kept_src, other_uri, other_src)
-
     source_names = []
 
     for file_idx, filepath in enumerate(cx2_files):
@@ -294,17 +301,6 @@ def merge_cx2_files(input_dir, output_path, slim=True, collapse=True,
             base_visual_editor_properties = aspects["visualEditorProperties"]
         if not base_network_attrs and "networkAttributes" in aspects:
             base_network_attrs = aspects["networkAttributes"]
-
-        # Fold this network's @context prefixes into the merged @context. A new
-        # prefix is added; an existing prefix mapped to a different URI is
-        # recorded as a conflict (first network to define it wins).
-        for prefix, uri in parse_context(aspects.get("networkAttributes")).items():
-            if prefix not in merged_context:
-                merged_context[prefix] = uri
-                context_source[prefix] = fname
-            elif merged_context[prefix] != uri:
-                context_conflicts.append(
-                    (prefix, merged_context[prefix], context_source[prefix], uri, fname))
 
         # Accumulate attribute declarations (first declaration of a key wins).
         decl_aspect = aspects.get("attributeDeclarations")
@@ -410,21 +406,20 @@ def merge_cx2_files(input_dir, output_path, slim=True, collapse=True,
     if skipped_edges:
         print(f"  Skipped {skipped_edges} edges with unmapped nodes")
 
-    # Report @context prefix conflicts (same prefix, different URI across networks).
-    print(f"  Merged @context: {len(merged_context)} prefixes "
-          f"({', '.join(sorted(merged_context))})")
-    if context_conflicts:
-        print(f"  WARNING: {len(context_conflicts)} @context prefix conflict(s) "
-              f"(same prefix mapped to different URIs); kept the first:")
-        for prefix, kept_uri, kept_src, other_uri, other_src in context_conflicts:
-            print(f"    '{prefix}': \"{kept_uri}\" (from {kept_src}) "
-                  f"vs \"{other_uri}\" (from {other_src})")
-
     # Collapse redundant edges sharing the same directed endpoints so that a
     # node pair never has more than 2 edges (one per direction). Runs before
     # slimming because unioning differing evidence needs the original items.
     if collapse:
-        unified_edges, cstats = collapse_directed_edges(unified_edges)
+        # Map every node name/symbol to its unified id so the collapse can
+        # resolve evidence subject/object symbols (incl. paralogs sharing an
+        # accession) to the merged node they belong to.
+        name_to_id = {}
+        for n in unified_nodes.values():
+            nm = n["v"].get("n") or n["v"].get("name")
+            if nm is not None:
+                name_to_id.setdefault(nm, n["id"])
+
+        unified_edges, cstats = collapse_directed_edges(unified_edges, name_to_id)
         print(f"  Collapsed directed duplicates: "
               f"{cstats['input_edges']} -> {cstats['output_edges']} edges "
               f"({cstats['dropped']} redundant removed across "
@@ -492,21 +487,13 @@ def merge_cx2_files(input_dir, output_path, slim=True, collapse=True,
         n_files = len(source_names)
         missing_uuids = []
         for file_idx, fname in enumerate(source_names):
-            # Strip a trailing version marker from the filename, e.g.
-            # "IL5-mediated signaling events _v2_0_" -> "IL5-mediated signaling events".
-            pname = re.sub(r"\s*_v\d+(?:[._]\d+)*_?\s*$", "",
-                           os.path.splitext(fname)[0]).strip()
-            # Use the source NDEx network as the pathway node's represents IRI:
-            # ndex:<uuid>, which the merged @context resolves to
-            # https://www.ndexbio.org/v3/networks/<uuid>. Fall back to a
-            # non-resolvable pathway:<name> when no UUID is known.
+            pname = os.path.splitext(fname)[0]
+            pv = {"n": pname, "r": f"pathway:{pname}", "type": "pathway"}
             uuid = lookup_uuid(fname)
             if uuid:
-                represents = f"ndex:{uuid}"
+                pv["ndex_id"] = f"ndex:{uuid}"
             else:
-                represents = f"pathway:{pname}"
                 missing_uuids.append(fname)
-            pv = {"n": pname, "r": represents, "type": "pathway"}
             pnode = {"id": next_nid, "v": pv}
             unified_nodes[f"__pathway__{file_idx}"] = pnode
             pathway_node_ids[file_idx] = next_nid
@@ -542,17 +529,16 @@ def merge_cx2_files(input_dir, output_path, slim=True, collapse=True,
     # the stream early and triggers NDEx's "End of array expected" error.
     net_attrs = (base_network_attrs if isinstance(base_network_attrs, list)
                  else [base_network_attrs])
-    first_attrs = net_attrs[0] if net_attrs else {}
-
-    # The merged network's identity: a fixed name, the first source network's
-    # description and reference, and the merged @context (which carries the
-    # `ndex` prefix plus every prefix the source networks declared).
-    merged_attrs = {"name": "merged nci-pid 2.0 network"}
-    if first_attrs.get("description") is not None:
-        merged_attrs["description"] = first_attrs["description"]
-    if first_attrs.get("reference") is not None:
-        merged_attrs["reference"] = first_attrs["reference"]
-    merged_attrs["@context"] = json.dumps(merged_context)
+    merged_attrs = net_attrs[0] if net_attrs else {}
+    merged_attrs["name"] = "NCI-PID Merged Network"
+    merged_attrs["description"] = (
+            f"Merged from {len(cx2_files)} NCI-PID CX2 files. "
+            f"Nodes deduplicated by represents/name (bare names scoped per-file). "
+            f"Edges deduplicated by full content. "
+            + ("Relationships HTML slimmed to converter-relevant items. "
+               if slim else "")
+            + f"Sources: {', '.join(source_names)}"
+    )
 
     node_list = list(unified_nodes.values())
 
@@ -696,19 +682,7 @@ if __name__ == "__main__":
             print("--uuid-map requires a path to a JSON file")
             sys.exit(1)
         with open(map_path) as f:
-            raw = json.load(f)
-        # Accept either a direct {filename: uuid} map, or a download-manifest.json
-        # ({uuid: {"file": ..., "name": ...}}), which is inverted to filename->uuid
-        # (keyed by both the full filename and the extensionless basename).
-        if raw and all(isinstance(v, dict) and "file" in v for v in raw.values()):
-            uuid_map = {}
-            for u, entry in raw.items():
-                fname = entry.get("file")
-                if fname:
-                    uuid_map[fname] = u
-                    uuid_map[os.path.splitext(fname)[0]] = u
-        else:
-            uuid_map = raw
+            uuid_map = json.load(f)
         del args[i:i + 2]
 
     if len(args) == 2:
