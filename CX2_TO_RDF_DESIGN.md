@@ -7,7 +7,8 @@ This document describes the architecture and design for the **bio-cx2-to-rdf** c
 
 **Project Scope**: The converter uses a **dataset-specific adapter pattern** to support multiple biological network datasets, each with unique characteristics and semantic requirements. Currently supported datasets:
 1. **NCI-PID 2.0** - NCI Pathway Interaction Database version 2.0 networks
-2. **Nest Hierarchy** - Nested hierarchical biological networks (adapter in development)
+2. **IAS Interaction Network** - integrated protein-association network (NeST / Zheng et al. 2021, Data S1). CX2 generation implemented; RDF adapter planned. See [IAS_NETWORK_GENERATION.md](IAS_NETWORK_GENERATION.md), [SYMBOL_TO_PROTEIN_MAPPING.md](SYMBOL_TO_PROTEIN_MAPPING.md).
+3. **NeST Hierarchy** - nested hierarchical systems map derived from the IAS network (adapter in development). See [NEST_HIERARCHY_DATASET.md](NEST_HIERARCHY_DATASET.md).
 
 **NCI-PID 2.0 Adapter**: This document primarily describes the NCI-PID 2.0 adapter implementation. The NCI Pathway Interaction Database (NCI-PID) version 2.0 networks have been enhanced with INDRA (Integrated Network and Dynamical Reasoning Assembler) evidence and have specific characteristics including:
 - Protein entities identified with UniProt IDs
@@ -23,7 +24,7 @@ This document describes the architecture and design for the **bio-cx2-to-rdf** c
   - Evidence metadata parsing
   - Ontology term selection
 
-This architecture enables support for multiple biological network datasets (NCI-PID 2.0, Nest Hierarchy, and future additions) while maintaining a clean, maintainable codebase.
+This architecture enables support for multiple biological network datasets (NCI-PID 2.0, the IAS interaction network, the NeST hierarchy, and future additions) while maintaining a clean, maintainable codebase.
 
 **Data Focus**: The converter processes only the semantic network data (nodes, edges, attributes, metadata). Visual presentation aspects such as `visualProperties`, `visualEditorProperties`, and `nodeBypasses`/`edgeBypasses` are **explicitly excluded** from conversion as they do not contribute to the knowledge graph semantics.
 

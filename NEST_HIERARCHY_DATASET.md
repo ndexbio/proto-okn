@@ -1,18 +1,59 @@
-# Nest Hierarchy Dataset - Specification Document
+# NeST Hierarchy Dataset - Specification Document
 ## Dataset Adapter for bio-cx2-to-rdf Converter
 
-## Status: 🚧 In Development
+## Status: 🚧 In Development — RDF mapping TBD; source structure characterized below
 
-This document describes the structure and conversion requirements for **Nest Hierarchy** networks in CX2 format. This will guide the implementation of the Nest Hierarchy dataset adapter.
+This document describes the structure and conversion requirements for the **NeST hierarchy** network in CX2 format. This will guide the implementation of the NeST hierarchy dataset adapter.
+
+> **Scope — this is the hierarchy, a *separate* graph from the interaction network.**
+> The IAS interaction network (Data S1, the flat scored protein-pair network the
+> hierarchy is *derived from*) is specified and built separately — see
+> [IAS_NETWORK_GENERATION.md](IAS_NETWORK_GENERATION.md) and
+> [SYMBOL_TO_PROTEIN_MAPPING.md](SYMBOL_TO_PROTEIN_MAPPING.md). The two are linked
+> by protein identifiers: system nodes here reference member proteins (via the
+> `Genes` attribute) that resolve to the same `uniprot:`/`hgnc:` CURIEs used there.
 
 ---
 
 ## 1. Dataset Overview
 
-**Name**: Nest Hierarchy
+**Name**: NeST 1.0 hierarchical cancer systems map
 **Format**: Cytoscape CX2
-**Source**: [TBD - Please provide source/repository]
-**Description**: [TBD - Please describe what Nest Hierarchy networks represent]
+**Source**: Zheng et al., *Science* 374, eabf3067 (2021), Fig. 4A / Data S3; http://ccmi.org/nest/. Local file: `nest/NeST Map - Main Model.cx2`.
+**Description**: A hierarchy of **395 protein systems** ("Nested Systems in Tumors") under mutational selection across 13 cancer types, derived from the IAS network by multiscale community detection (CliXO/HiDeF) and HiSig. Nodes = protein systems (at scales from complexes to broad processes); edges = containment (system-within-system).
+
+### Verified source structure (`nest/NeST Map - Main Model.cx2`)
+- **395 nodes** (systems), **466 edges** (containment).
+- **Node attributes**: `NEST ID` (e.g. `NEST:60`), `name` (`n`), `Genes` (space-separated HGNC symbols = the system's member proteins), `Size`, `Annotation` (curator-assigned system name, e.g. "Nuclear receptor transcription pathway"), `adjusted p-value` / `-log10 adjusted p-value`, `No. significantly mutated cancer types (aggregate)`, `Significantly mutated cancer types (aggregate)`, and per-cohort `Mutation frequency:<TYPE>` for all 13 tumor types (BLCA, BRCA, COAD, GBM, HNSC, KIRC, LIHC, LUAD, LUSC, OV, SKCM, STAD, UCEC).
+- **Edges**: all `interaction = "interacts with"`, split by a `Tree_edge` boolean — **343 `true`** (primary containment; solid arrows in Fig. 4A), **72 `false`** (additional containment = pleiotropy; dashed arrows), **51 unset**. This boolean is the containment semantics and should be preserved (e.g. distinct predicates or a qualifier), not collapsed.
+- **Membership**: the `Genes` attribute lists the proteins in each system — the system→protein link. The root node `NEST` lists all ~19,035 genes; individual systems list their members. Some member symbols will be proteins not retained by the interaction-network filter — mint protein IRIs from the union of both sources.
+
+---
+
+## HCX conversion — linking to the IAS interaction network (implemented)
+
+The main model is converted to **HCX** (Hierarchical CX2, spec: https://cytoscape.org/cx/cx2/hcx-specification/) so NDEx/HiView renders it as a browsable hierarchy whose systems link to nodes of the IAS interaction network.
+
+**Script:** [nest/build_hcx_hierarchy.py](nest/build_hcx_hierarchy.py) → [nest/NeST_hierarchy_HCX.cx2](nest/NeST_hierarchy_HCX.cx2).
+
+**The link mechanism:** NDEx preserves CX2 node ids, so IAS node id *N* (name = gene symbol) in [nest/IAS_network.cx2](nest/IAS_network.cx2) is the **same id** in the uploaded NDEx network (verified: id 0→A1BG … id 16839→ZSCAN32, all 16,840 identical). The converter maps each system's `Genes` symbols → those IAS node ids and stores them as `HCX::members`.
+
+**What the converter adds** (all original aspects — nodes, edges, visualProperties, nodeBypasses, etc. — are preserved):
+
+| level | attribute | value |
+|---|---|---|
+| network | `ndexSchema` | `"hierarchy_v0.1"` (required) |
+| network | `HCX::modelFileCount` | `2` (this hierarchy + the interaction network; required) |
+| network | `HCX::interactionNetworkUUID` | `e3bb3a6d-878e-11f1-857e-005056ae3c32` (NDEx UUID of the IAS network) |
+| node | `HCX::isRoot` (boolean) | `true` on the root, `false` on the other 394 |
+| node | `HCX::members` (`list_of_long`) | IAS node ids of the system's genes — **the link** |
+| node | `HCX::memberNames` (`list_of_string`) | parallel gene symbols (circle-packing labels) |
+
+- **Root** = the unique node never a containment *target* (edges run parent `s` → child `t`); resolves to `NEST` (id 41341). One `isRoot=true`, 394 `false`.
+- **Coverage:** 55,572 / 57,771 gene slots (96.2%) map to an IAS node; **2,195 distinct symbols don't** — the root's full-genome padding plus IL36G/SPAAR (no IAS edge above the 0.18 floor, so no node to link). These stay in the untouched `Genes` attribute but are absent from `HCX::members` (`members ⊆ Genes`). Root: 16,840 of its 19,035 genes become members.
+- **Validated:** all 55,572 `HCX::members` ids resolve to the correct IAS node (0 missing, 0 id→name mismatches); members are integers (`long`).
+
+**To publish:** upload `NeST_hierarchy_HCX.cx2` to NDEx; HiView resolves `HCX::interactionNetworkUUID` to render systems over the IAS network. (Upload is a manual step — not done by the script.)
 
 ---
 

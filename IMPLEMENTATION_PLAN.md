@@ -9,7 +9,7 @@ This document outlines the implementation plan for the **bio-cx2-to-rdf** conver
 2. **Library for Cytoscape Web**: Browser-compatible JavaScript/TypeScript library for real-time RDF serialization
 
 The implementation follows a **modular architecture with dataset-specific adapters**, enabling:
-- Support for multiple biological network datasets (NCI-PID 2.0, Nest Hierarchy, and future additions)
+- Support for multiple biological network datasets (NCI-PID 2.0, the IAS interaction network, the NeST hierarchy, and future additions; see [IAS_NETWORK_GENERATION.md](IAS_NETWORK_GENERATION.md))
 - Shared core infrastructure for CX2 parsing and RDF generation
 - Dataset-specific logic isolated in pluggable adapters
 - Code reuse across both deployment modes (CLI and browser)

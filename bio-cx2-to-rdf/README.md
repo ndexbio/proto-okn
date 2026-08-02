@@ -280,7 +280,9 @@ For detailed design and implementation documentation, see:
 
 - [CX2_TO_RDF_DESIGN.md](../CX2_TO_RDF_DESIGN.md) - Comprehensive design document
 - [IMPLEMENTATION_PLAN.md](../IMPLEMENTATION_PLAN.md) - Implementation roadmap
-- [NEST_HIERARCHY_DATASET.md](../NEST_HIERARCHY_DATASET.md) - Nest Hierarchy adapter specification
+- [IAS_NETWORK_GENERATION.md](../IAS_NETWORK_GENERATION.md) - IAS interaction network (NeST / Zheng et al. 2021): CX2 generation spec (CX2 built; RDF adapter pending)
+- [SYMBOL_TO_PROTEIN_MAPPING.md](../SYMBOL_TO_PROTEIN_MAPPING.md) - HGNC symbol → UniProt/HGNC CURIE resolution for the IAS network
+- [NEST_HIERARCHY_DATASET.md](../NEST_HIERARCHY_DATASET.md) - NeST hierarchy (395 systems) adapter specification — separate graph, still TBD
 
 ## Architecture
 
@@ -296,8 +298,15 @@ Core Library (platform-agnostic)
          ▼
 Dataset Adapters (pluggable)
   ├── NCI-PID 2.0 Adapter (implemented)
-  └── Nest Hierarchy Adapter (planned)
+  ├── IAS Interaction Network Adapter (planned — CX2 generated, see IAS_NETWORK_GENERATION.md)
+  └── NeST Hierarchy Adapter (planned)
 ```
+
+> **IAS / NeST networks.** The IAS interaction network is generated to CX2 by
+> `nest/build_cx2_network.py` (nodes keyed on gene symbol; `represents` = UniProt
+> accession, or an HGNC gene id for the 12 symbols with no protein product). The
+> RDF adapter that maps its edges to `RO:0002434` + ECO-typed evidence is not yet
+> implemented. See [IAS_NETWORK_GENERATION.md](../IAS_NETWORK_GENERATION.md).
 
 ## License
 
