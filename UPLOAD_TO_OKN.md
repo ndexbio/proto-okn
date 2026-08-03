@@ -6,7 +6,10 @@ lakeFS instance.
 
 The repository uses a Git-like branching model: you stage and commit changes on
 a working branch (`develop`), open a pull request into `main`, review it, and
-then merge. Nothing lands in `main` until the pull request is merged.
+then merge. Merging into `main` triggers a conversion pipeline that serves the
+graph; once conversion finishes you receive an email and tag the resulting
+stable branch. Nothing lands in `main` until the pull request is merged, and the
+graph is not fully published until it has been tagged.
 
 ## Prerequisites
 
@@ -64,7 +67,35 @@ merging. This is the checkpoint for catching mistakes before anything reaches
 ### 7. Merge into `main`
 
 Once the review is complete, use the repository interface to merge the pull
-request into `main`. The change is now live in `main`.
+request into `main`. Merging into `main` triggers the conversion pipeline (see
+next step) — it is not just a code merge, so only merge when the data is ready
+to be published.
+
+### 8. Wait for conversion and the notification email
+
+Merging into `main` automatically kicks off the first conversion steps, which
+convert your data into the **qlever** and **hdt** formats used to serve the
+graph. When conversion finishes, the pipeline creates a new stable branch named
+like **`stable_v0_0_2`**, and an email is sent to you with instructions,
+pointing to that new branch and telling you what to tag it as.
+
+> **If you do not receive an email**, do not assume the upload failed silently —
+> the conversion may have errored or the notification may not have gone out.
+> Ping the OKN team (e.g. in the OKN Slack) to check on the status of the
+> conversion before proceeding.
+
+### 9. Tag the stable branch
+
+The final action is tagging the new stable branch. Following the email's
+instructions, add a **lakeFS tag** (similar to a GitHub tag) to the stable
+branch. Tags can be viewed and added at
+<https://repository.okn.us/repositories/ncipidkg/tags> (substitute your
+repository).
+
+Use the conventional naming pattern: a branch named `stable_v0_0_2` is tagged as
+**`v0.0.2`**. Following this convention is recommended — it is how OKN tracks
+versions consistently across the several knowledge graphs they host. The graph
+is not considered fully published until this tag has been added.
 
 ## Summary
 
@@ -75,7 +106,9 @@ request into `main`. The change is now live in `main`.
 | Upload & commit | `develop` |
 | Open pull request | `develop` → `main` |
 | Review | pull request diff |
-| Merge | into `main` via the interface |
+| Merge | into `main` via the interface (triggers conversion) |
+| Wait for conversion | qlever / hdt build; new `stable_v0_0_X` branch + email |
+| Tag | tag `stable_v0_0_X` as `v0.0.X` |
 
 ## Notes
 
@@ -83,3 +116,9 @@ request into `main`. The change is now live in `main`.
   through a reviewed, merged pull request.
 - Keep commit messages and pull request descriptions specific enough that a
   collaborator can tell what graph changed and why without opening every file.
+- Merging into `main` is what triggers the conversion pipeline — treat the merge
+  as "publish," not just "save."
+- Expect an email once conversion completes. **If no email arrives, ping the OKN
+  team to check the conversion status** rather than waiting indefinitely.
+- The final step is always tagging the new `stable_v0_0_X` branch as `v0.0.X`.
+  The graph is not fully published until it is tagged.
