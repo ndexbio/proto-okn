@@ -1,0 +1,830 @@
+{
+  "0158ee1c-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Syndecan-3-mediated signaling events (v2.0).cx2",
+    "name": "Syndecan-3-mediated signaling events (v2.0)"
+  },
+  "03b13606-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "ErbB receptor signaling network (v2.0).cx2",
+    "name": "ErbB receptor signaling network (v2.0)"
+  },
+  "04719fd9-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Syndecan-1-mediated signaling events (v2.0).cx2",
+    "name": "Syndecan-1-mediated signaling events (v2.0)"
+  },
+  "00104179-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Syndecan-4-mediated signaling events (v2.0).cx2",
+    "name": "Syndecan-4-mediated signaling events (v2.0)"
+  },
+  "05f2255f-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Ephrin B reverse signaling (v2.0).cx2",
+    "name": "Ephrin B reverse signaling (v2.0)"
+  },
+  "0538724c-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "EPO signaling pathway (v2.0).cx2",
+    "name": "EPO signaling pathway (v2.0)"
+  },
+  "02f5ae33-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Syndecan-2-mediated signaling events (v2.0).cx2",
+    "name": "Syndecan-2-mediated signaling events (v2.0)"
+  },
+  "06abd872-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Sumoylation by RanBP2 regulates transcriptional repression (v2.0).cx2",
+    "name": "Sumoylation by RanBP2 regulates transcriptional repression (v2.0)"
+  },
+  "08386be8-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Stabilization and expansion of the E-cadherin adherens junction (v2.0).cx2",
+    "name": "Stabilization and expansion of the E-cadherin adherens junction (v2.0)"
+  },
+  "09acbc6e-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Sphingosine 1-phosphate (S1P) pathway (v2.0).cx2",
+    "name": "Sphingosine 1-phosphate (S1P) pathway (v2.0)"
+  },
+  "0a6adc51-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "EPHA forward signaling (v2.0).cx2",
+    "name": "EPHA forward signaling (v2.0)"
+  },
+  "08f41acb-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "EPHA2 forward signaling (v2.0).cx2",
+    "name": "EPHA2 forward signaling (v2.0)"
+  },
+  "0772d1f5-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "EPHB forward signaling (v2.0).cx2",
+    "name": "EPHB forward signaling (v2.0)"
+  },
+  "0be7b857-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Endothelins (v2.0).cx2",
+    "name": "Endothelins (v2.0)"
+  },
+  "0e21c9e0-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "EGFR-dependent Endothelin signaling events (v2.0).cx2",
+    "name": "EGFR-dependent Endothelin signaling events (v2.0)"
+  },
+  "0fb27c06-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "EGF_receptor_(ErbB1)_signaling_pathway (v2.0).cx2",
+    "name": "EGF_receptor_(ErbB1)_signaling_pathway (v2.0)"
+  },
+  "11f31d3f-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Signaling events mediated by the Hedgehog family (v2.0).cx2",
+    "name": "Signaling events mediated by the Hedgehog family (v2.0)"
+  },
+  "108a6579-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Signaling events mediated by VEGFR1 and VEGFR2 (v2.0).cx2",
+    "name": "Signaling events mediated by VEGFR1 and VEGFR2 (v2.0)"
+  },
+  "0b1dffb4-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Signaling mediated by p38-gamma and p38-delta (v2.0).cx2",
+    "name": "Signaling mediated by p38-gamma and p38-delta (v2.0)"
+  },
+  "1394bf55-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Signaling events mediated by TCPTP (v2.0).cx2",
+    "name": "Signaling events mediated by TCPTP (v2.0)"
+  },
+  "0d6e585d-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Endogenous TLR signaling (v2.0).cx2",
+    "name": "Endogenous TLR signaling (v2.0)"
+  },
+  "022d7c2f-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "ErbB1 downstream signaling (v2.0).cx2",
+    "name": "ErbB1 downstream signaling (v2.0)"
+  },
+  "151aea2b-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "E-cadherin signaling in keratinocytes (v2.0).cx2",
+    "name": "E-cadherin signaling in keratinocytes (v2.0)"
+  },
+  "0cae3caa-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Signaling mediated by p38-alpha and p38-beta (v2.0).cx2",
+    "name": "Signaling mediated by p38-alpha and p38-beta (v2.0)"
+  },
+  "113a7b9c-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Effects of Botulinum toxin (v2.0).cx2",
+    "name": "Effects of Botulinum toxin (v2.0)"
+  },
+  "176d1794-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "DNA-PK pathway in nonhomologous end joining (v2.0).cx2",
+    "name": "DNA-PK pathway in nonhomologous end joining (v2.0)"
+  },
+  "16b5fc91-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Downstream signaling in nave CD8 T cells (v2.0).cx2",
+    "name": "Downstream signaling in nave CD8 T cells (v2.0)"
+  },
+  "15e7b00e-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Signaling events mediated by Stem cell factor receptor (c-Kit) (v2.0).cx2",
+    "name": "Signaling events mediated by Stem cell factor receptor (c-Kit) (v2.0)"
+  },
+  "18fe17da-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Signaling events mediated by PRL (v2.0).cx2",
+    "name": "Signaling events mediated by PRL (v2.0)"
+  },
+  "0eea4a03-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Signaling events regulated by Ret tyrosine kinase (v2.0).cx2",
+    "name": "Signaling events regulated by Ret tyrosine kinase (v2.0)"
+  },
+  "145cca48-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "E-cadherin signaling in the nascent adherens junction (v2.0).cx2",
+    "name": "E-cadherin signaling in the nascent adherens junction (v2.0)"
+  },
+  "1aa02e21-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Degradation of beta catenin (v2.0).cx2",
+    "name": "Degradation of beta catenin (v2.0)"
+  },
+  "18429007-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Signaling events mediated by PTP1B (v2.0).cx2",
+    "name": "Signaling events mediated by PTP1B (v2.0)"
+  },
+  "1b7e5924-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Signaling events mediated by Hepatocyte Growth Factor Receptor (c-Met) (v2.0).cx2",
+    "name": "Signaling events mediated by Hepatocyte Growth Factor Receptor (c-Met) (v2.0)"
+  },
+  "1ea11d01-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Signaling events mediated by HDAC Class II (v2.0).cx2",
+    "name": "Signaling events mediated by HDAC Class II (v2.0)"
+  },
+  "1d14145a-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Signaling events mediated by HDAC Class III (v2.0).cx2",
+    "name": "Signaling events mediated by HDAC Class III (v2.0)"
+  },
+  "1ddc465e-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "CXCR3-mediated signaling events (v2.0).cx2",
+    "name": "CXCR3-mediated signaling events (v2.0)"
+  },
+  "1c51fcd7-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "CXCR4-mediated signaling events (v2.0).cx2",
+    "name": "CXCR4-mediated signaling events (v2.0)"
+  },
+  "20223ec7-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Class IB PI3K non-lipid kinase events (v2.0).cx2",
+    "name": "Class IB PI3K non-lipid kinase events (v2.0)"
+  },
+  "1f6fb7a4-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Coregulation of Androgen receptor activity (v2.0).cx2",
+    "name": "Coregulation of Androgen receptor activity (v2.0)"
+  },
+  "2337bc33-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Circadian rhythm pathway (v2.0).cx2",
+    "name": "Circadian rhythm pathway (v2.0)"
+  },
+  "227f68b0-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Class I PI3K signaling events mediated by Akt (v2.0).cx2",
+    "name": "Class I PI3K signaling events mediated by Akt (v2.0)"
+  },
+  "19df501d-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Direct p53 effectors (v2.0).cx2",
+    "name": "Direct p53 effectors (v2.0)"
+  },
+  "20ec1e7a-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Class I PI3K signaling events (v2.0).cx2",
+    "name": "Class I PI3K signaling events (v2.0)"
+  },
+  "21ba6afd-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Signaling events mediated by HDAC Class I (v2.0).cx2",
+    "name": "Signaling events mediated by HDAC Class I (v2.0)"
+  },
+  "24dbcf49-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Ceramide signaling pathway (v2.0).cx2",
+    "name": "Ceramide signaling pathway (v2.0)"
+  },
+  "2678413f-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Cellular roles of Anthrax toxin (v2.0).cx2",
+    "name": "Cellular roles of Anthrax toxin (v2.0)"
+  },
+  "2729b6f2-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "S1P5 pathway (v2.0).cx2",
+    "name": "S1P5 pathway (v2.0)"
+  },
+  "2406cc06-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Signaling events mediated by focal adhesion kinase (v2.0).cx2",
+    "name": "Signaling events mediated by focal adhesion kinase (v2.0)"
+  },
+  "27e4a285-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "S1P4 pathway (v2.0).cx2",
+    "name": "S1P4 pathway (v2.0)"
+  },
+  "25b4ca2c-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "SHP2 signaling (v2.0).cx2",
+    "name": "SHP2 signaling (v2.0)"
+  },
+  "2971d23b-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "S1P3 pathway (v2.0).cx2",
+    "name": "S1P3 pathway (v2.0)"
+  },
+  "2a33c2ae-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "CD40CD40L signaling (v2.0).cx2",
+    "name": "CD40CD40L signaling (v2.0)"
+  },
+  "2aefe6c1-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "S1P2 pathway (v2.0).cx2",
+    "name": "S1P2 pathway (v2.0)"
+  },
+  "2ba8fd94-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "PAR4-mediated thrombin signaling events (v2.0).cx2",
+    "name": "PAR4-mediated thrombin signaling events (v2.0)"
+  },
+  "2c687d07-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "S1P1 pathway (v2.0).cx2",
+    "name": "S1P1 pathway (v2.0)"
+  },
+  "2dfbc73d-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "PAR1-mediated thrombin signaling events (v2.0).cx2",
+    "name": "PAR1-mediated thrombin signaling events (v2.0)"
+  },
+  "2f7bd793-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "RXR and RAR heterodimerization with other nuclear receptor (v2.0).cx2",
+    "name": "RXR and RAR heterodimerization with other nuclear receptor (v2.0)"
+  },
+  "2d39d6ca-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Caspase Cascade in Apoptosis (v2.0).cx2",
+    "name": "Caspase Cascade in Apoptosis (v2.0)"
+  },
+  "12c9f542-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "E2F transcription factor network (v2.0).cx2",
+    "name": "E2F transcription factor network (v2.0)"
+  },
+  "28b734c8-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "CDC42 signaling events (v2.0).cx2",
+    "name": "CDC42 signaling events (v2.0)"
+  },
+  "2eb61690-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Canonical Wnt signaling pathway (v2.0).cx2",
+    "name": "Canonical Wnt signaling pathway (v2.0)"
+  },
+  "303da0f6-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Canonical NF-kappaB pathway (v2.0).cx2",
+    "name": "Canonical NF-kappaB pathway (v2.0)"
+  },
+  "31dc0ebc-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Role of Calcineurin-dependent NFAT signaling in lymphocytes (v2.0).cx2",
+    "name": "Role of Calcineurin-dependent NFAT signaling in lymphocytes (v2.0)"
+  },
+  "32a2930f-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Calcium signaling in the CD4 TCR pathway (v2.0).cx2",
+    "name": "Calcium signaling in the CD4 TCR pathway (v2.0)"
+  },
+  "3510fb08-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Calcineurin-regulated NFAT-dependent transcription in lymphocytes (v2.0).cx2",
+    "name": "Calcineurin-regulated NFAT-dependent transcription in lymphocytes (v2.0)"
+  },
+  "375f30d1-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "C-MYC pathway (v2.0).cx2",
+    "name": "C-MYC pathway (v2.0)"
+  },
+  "3376abf2-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "p73 transcription factor network (v2.0).cx2",
+    "name": "p73 transcription factor network (v2.0)"
+  },
+  "38220ba4-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "p38 signaling mediated by MAPKAP kinases (v2.0).cx2",
+    "name": "p38 signaling mediated by MAPKAP kinases (v2.0)"
+  },
+  "343f7a35-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "RhoA signaling pathway (v2.0).cx2",
+    "name": "RhoA signaling pathway (v2.0)"
+  },
+  "31156359-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "p75(NTR)-mediated signaling (v2.0).cx2",
+    "name": "p75(NTR)-mediated signaling (v2.0)"
+  },
+  "35e031eb-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "p53 pathway (v2.0).cx2",
+    "name": "p53 pathway (v2.0)"
+  },
+  "36a30cbe-45d1-11ed-b7d0-0ac135e8bacf": {
+    "file": "Retinoic acid receptors-mediated signaling (v2.0).cx2",
+    "name": "Retinoic acid receptors-mediated signaling (v2.0)"
+  },
+  "978fef23-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "p38 MAPK signaling pathway (v2.0).cx2",
+    "name": "p38 MAPK signaling pathway (v2.0)"
+  },
+  "985bcaa6-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "BMP receptor signaling (v2.0).cx2",
+    "name": "BMP receptor signaling (v2.0)"
+  },
+  "9ab39d5f-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Beta5 beta6 beta7 and beta8 integrin cell surface interactions (v2.0).cx2",
+    "name": "Beta5 beta6 beta7 and beta8 integrin cell surface interactions (v2.0)"
+  },
+  "9c462445-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Beta3 integrin cell surface interactions (v2.0).cx2",
+    "name": "Beta3 integrin cell surface interactions (v2.0)"
+  },
+  "99f99c2c-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Osteopontin-mediated events (v2.0).cx2",
+    "name": "Osteopontin-mediated events (v2.0)"
+  },
+  "9b84d012-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Notch-mediated HESHEY network (v2.0).cx2",
+    "name": "Notch-mediated HESHEY network (v2.0)"
+  },
+  "733d8880-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "C-MYB transcription factor network (v2.0).cx2",
+    "name": "C-MYB transcription factor network (v2.0)"
+  },
+  "9d03f608-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Regulation of RhoA activity (v2.0).cx2",
+    "name": "Regulation of RhoA activity (v2.0)"
+  },
+  "9dc01a1b-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Beta2 integrin cell surface interactions (v2.0).cx2",
+    "name": "Beta2 integrin cell surface interactions (v2.0)"
+  },
+  "a00f1334-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Nongenotropic Androgen signaling (v2.0).cx2",
+    "name": "Nongenotropic Androgen signaling (v2.0)"
+  },
+  "a333f9f0-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Regulation of Ras family activation (v2.0).cx2",
+    "name": "Regulation of Ras family activation (v2.0)"
+  },
+  "9f4cad91-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Beta1 integrin cell surface interactions (v2.0).cx2",
+    "name": "Beta1 integrin cell surface interactions (v2.0)"
+  },
+  "9e87fdfe-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Notch signaling pathway (v2.0).cx2",
+    "name": "Notch signaling pathway (v2.0)"
+  },
+  "a1a5439a-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Noncanonical Wnt signaling pathway (v2.0).cx2",
+    "name": "Noncanonical Wnt signaling pathway (v2.0)"
+  },
+  "a27a1fcd-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "BCR signaling pathway (v2.0).cx2",
+    "name": "BCR signaling pathway (v2.0)"
+  },
+  "a0e28fd7-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Regulation of retinoblastoma protein (v2.0).cx2",
+    "name": "Regulation of retinoblastoma protein (v2.0)"
+  },
+  "9933b419-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Regulation of Telomerase (v2.0).cx2",
+    "name": "Regulation of Telomerase (v2.0)"
+  },
+  "a4c40fd6-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "BARD1 signaling events (v2.0).cx2",
+    "name": "BARD1 signaling events (v2.0)"
+  },
+  "a57621c9-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Regulation of RAC1 activity (v2.0).cx2",
+    "name": "Regulation of RAC1 activity (v2.0)"
+  },
+  "a7b05a62-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Regulation of p38-alpha and p38-beta (v2.0).cx2",
+    "name": "Regulation of p38-alpha and p38-beta (v2.0)"
+  },
+  "a6f0daef-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Netrin-mediated signaling events (v2.0).cx2",
+    "name": "Netrin-mediated signaling events (v2.0)"
+  },
+  "a86fd9d5-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Aurora B signaling (v2.0).cx2",
+    "name": "Aurora B signaling (v2.0)"
+  },
+  "a9f0d48b-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Aurora A signaling (v2.0).cx2",
+    "name": "Aurora A signaling (v2.0)"
+  },
+  "aab29dee-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Nectin adhesion pathway (v2.0).cx2",
+    "name": "Nectin adhesion pathway (v2.0)"
+  },
+  "ab685961-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Atypical NF-kappaB pathway (v2.0).cx2",
+    "name": "Atypical NF-kappaB pathway (v2.0)"
+  },
+  "a92f8058-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "NephrinNeph1 signaling in the kidney podocyte (v2.0).cx2",
+    "name": "NephrinNeph1 signaling in the kidney podocyte (v2.0)"
+  },
+  "ac27ffe4-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "N-cadherin signaling events (v2.0).cx2",
+    "name": "N-cadherin signaling events (v2.0)"
+  },
+  "acf31817-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "ATR signaling pathway (v2.0).cx2",
+    "name": "ATR signaling pathway (v2.0)"
+  },
+  "ae9444fd-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "ATM pathway (v2.0).cx2",
+    "name": "ATM pathway (v2.0)"
+  },
+  "b024f723-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "LPA4-mediated signaling events (v2.0).cx2",
+    "name": "LPA4-mediated signaling events (v2.0)"
+  },
+  "adcc611a-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Regulation of nuclear SMAD23 signaling (v2.0).cx2",
+    "name": "Regulation of nuclear SMAD23 signaling (v2.0)"
+  },
+  "b4237502-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Regulation of cytoplasmic and nuclear SMAD23 signaling (v2.0).cx2",
+    "name": "Regulation of cytoplasmic and nuclear SMAD23 signaling (v2.0)"
+  },
+  "b36b217f-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Arf6 trafficking events (v2.0).cx2",
+    "name": "Arf6 trafficking events (v2.0)"
+  },
+  "af6f62c0-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "mTOR signaling pathway (v2.0).cx2",
+    "name": "mTOR signaling pathway (v2.0)"
+  },
+  "b2aba20c-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "LPA receptor mediated events (v2.0).cx2",
+    "name": "LPA receptor mediated events (v2.0)"
+  },
+  "b0f9d356-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "ATF-2 transcription factor network (v2.0).cx2",
+    "name": "ATF-2 transcription factor network (v2.0)"
+  },
+  "b4e31b85-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Arf6 signaling events (v2.0).cx2",
+    "name": "Arf6 signaling events (v2.0)"
+  },
+  "b65fa96b-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Regulation of CDC42 activity (v2.0).cx2",
+    "name": "Regulation of CDC42 activity (v2.0)"
+  },
+  "b713901e-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Arf6 downstream pathway (v2.0).cx2",
+    "name": "Arf6 downstream pathway (v2.0)"
+  },
+  "b5a84048-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "LKB1 signaling events (v2.0).cx2",
+    "name": "LKB1 signaling events (v2.0)"
+  },
+  "b1d34369-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Regulation of nuclear beta catenin signaling and target gene transcription (v2.0).cx2",
+    "name": "Regulation of nuclear beta catenin signaling and target gene transcription (v2.0)"
+  },
+  "b9458b57-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "JNK signaling in the CD4 TCR pathway (v2.0).cx2",
+    "name": "JNK signaling in the CD4 TCR pathway (v2.0)"
+  },
+  "b884fa74-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Arf1 pathway (v2.0).cx2",
+    "name": "Arf1 pathway (v2.0)"
+  },
+  "b7ce0681-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Lissencephaly gene (LIS1) in neuronal migration and development (v2.0).cx2",
+    "name": "Lissencephaly gene (LIS1) in neuronal migration and development (v2.0)"
+  },
+  "bba52640-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Reelin signaling pathway (v2.0).cx2",
+    "name": "Reelin signaling pathway (v2.0)"
+  },
+  "bef8e52c-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Rapid glucocorticoid signaling (v2.0).cx2",
+    "name": "Rapid glucocorticoid signaling (v2.0)"
+  },
+  "be3769e9-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Ras signaling in the CD4 TCR pathway (v2.0).cx2",
+    "name": "Ras signaling in the CD4 TCR pathway (v2.0)"
+  },
+  "ba13148a-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Regulation of Androgen receptor activity (v2.0).cx2",
+    "name": "Regulation of Androgen receptor activity (v2.0)"
+  },
+  "bae076ad-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Internalization of ErbB1 (v2.0).cx2",
+    "name": "Internalization of ErbB1 (v2.0)"
+  },
+  "bfcd9a4f-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Integrin-linked kinase signaling (v2.0).cx2",
+    "name": "Integrin-linked kinase signaling (v2.0)"
+  },
+  "bd752b56-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Integrins in angiogenesis (v2.0).cx2",
+    "name": "Integrins in angiogenesis (v2.0)"
+  },
+  "c1610b95-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Integrin family cell surface interactions (v2.0).cx2",
+    "name": "Integrin family cell surface interactions (v2.0)"
+  },
+  "c0a535a2-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Angiopoietin receptor Tie2-mediated signaling (v2.0).cx2",
+    "name": "Angiopoietin receptor Tie2-mediated signaling (v2.0)"
+  },
+  "c22bd5a8-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "amb2 Integrin signaling (v2.0).cx2",
+    "name": "amb2 Integrin signaling (v2.0)"
+  },
+  "c2fb5aab-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Insulin-mediated glucose transport (v2.0).cx2",
+    "name": "Insulin-mediated glucose transport (v2.0)"
+  },
+  "c4a476d1-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Alternative NF-kappaB pathway (v2.0).cx2",
+    "name": "Alternative NF-kappaB pathway (v2.0)"
+  },
+  "c644e067-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Alpha9 beta1 integrin signaling events (v2.0).cx2",
+    "name": "Alpha9 beta1 integrin signaling events (v2.0)"
+  },
+  "c6f93c4a-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Alpha6 beta4 integrin-ligand interactions (v2.0).cx2",
+    "name": "Alpha6 beta4 integrin-ligand interactions (v2.0)"
+  },
+  "c3d3e05e-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "RAC1 signaling pathway (v2.0).cx2",
+    "name": "RAC1 signaling pathway (v2.0)"
+  },
+  "c7be881d-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "IL8- and CXCR2-mediated signaling events (v2.0).cx2",
+    "name": "IL8- and CXCR2-mediated signaling events (v2.0)"
+  },
+  "c578b6c4-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Insulin Pathway (v2.0).cx2",
+    "name": "Insulin Pathway (v2.0)"
+  },
+  "c95ea393-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "IL8- and CXCR1-mediated signaling events (v2.0).cx2",
+    "name": "IL8- and CXCR1-mediated signaling events (v2.0)"
+  },
+  "ca2b9086-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Alpha4 beta1 integrin signaling events (v2.0).cx2",
+    "name": "Alpha4 beta1 integrin signaling events (v2.0)"
+  },
+  "caee6b59-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Wnt signaling network (v2.0).cx2",
+    "name": "Wnt signaling network (v2.0)"
+  },
+  "c8989470-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Presenilin action in Notch and Wnt signaling (v2.0).cx2",
+    "name": "Presenilin action in Notch and Wnt signaling (v2.0)"
+  },
+  "cc788dcf-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Alpha-synuclein signaling (v2.0).cx2",
+    "name": "Alpha-synuclein signaling (v2.0)"
+  },
+  "a3fd3d63-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Neurotrophic factor-mediated Trk receptor signaling (v2.0).cx2",
+    "name": "Neurotrophic factor-mediated Trk receptor signaling (v2.0)"
+  },
+  "bc8aa443-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "AP-1 transcription factor network (v2.0).cx2",
+    "name": "AP-1 transcription factor network (v2.0)"
+  },
+  "cd4a35b2-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "IL6-mediated signaling events (v2.0).cx2",
+    "name": "IL6-mediated signaling events (v2.0)"
+  },
+  "cdfff125-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "PLK3 signaling events (v2.0).cx2",
+    "name": "PLK3 signaling events (v2.0)"
+  },
+  "ceb6be08-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "ALK2 signaling events (v2.0).cx2",
+    "name": "ALK2 signaling events (v2.0)"
+  },
+  "cf6d63db-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Visual signal transduction Rods (v2.0).cx2",
+    "name": "Visual signal transduction Rods (v2.0)"
+  },
+  "cbba46dc-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Posttranslational regulation of adherens junction stability and dissassembly (v2.0).cx2",
+    "name": "Posttranslational regulation of adherens junction stability and dissassembly (v2.0)"
+  },
+  "d19e2694-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Visual signal transduction Cones (v2.0).cx2",
+    "name": "Visual signal transduction Cones (v2.0)"
+  },
+  "d3f9f0ed-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "a6b1 and a6b4 Integrin signaling (v2.0).cx2",
+    "name": "a6b1 and a6b4 Integrin signaling (v2.0)"
+  },
+  "d56b5b43-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Plexin-D1 Signaling (v2.0).cx2",
+    "name": "Plexin-D1 Signaling (v2.0)"
+  },
+  "d4b6d850-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "IL3-mediated signaling events (v2.0).cx2",
+    "name": "IL3-mediated signaling events (v2.0)"
+  },
+  "d6253566-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "VEGFR3 signaling in lymphatic endothelium (v2.0).cx2",
+    "name": "VEGFR3 signaling in lymphatic endothelium (v2.0)"
+  },
+  "d0e5d311-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "ALK1 signaling events (v2.0).cx2",
+    "name": "ALK1 signaling events (v2.0)"
+  },
+  "d33197da-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "IL4-mediated signaling events (v2.0).cx2",
+    "name": "IL4-mediated signaling events (v2.0)"
+  },
+  "d6d328a9-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "a4b7 Integrin signaling (v2.0).cx2",
+    "name": "a4b7 Integrin signaling (v2.0)"
+  },
+  "d79f042c-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "IL27-mediated signaling events (v2.0).cx2",
+    "name": "IL27-mediated signaling events (v2.0)"
+  },
+  "d924dfe2-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "VEGFR1 specific signals (v2.0).cx2",
+    "name": "VEGFR1 specific signals (v2.0)"
+  },
+  "daaa4768-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "VEGF and VEGFR signaling network (v2.0).cx2",
+    "name": "VEGF and VEGFR signaling network (v2.0)"
+  },
+  "d865616f-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Plasma membrane estrogen receptor signaling (v2.0).cx2",
+    "name": "Plasma membrane estrogen receptor signaling (v2.0)"
+  },
+  "d9f464e5-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "IL23-mediated signaling events (v2.0).cx2",
+    "name": "IL23-mediated signaling events (v2.0)"
+  },
+  "dd2f44a2-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Validated transcriptional targets of TAp63 isoforms (v2.0).cx2",
+    "name": "Validated transcriptional targets of TAp63 isoforms (v2.0)"
+  },
+  "ddf6b355-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "IL2 signaling events mediated by STAT5 (v2.0).cx2",
+    "name": "IL2 signaling events mediated by STAT5 (v2.0)"
+  },
+  "df5b9a8b-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "PDGF receptor signaling network (v2.0).cx2",
+    "name": "PDGF receptor signaling network (v2.0)"
+  },
+  "deac47b8-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "PDGFR-alpha signaling pathway (v2.0).cx2",
+    "name": "PDGFR-alpha signaling pathway (v2.0)"
+  },
+  "db81bbab-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "IL2-mediated signaling events (v2.0).cx2",
+    "name": "IL2-mediated signaling events (v2.0)"
+  },
+  "e0dda6b1-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Validated transcriptional targets of deltaNp63 isoforms (v2.0).cx2",
+    "name": "Validated transcriptional targets of deltaNp63 isoforms (v2.0)"
+  },
+  "d02716ee-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "IL5-mediated signaling events (v2.0).cx2",
+    "name": "IL5-mediated signaling events (v2.0)"
+  },
+  "dc6b314e-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "PDGFR-beta signaling pathway (v2.0).cx2",
+    "name": "PDGFR-beta signaling pathway (v2.0)"
+  },
+  "d2632447-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "PLK1 signaling events (v2.0).cx2",
+    "name": "PLK1 signaling events (v2.0)"
+  },
+  "e01ec37e-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "IL2 signaling events mediated by PI3K (v2.0).cx2",
+    "name": "IL2 signaling events mediated by PI3K (v2.0)"
+  },
+  "e339bf2a-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "IL12 signaling mediated by STAT4 (v2.0).cx2",
+    "name": "IL12 signaling mediated by STAT4 (v2.0)"
+  },
+  "e713ec29-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Hypoxic and oxygen homeostasis regulation of HIF-1-alpha (v2.0).cx2",
+    "name": "Hypoxic and oxygen homeostasis regulation of HIF-1-alpha (v2.0)"
+  },
+  "e3fff55d-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "IL1-mediated signaling events (v2.0).cx2",
+    "name": "IL1-mediated signaling events (v2.0)"
+  },
+  "e275d2e7-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Validated transcriptional targets of AP1 family members Fra1 and Fra2 (v2.0).cx2",
+    "name": "Validated transcriptional targets of AP1 family members Fra1 and Fra2 (v2.0)"
+  },
+  "e658d986-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "IFN-gamma pathway (v2.0).cx2",
+    "name": "IFN-gamma pathway (v2.0)"
+  },
+  "e59625c3-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Validated targets of C-MYC transcriptional repression (v2.0).cx2",
+    "name": "Validated targets of C-MYC transcriptional repression (v2.0)"
+  },
+  "e4c60480-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "IGF1 pathway (v2.0).cx2",
+    "name": "IGF1 pathway (v2.0)"
+  },
+  "e1b36d44-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "IL12-mediated signaling events (v2.0).cx2",
+    "name": "IL12-mediated signaling events (v2.0)"
+  },
+  "ea25e725-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Validated nuclear estrogen receptor beta network (v2.0).cx2",
+    "name": "Validated nuclear estrogen receptor beta network (v2.0)"
+  },
+  "e9711612-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "HIF-2-alpha transcription factor network (v2.0).cx2",
+    "name": "HIF-2-alpha transcription factor network (v2.0)"
+  },
+  "ebc20afb-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Hedgehog signaling events mediated by Gli proteins (v2.0).cx2",
+    "name": "Hedgehog signaling events mediated by Gli proteins (v2.0)"
+  },
+  "e7eb395c-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Validated targets of C-MYC transcriptional activation (v2.0).cx2",
+    "name": "Validated targets of C-MYC transcriptional activation (v2.0)"
+  },
+  "ed5c3301-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "GMCSF-mediated signaling events (v2.0).cx2",
+    "name": "GMCSF-mediated signaling events (v2.0)"
+  },
+  "ee0d81a4-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Glypican 3 network (v2.0).cx2",
+    "name": "Glypican 3 network (v2.0)"
+  },
+  "e8ad29cf-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "HIV-1 Nef Negative effector of Fas and TNF-alpha (v2.0).cx2",
+    "name": "HIV-1 Nef Negative effector of Fas and TNF-alpha (v2.0)"
+  },
+  "eed58c97-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Urokinase-type plasminogen activator (uPA) and uPAR-mediated signaling (v2.0).cx2",
+    "name": "Urokinase-type plasminogen activator (uPA) and uPAR-mediated signaling (v2.0)"
+  },
+  "f046f6ed-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Glypican 1 network (v2.0).cx2",
+    "name": "Glypican 1 network (v2.0)"
+  },
+  "eafa0008-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "HIF-1-alpha transcription factor network (v2.0).cx2",
+    "name": "HIF-1-alpha transcription factor network (v2.0)"
+  },
+  "f10e8cb0-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Trk receptor signaling mediated by the MAPK pathway (v2.0).cx2",
+    "name": "Trk receptor signaling mediated by the MAPK pathway (v2.0)"
+  },
+  "f1d36353-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Trk receptor signaling mediated by PI3K and PLC-gamma (v2.0).cx2",
+    "name": "Trk receptor signaling mediated by PI3K and PLC-gamma (v2.0)"
+  },
+  "ec8f942e-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Validated nuclear estrogen receptor alpha network (v2.0).cx2",
+    "name": "Validated nuclear estrogen receptor alpha network (v2.0)"
+  },
+  "f4fe3d7f-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "FOXM1 transcription factor network (v2.0).cx2",
+    "name": "FOXM1 transcription factor network (v2.0)"
+  },
+  "f691d5d5-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "FOXA2 and FOXA3 transcription factor networks (v2.0).cx2",
+    "name": "FOXA2 and FOXA3 transcription factor networks (v2.0)"
+  },
+  "f36ec3d9-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "TRAIL signaling pathway (v2.0).cx2",
+    "name": "TRAIL signaling pathway (v2.0)"
+  },
+  "f434abec-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "FoxO family signaling (v2.0).cx2",
+    "name": "FoxO family signaling (v2.0)"
+  },
+  "f7585a28-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "FOXA1 transcription factor network (v2.0).cx2",
+    "name": "FOXA1 transcription factor network (v2.0)"
+  },
+  "f5c97cc2-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "TNF receptor signaling pathway (v2.0).cx2",
+    "name": "TNF receptor signaling pathway  (v2.0)"
+  },
+  "f9ba6611-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "TGF-beta receptor signaling (v2.0).cx2",
+    "name": "TGF-beta receptor signaling (v2.0)"
+  },
+  "fb532e87-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "FAS (CD95) signaling pathway (v2.0).cx2",
+    "name": "FAS (CD95) signaling pathway (v2.0)"
+  },
+  "f8f408ce-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "FGF signaling pathway (v2.0).cx2",
+    "name": "FGF signaling pathway (v2.0)"
+  },
+  "fce4f21d-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Fanconi anemia pathway (v2.0).cx2",
+    "name": "Fanconi anemia pathway (v2.0)"
+  },
+  "fda36020-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "ErbB4 signaling events (v2.0).cx2",
+    "name": "ErbB4 signaling events (v2.0)"
+  },
+  "fc1fcd5a-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "TCR signaling in nave CD8 T cells (v2.0).cx2",
+    "name": "TCR signaling in nave CD8 T cells (v2.0)"
+  },
+  "f825200b-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Thromboxane A2 receptor signaling (v2.0).cx2",
+    "name": "Thromboxane A2 receptor signaling (v2.0)"
+  },
+  "f2aa3b56-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Glucocorticoid receptor regulatory network (v2.0).cx2",
+    "name": "Glucocorticoid receptor regulatory network (v2.0)"
+  },
+  "fe735a53-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "TCR signaling in nave CD4 T cells (v2.0).cx2",
+    "name": "TCR signaling in nave CD4 T cells (v2.0)"
+  },
+  "fa886474-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "Fc-epsilon receptor I signaling in mast cells (v2.0).cx2",
+    "name": "Fc-epsilon receptor I signaling in mast cells (v2.0)"
+  },
+  "ff4b43c6-45d0-11ed-b7d0-0ac135e8bacf": {
+    "file": "ErbB2ErbB3 signaling events (v2.0).cx2",
+    "name": "ErbB2ErbB3 signaling events (v2.0)"
+  }
+}
