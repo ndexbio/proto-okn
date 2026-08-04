@@ -1,0 +1,14 @@
+code	cohort_name	mondo_id	mondo_label	mondo_iri	route	anchor	oncotree	alternatives	note
+BLCA	Bladder Urothelial Carcinoma	MONDO:0005611	bladder transitional cell carcinoma	http://purl.obolibrary.org/obo/MONDO_0005611	oncotree_xref	ONCOTREE:BLCA	BLCA		
+BRCA	Breast Invasive Carcinoma	MONDO:0006256	invasive breast carcinoma	http://purl.obolibrary.org/obo/MONDO_0006256	oncotree_xref	ONCOTREE:BRCA	BRCA		
+COAD	Colon Adenocarcinoma	MONDO:0002271	colon adenocarcinoma	http://purl.obolibrary.org/obo/MONDO_0002271	oncotree_xref	ONCOTREE:COAD	COAD		
+GBM	Glioblastoma Multiforme	MONDO:0018177	glioblastoma	http://purl.obolibrary.org/obo/MONDO_0018177	exact_synonym	synonym "GBM"	GB		
+HNSC	Head and Neck Squamous Cell Carcinoma	MONDO:0010150	head and neck squamous cell carcinoma	http://purl.obolibrary.org/obo/MONDO_0010150	oncotree_xref	ONCOTREE:HNSC	HNSC		
+KIRC	Kidney Renal Clear Cell Carcinoma	MONDO:0005005	clear cell renal carcinoma	http://purl.obolibrary.org/obo/MONDO_0005005	exact_label	label "clear cell renal carcinoma"	CCRCC		
+LIHC	Liver Hepatocellular Carcinoma	MONDO:0007256	hepatocellular carcinoma	http://purl.obolibrary.org/obo/MONDO_0007256	exact_label	label "hepatocellular carcinoma"	HCC		
+LUAD	Lung Adenocarcinoma	MONDO:0005061	lung adenocarcinoma	http://purl.obolibrary.org/obo/MONDO_0005061	oncotree_xref	ONCOTREE:LUAD	LUAD		
+LUSC	Lung Squamous Cell Carcinoma	MONDO:0005097	squamous cell lung carcinoma	http://purl.obolibrary.org/obo/MONDO_0005097	oncotree_xref	ONCOTREE:LUSC	LUSC		
+OV	Ovarian Serous Cystadenocarcinoma	MONDO:0006046	ovarian serous cystadenocarcinoma	http://purl.obolibrary.org/obo/MONDO_0006046	override	curator-pinned			Label matches the TCGA cohort verbatim. The OncoTree anchor (ONCOTREE:SOC) sits on MONDO:0005211 "ovarian serous adenocarcinoma", OncoTree's broader serous-ovarian bucket, so the xref route would lose specificity.
+SKCM	Skin Cutaneous Melanoma	MONDO:0005012	cutaneous melanoma	http://purl.obolibrary.org/obo/MONDO_0005012	oncotree_xref	ONCOTREE:SKCM	SKCM		
+STAD	Stomach Adenocarcinoma	MONDO:0005036	gastric adenocarcinoma	http://purl.obolibrary.org/obo/MONDO_0005036	oncotree_xref	ONCOTREE:STAD	STAD		
+UCEC	Uterine Corpus Endometrial Carcinoma	MONDO:0000553	uterine corpus endometrial carcinoma	http://purl.obolibrary.org/obo/MONDO_0000553	override	curator-pinned			Label matches the TCGA cohort verbatim and is a child of MONDO:0002447 "endometrial carcinoma", which is what carries ONCOTREE:UCEC. The xref route would resolve to the less specific parent.

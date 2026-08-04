@@ -27,7 +27,10 @@ HCX::members (still listed in the untouched `Genes` attribute).
 import argparse, csv, json, sys
 from collections import OrderedDict
 
-INTERACTION_UUID = "e3bb3a6d-878e-11f1-857e-005056ae3c32"
+# NDEx UUID of the IAS interaction network. Verified 2026-08-03 against the NDEx API:
+# "IAS integrated protein-association network (NeST / Zheng et al. 2021)", 16840 nodes /
+# 209996 edges. (Was previously e3bb3a6d-878e-11f1-857e-005056ae3c32, which was wrong.)
+INTERACTION_UUID = "4731187a-8796-11f1-857e-005056ae3c32"
 
 
 def aspect_map(cx2):
