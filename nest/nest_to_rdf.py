@@ -38,6 +38,7 @@ TWO THINGS CONSUMERS MUST KNOW, both documented in the output header:
 """
 import argparse
 import csv
+import re
 import datetime
 import json
 import os
@@ -85,8 +86,14 @@ BH = "NCIT:C61596"                # Benjamini-Hochberg Procedure
 
 # ------------------------------------------------------------------ NDEx + CX2
 
-def fetch_cx2(base, uuid, cache_dir, offline=False):
-    """Download a CX2 network by UUID, caching it. Unlisted networks resolve by UUID."""
+def fetch_cx2(base, uuid, cache_dir, offline=False, idle_timeout=300):
+    """
+    Download a CX2 network by UUID, caching it. Unlisted networks resolve by UUID.
+
+    `idle_timeout` is passed to urlopen, where it is a per-socket-operation timeout: it
+    bounds connect and each individual read, NOT the total transfer. A slow but progressing
+    download of a 50 MB network is therefore never cut off — only a genuine stall fails.
+    """
     path = os.path.join(cache_dir, f"{uuid}.cx2")
     if os.path.exists(path):
         print(f"  cached  {uuid}  ({os.path.getsize(path):,} bytes)", file=sys.stderr)
@@ -97,7 +104,7 @@ def fetch_cx2(base, uuid, cache_dir, offline=False):
     url = f"{base}/v3/networks/{uuid}"
     print(f"  GET     {url}", file=sys.stderr, flush=True)
     try:
-        with urllib.request.urlopen(url, timeout=600) as resp:
+        with urllib.request.urlopen(url, timeout=idle_timeout) as resp:
             raw = resp.read()
     except (urllib.error.URLError, TimeoutError) as exc:
         sys.exit(f"ERROR: could not download {uuid}: {exc}")
@@ -162,13 +169,30 @@ def nonneg(value):
     return f'"{int(value)}"^^xsd:nonNegativeInteger'
 
 
+def head_triples(subject):
+    """
+    Triples carried on a block's *subject line* rather than in its indented pairs.
+
+    `ndexv:memberCount a rdf:Property, owl:DatatypeProperty ;` states two rdf:type triples
+    before the first pair is written. Counting only the pairs would miss them.
+    """
+    m = re.search(r"\sa\s+([^;]+);\s*$", subject)
+    return len(m.group(1).split(",")) if m else 0
+
+
 class Writer:
     def __init__(self, fh):
         self.fh = fh
         self.count = 0
 
     def raw(self, text=""):
+        """Text that carries no triples (comments, blank lines, section headers)."""
         self.fh.write(text + "\n")
+
+    def raw_triples(self, text, n):
+        """Text carrying `n` triples — e.g. one subject with a comma-separated object list."""
+        self.fh.write(text + "\n")
+        self.count += n
 
     def triple(self, s, p, o):
         self.fh.write(f"{s} {p} {o} .\n")
@@ -176,21 +200,28 @@ class Writer:
 
     def block(self, subject, pairs):
         """
-        pairs: list of (predicate, object) or (predicate, object, comment).
+        pairs: (predicate, object), (predicate, object, comment), or
+               (predicate, object, comment, n_triples).
 
         A comment is emitted AFTER the `;`/`.` terminator — putting it before would make the
         terminator part of the comment and produce invalid Turtle.
+
+        `n_triples` defaults to 1 and exists for object slots that are not a single triple,
+        such as an inlined blank node: `[ a prov:Activity ; prov:wasAssociatedWith <x> ; … ]`
+        is the link plus everything inside it.
         """
         if not pairs:
             return
         self.fh.write(subject + "\n")
+        self.count += head_triples(subject)
         for i, item in enumerate(pairs):
             p, o = item[0], item[1]
             comment = item[2] if len(item) > 2 else None
+            n = item[3] if len(item) > 3 else 1
             end = " ." if i == len(pairs) - 1 else " ;"
             tail = f"   # {comment}" if comment else ""
             self.fh.write(f"    {p} {o}{end}{tail}\n")
-            self.count += 1
+            self.count += n
         self.fh.write("\n")
 
 
@@ -303,7 +334,8 @@ def write_provenance(w, hier_uuid, ias_uuid, version):
         ("prov:wasDerivedFrom", f"ndex:{ias_uuid}"),
         ("prov:wasGeneratedBy",
          f'[ a prov:Activity ; prov:wasAssociatedWith '
-         f'<https://github.com/ndexbio/proto-okn> ; pav:version "{TOOL_VERSION}" ]'),
+         f'<https://github.com/ndexbio/proto-okn> ; pav:version "{TOOL_VERSION}" ]',
+         None, 4),
     ])
 
 
@@ -348,7 +380,8 @@ def write_membership(w, small, ias_iri, local, stats):
         iris = [ias_iri[m] for m in (v.get("HCX::members") or []) if m in ias_iri]
         if not iris:
             continue
-        w.raw(f"{local(v)} biolink:has_member " + ",\n        ".join(iris) + " .")
+        w.raw_triples(f"{local(v)} biolink:has_member " + ",\n        ".join(iris) + " .",
+                      len(iris))
         stats["member_emitted"] += len(iris)
     w.raw()
 
@@ -466,6 +499,22 @@ def write_ias(w, ias, stats):
 
 # ------------------------------------------------------------------------ main
 
+def positive_int(text):
+    """
+    An argparse type that rejects non-integers and non-positive values.
+
+    `type=int` alone would accept 0 and negatives, which silently suppress every system's
+    membership and associations rather than failing.
+    """
+    try:
+        value = int(text)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"expected an integer, got {text!r}")
+    if value < 1:
+        raise argparse.ArgumentTypeError(f"expected an integer >= 1, got {value}")
+    return value
+
+
 def load_mondo(path):
     out = {}
     with open(path) as fh:
@@ -481,7 +530,7 @@ def main():
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("uuid", help="NDEx UUID of the NeST hierarchy (HCX network)")
     ap.add_argument("-o", "--out", default="nest.ttl", help="output Turtle file")
-    ap.add_argument("--cutoff", type=int, default=400,
+    ap.add_argument("--cutoff", type=positive_int, default=400,
                     help="systems with Size >= this emit no membership or associations "
                          "(default 400)")
     ap.add_argument("--mondo", default=os.path.join(here, "cancer_type_mondo_map.tsv"),
@@ -493,10 +542,14 @@ def main():
                     help="fail instead of downloading if a network is not cached")
     ap.add_argument("--dataset-version", default="1.0",
                     help="pav:version recorded on the dataset node")
+    ap.add_argument("--idle-timeout", type=positive_int, default=300, metavar="SECONDS",
+                    help="abort a download that stalls for this long (default 300). This is "
+                         "an idle timeout, not a total deadline: a slow but progressing "
+                         "transfer is never cut off.")
     args = ap.parse_args()
 
     print("resolving networks", file=sys.stderr)
-    hier = fetch_cx2(args.ndex, args.uuid, args.cache_dir, args.offline)
+    hier = fetch_cx2(args.ndex, args.uuid, args.cache_dir, args.offline, args.idle_timeout)
     hna = aspects(hier)["networkAttributes"][0]
     if hna.get("ndexSchema") != "hierarchy_v0.1":
         print(f"  WARNING: ndexSchema is {hna.get('ndexSchema')!r}, expected "
@@ -506,7 +559,7 @@ def main():
         sys.exit("ERROR: the hierarchy has no HCX::interactionNetworkUUID attribute, so the "
                  "interaction network cannot be located.")
     print(f"  interaction network: {ias_uuid}", file=sys.stderr)
-    ias = fetch_cx2(args.ndex, ias_uuid, args.cache_dir, args.offline)
+    ias = fetch_cx2(args.ndex, ias_uuid, args.cache_dir, args.offline, args.idle_timeout)
 
     mondo = load_mondo(args.mondo)
     print(f"  cohort -> MONDO entries: {len(mondo)}", file=sys.stderr)
@@ -542,7 +595,11 @@ def main():
     if stats['selfloops']:
         print(f"  self-loops dropped ....... {stats['selfloops']:>9,} "
               f"(symbols sharing a UniProt accession)", file=sys.stderr)
-    print(f"  TOTAL TRIPLES ............ {w.count:>9,}", file=sys.stderr)
+    print(f"  TRIPLES WRITTEN .......... {w.count:>9,}", file=sys.stderr)
+    print("    a loaded graph holds slightly fewer: RDF is a set, and a few triples",
+          file=sys.stderr)
+    print("    coincide where distinct gene symbols share one UniProt accession",
+          file=sys.stderr)
     print(f"  -> {args.out} ({os.path.getsize(args.out):,} bytes)", file=sys.stderr)
 
 

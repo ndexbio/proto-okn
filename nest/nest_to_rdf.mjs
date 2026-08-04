@@ -24,6 +24,9 @@
  *   --ndex <url>            NDEx server base URL (default: https://www.ndexbio.org)
  *   --offline               fail instead of downloading if a network is not cached
  *   --dataset-version <s>   pav:version recorded on the dataset node (default: 1.0)
+ *   --idle-timeout <s>      abort a download that stalls for this many seconds (default 300).
+ *                           This is an IDLE timeout, not a total deadline: a slow but
+ *                           progressing transfer is never cut off.
  *
  * NOTE: parsing the ~54 MB IAS network needs a large heap. If node reports a heap OOM,
  * re-run with `node --max-old-space-size=4096 nest_to_rdf.mjs ...`.
@@ -72,7 +75,44 @@ const BH = 'NCIT:C61596'; // Benjamini-Hochberg Procedure
 
 // ------------------------------------------------------------------ NDEx + CX2
 
-async function fetchCx2(base, uuid, cacheDir, offline) {
+/**
+ * GET a URL, aborting only if the transfer *stalls* for `idleMs`.
+ *
+ * Deliberately an idle timeout rather than `AbortSignal.timeout()`, which is a total
+ * deadline: these payloads are tens of megabytes, so a hard cap would kill a slow but
+ * perfectly healthy download. This also matches the Python side, whose
+ * `urlopen(timeout=...)` is a per-socket-operation timeout, not a limit on the whole
+ * transfer. The timer covers connect and time-to-first-byte, then resets on every chunk.
+ */
+async function fetchIdleTimeout(url, idleMs) {
+  const ctrl = new AbortController();
+  let timer;
+  const arm = () => {
+    clearTimeout(timer);
+    timer = setTimeout(
+      () => ctrl.abort(new Error(`no data received for ${Math.round(idleMs / 1000)}s`)),
+      idleMs,
+    );
+  };
+  arm();
+  try {
+    const resp = await fetch(url, { signal: ctrl.signal });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status} ${resp.statusText}`);
+    const chunks = [];
+    for await (const chunk of resp.body) {
+      arm();
+      chunks.push(chunk);
+    }
+    return Buffer.concat(chunks);
+  } catch (err) {
+    // An abort surfaces as AbortError; report the stall, not the generic abort.
+    throw ctrl.signal.aborted ? (ctrl.signal.reason ?? err) : err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function fetchCx2(base, uuid, cacheDir, offline, idleMs) {
   const file = path.join(cacheDir, `${uuid}.cx2`);
   if (fs.existsSync(file)) {
     console.error(`  cached  ${uuid}  (${fs.statSync(file).size.toLocaleString('en-US')} bytes)`);
@@ -83,9 +123,7 @@ async function fetchCx2(base, uuid, cacheDir, offline) {
   console.error(`  GET     ${url}`);
   let raw;
   try {
-    const resp = await fetch(url);
-    if (!resp.ok) die(`could not download ${uuid}: HTTP ${resp.status}`);
-    raw = Buffer.from(await resp.arrayBuffer());
+    raw = await fetchIdleTimeout(url, idleMs);
   } catch (err) {
     die(`could not download ${uuid}: ${err.message}`);
   }
@@ -160,6 +198,17 @@ const dbl = (v) => `"${pyRepr(v)}"^^xsd:double`;
 /** A typed xsd:nonNegativeInteger literal, matching ndexv:memberCount's declared range. */
 const nonneg = (v) => `"${Math.trunc(Number(v))}"^^xsd:nonNegativeInteger`;
 
+/**
+ * Triples carried on a block's *subject line* rather than in its indented pairs.
+ *
+ * `ndexv:memberCount a rdf:Property, owl:DatatypeProperty ;` states two rdf:type triples
+ * before the first pair is written. Counting only the pairs would miss them.
+ */
+function headTriples(subject) {
+  const m = /\sa\s+([^;]+);\s*$/.exec(subject);
+  return m ? m[1].split(',').length : 0;
+}
+
 /** Buffered writer — the output is ~57 MB, so it is flushed in chunks rather than joined. */
 class Writer {
   constructor(fd) {
@@ -178,26 +227,39 @@ class Writer {
     this.buf = [];
     this.bytes = 0;
   }
+  /** Text that carries no triples (comments, blank lines, section headers). */
   raw(text = '') {
     this.#push(text + '\n');
+  }
+  /** Text that carries `n` triples — e.g. one subject with a comma-separated object list. */
+  rawTriples(text, n) {
+    this.#push(text + '\n');
+    this.count += n;
   }
   triple(s, p, o) {
     this.#push(`${s} ${p} ${o} .\n`);
     this.count += 1;
   }
   /**
-   * pairs: [predicate, object] or [predicate, object, comment].
+   * pairs: [predicate, object], [predicate, object, comment], or
+   *        [predicate, object, comment, nTriples].
+   *
    * A comment is emitted AFTER the `;`/`.` terminator — putting it before would make the
    * terminator part of the comment and produce invalid Turtle.
+   *
+   * `nTriples` defaults to 1 and exists for object slots that are not a single triple, such
+   * as an inlined blank node: `[ a prov:Activity ; prov:wasAssociatedWith <x> ; … ]` is the
+   * link plus everything inside it.
    */
   block(subject, pairs) {
     if (!pairs.length) return;
     this.#push(subject + '\n');
-    pairs.forEach(([p, o, comment], i) => {
+    this.count += headTriples(subject);
+    pairs.forEach(([p, o, comment, n], i) => {
       const end = i === pairs.length - 1 ? ' .' : ' ;';
       const tail = comment ? `   # ${comment}` : '';
       this.#push(`    ${p} ${o}${end}${tail}\n`);
-      this.count += 1;
+      this.count += n ?? 1;
     });
     this.#push('\n');
   }
@@ -313,7 +375,7 @@ function writeProvenance(w, hierUuid, iasUuid, version) {
     ['prov:wasDerivedFrom', `ndex:${hierUuid}`],
     ['prov:wasDerivedFrom', `ndex:${iasUuid}`],
     ['prov:wasGeneratedBy', '[ a prov:Activity ; prov:wasAssociatedWith ' +
-      `<https://github.com/ndexbio/proto-okn> ; pav:version "${TOOL_VERSION}" ]`],
+      `<https://github.com/ndexbio/proto-okn> ; pav:version "${TOOL_VERSION}" ]`, null, 4],
   ]);
 }
 
@@ -356,7 +418,8 @@ function writeMembership(w, small, iasIri, local, stats) {
   for (const [, v] of small) {
     const iris = (v['HCX::members'] || []).map((m) => iasIri.get(m)).filter(Boolean);
     if (!iris.length) continue;
-    w.raw(`${local(v)} biolink:has_member ` + iris.join(',\n        ') + ' .');
+    w.rawTriples(`${local(v)} biolink:has_member ` + iris.join(',\n        ') + ' .',
+      iris.length);
     stats.member_emitted += iris.length;
   }
   w.raw();
@@ -500,6 +563,23 @@ function die(msg) {
   process.exit(1);
 }
 
+/**
+ * Parse an integer option, failing fast.
+ *
+ * Worth being strict: `Number('abc')` is NaN, and every comparison against NaN is false, so
+ * an unvalidated `--cutoff` would put every system "above the cutoff" and emit zero
+ * membership and zero associations — while still exiting 0. A NaN `--idle-timeout` becomes
+ * `setTimeout(…, NaN)`, which fires immediately and aborts the download. Both fail silently
+ * or confusingly rather than loudly. argparse rejects these on the Python side.
+ */
+function intArg(value, name, min) {
+  const n = Number(value);
+  if (value === '' || !Number.isInteger(n) || n < min) {
+    die(`--${name} expects an integer >= ${min}, got '${value}'`);
+  }
+  return n;
+}
+
 function loadMondo(file) {
   const out = new Map();
   const lines = fs.readFileSync(file, 'utf8').split('\n');
@@ -522,11 +602,13 @@ function parseArgs(argv) {
     ndex: NDEX_DEFAULT,
     offline: false,
     datasetVersion: '1.0',
+    idleTimeout: 300,
     uuid: null,
   };
   const flags = {
     '-o': 'out', '--out': 'out', '--cutoff': 'cutoff', '--mondo': 'mondo',
     '--cache-dir': 'cacheDir', '--ndex': 'ndex', '--dataset-version': 'datasetVersion',
+    '--idle-timeout': 'idleTimeout',
   };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
@@ -536,13 +618,19 @@ function parseArgs(argv) {
         .split('*/')[0].replace(/^#!.*\n/, ''));
       process.exit(0);
     }
-    if (a in flags) { opts[flags[a]] = argv[++i]; continue; }
+    if (a in flags) {
+      const value = argv[++i];
+      if (value === undefined) die(`${a} expects a value`);
+      opts[flags[a]] = value;
+      continue;
+    }
     if (a.startsWith('-')) die(`unknown option ${a}`);
     if (opts.uuid) die('expected exactly one UUID argument');
     opts.uuid = a;
   }
   if (!opts.uuid) die('missing required argument: the NDEx UUID of the NeST hierarchy');
-  opts.cutoff = Number(opts.cutoff);
+  opts.cutoff = intArg(opts.cutoff, 'cutoff', 1);
+  opts.idleTimeout = intArg(opts.idleTimeout, 'idle-timeout', 1);
   return opts;
 }
 
@@ -550,7 +638,8 @@ async function main() {
   const opts = parseArgs(process.argv.slice(2));
 
   console.error('resolving networks');
-  const hier = await fetchCx2(opts.ndex, opts.uuid, opts.cacheDir, opts.offline);
+  const idleMs = opts.idleTimeout * 1000;
+  const hier = await fetchCx2(opts.ndex, opts.uuid, opts.cacheDir, opts.offline, idleMs);
   const hna = aspects(hier).networkAttributes[0];
   if (hna.ndexSchema !== 'hierarchy_v0.1') {
     console.error(`  WARNING: ndexSchema is '${hna.ndexSchema}', expected 'hierarchy_v0.1' ` +
@@ -562,7 +651,7 @@ async function main() {
       'network cannot be located.');
   }
   console.error(`  interaction network: ${iasUuid}`);
-  const ias = await fetchCx2(opts.ndex, iasUuid, opts.cacheDir, opts.offline);
+  const ias = await fetchCx2(opts.ndex, iasUuid, opts.cacheDir, opts.offline, idleMs);
 
   const mondo = loadMondo(opts.mondo);
   console.error(`  cohort -> MONDO entries: ${mondo.size}`);
@@ -604,7 +693,9 @@ async function main() {
     console.error(`  self-loops dropped ....... ${n(stats.selfloops)} ` +
       '(symbols sharing a UniProt accession)');
   }
-  console.error(`  TOTAL TRIPLES ............ ${n(w.count)}`);
+  console.error(`  TRIPLES WRITTEN .......... ${n(w.count)}`);
+  console.error('    a loaded graph holds slightly fewer: RDF is a set, and a few triples');
+  console.error('    coincide where distinct gene symbols share one UniProt accession');
   console.error(`  -> ${opts.out} (${fs.statSync(opts.out).size.toLocaleString('en-US')} bytes)`);
 }
 
