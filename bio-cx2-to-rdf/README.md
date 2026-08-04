@@ -274,15 +274,55 @@ Sample CX2 networks are available in the parent directory:
 - `Ephri_B.cx2` - Ephrin B signaling pathway
 - `Direct p53 effectors (v2.0).cx2` - Comprehensive p53 pathway
 
+## NeST → RDF (standalone converters)
+
+The NeST hierarchy and its IAS interaction network are converted by **standalone scripts in
+[`nest/`](../nest/), not by this package** — they do not go through the adapter pipeline
+above. Two implementations exist and produce **byte-identical** output; `diff` between them
+is the regression test.
+
+```bash
+cd nest
+
+# Python
+python3 nest_to_rdf.py 4f9210a1-8797-11f1-857e-005056ae3c32 -o nest.ttl
+
+# Node (identical output; use --max-old-space-size if the 54 MB IAS parse OOMs)
+node --max-old-space-size=4096 nest_to_rdf.mjs 4f9210a1-8797-11f1-857e-005056ae3c32 -o nest.ttl
+```
+
+The single argument is the **NDEx UUID of the NeST hierarchy**. The interaction network is
+located automatically from that network's `HCX::interactionNetworkUUID` attribute and
+downloaded too. Both downloads are cached under `nest/.ndex-cache/`, so re-runs take about a
+second; add `--offline` to require the cache and never hit the network.
+
+| option | default | |
+|---|---|---|
+| `-o, --out` | `nest.ttl` | output Turtle file |
+| `--cutoff` | `400` | systems with `Size` ≥ this emit no membership or associations (all nodes and containment edges are always emitted) |
+| `--mondo` | `cancer_type_mondo_map.tsv` | cohort → MONDO mapping |
+| `--cache-dir` | `.ndex-cache` | where downloaded CX2 files are cached |
+| `--ndex` | `https://www.ndexbio.org` | NDEx server |
+| `--offline` | | fail rather than download |
+| `--dataset-version` | `1.0` | `pav:version` on the dataset node |
+
+Output for the current deposits: **1,318,130 triples, ~57 MB** — 395 systems, 466 `part_of`,
+11,348 `has_member`, 701 associations, 16,840 proteins and 209,956 interactions. It is a
+generated artifact; regenerate rather than edit, and note that a new build **replaces** the
+graph (minted statement IRIs are build-scoped — see the spec).
+
+The cohort → MONDO table it reads is itself generated and verified by
+`nest/map_cancer_types_to_mondo.py`; see [NEST_HIERARCHY_DATASET.md §5](../NEST_HIERARCHY_DATASET.md).
+
 ## Documentation
 
 For detailed design and implementation documentation, see:
 
 - [CX2_TO_RDF_DESIGN.md](../CX2_TO_RDF_DESIGN.md) - Comprehensive design document
 - [IMPLEMENTATION_PLAN.md](../IMPLEMENTATION_PLAN.md) - Implementation roadmap
-- [IAS_NETWORK_GENERATION.md](../IAS_NETWORK_GENERATION.md) - IAS interaction network (NeST / Zheng et al. 2021): CX2 generation spec (CX2 built; RDF adapter pending)
+- [IAS_NETWORK_GENERATION.md](../IAS_NETWORK_GENERATION.md) - IAS interaction network (NeST / Zheng et al. 2021): CX2 generation **and** RDF mapping spec
 - [SYMBOL_TO_PROTEIN_MAPPING.md](../SYMBOL_TO_PROTEIN_MAPPING.md) - HGNC symbol → UniProt/HGNC CURIE resolution for the IAS network
-- [NEST_HIERARCHY_DATASET.md](../NEST_HIERARCHY_DATASET.md) - NeST hierarchy (395 systems) adapter specification — separate graph, still TBD
+- [NEST_HIERARCHY_DATASET.md](../NEST_HIERARCHY_DATASET.md) - NeST hierarchy (395 systems): full CX2 → RDF design spec
 
 ## Architecture
 
@@ -298,15 +338,23 @@ Core Library (platform-agnostic)
          ▼
 Dataset Adapters (pluggable)
   ├── NCI-PID 2.0 Adapter (implemented)
-  ├── IAS Interaction Network Adapter (planned — CX2 generated, see IAS_NETWORK_GENERATION.md)
-  └── NeST Hierarchy Adapter (planned)
+  ├── IAS Interaction Network Adapter (not implemented — see note)
+  └── NeST Hierarchy Adapter (not implemented — see note)
 ```
 
-> **IAS / NeST networks.** The IAS interaction network is generated to CX2 by
-> `nest/build_cx2_network.py` (nodes keyed on gene symbol; `represents` = UniProt
-> accession, or an HGNC gene id for the 12 symbols with no protein product). The
-> RDF adapter that maps its edges to `RO:0002434` + ECO-typed evidence is not yet
-> implemented. See [IAS_NETWORK_GENERATION.md](../IAS_NETWORK_GENERATION.md).
+> **NeST / IAS are converted outside this pipeline.** Their RDF mapping is fully specified
+> and implemented, but by the standalone `nest/nest_to_rdf.{py,mjs}` scripts above rather
+> than as adapters here. Routing them through this package first requires core changes that
+> the current design cannot express:
+>
+> - `RdfOutput` has no literal-valued triple type — `directTriples` takes IRI objects only,
+>   which blocks every score, p-value and count
+> - `ReifiedStatement` hardcodes the NCI-PID evidence fields (`evidenceCount`,
+>   `evidenceUrl`, `processType`) rather than carrying generic qualifiers
+> - there is no adapter registry; `cli/index.ts` calls the NCI-PID adapter directly
+> - the retired `okn:`/`example.org` base is still hardcoded in `namespace-manager.ts`,
+>   `turtle-writer.ts` and `adapters/nci-pid/index.ts`
+> - output is accumulated in memory, which will not scale to the ~1.3 M triples NeST emits
 
 ## License
 
