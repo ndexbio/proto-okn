@@ -1,366 +1,519 @@
-# NeST Hierarchy Dataset - Specification Document
-## Dataset Adapter for bio-cx2-to-rdf Converter
+# NeST Hierarchy — CX2 → RDF Design Specification
 
-## Status: 🚧 In Development — RDF mapping TBD; source structure characterized below
+**Status:** ✅ RDF design settled (2026-08-03) · 🚧 adapter not implemented
 
-This document describes the structure and conversion requirements for the **NeST hierarchy** network in CX2 format. This will guide the implementation of the NeST hierarchy dataset adapter.
+This document specifies how the **NeST hierarchy** (395 protein systems) is converted from
+CX2 to RDF for the OKN.
 
-> **Scope — this is the hierarchy, a *separate* graph from the interaction network.**
-> The IAS interaction network (Data S1, the flat scored protein-pair network the
-> hierarchy is *derived from*) is specified and built separately — see
-> [IAS_NETWORK_GENERATION.md](IAS_NETWORK_GENERATION.md) and
-> [SYMBOL_TO_PROTEIN_MAPPING.md](SYMBOL_TO_PROTEIN_MAPPING.md). The two are linked
-> by protein identifiers: system nodes here reference member proteins (via the
-> `Genes` attribute) that resolve to the same `uniprot:`/`hgnc:` CURIEs used there.
+> **Scope.** The hierarchy and the IAS interaction network are **exported together into one
+> Turtle file**, but are specified separately:
+> - *this document* — the 395 systems, their containment, membership, and cancer associations
+> - [IAS_NETWORK_GENERATION.md](IAS_NETWORK_GENERATION.md) — the 16,840 proteins and 209,996
+>   interactions, **plus the shared concerns**: namespaces (§8), provenance and release
+>   policy (§11)
+> - [SYMBOL_TO_PROTEIN_MAPPING.md](SYMBOL_TO_PROTEIN_MAPPING.md) — HGNC symbol → `uniprot:`/`hgnc:` resolution
+>
+> The two halves join on protein IRIs: a system's members *are* nodes of the IAS network.
 
 ---
 
 ## 1. Dataset Overview
 
 **Name**: NeST 1.0 hierarchical cancer systems map
-**Format**: Cytoscape CX2
+**Format**: Cytoscape CX2 → HCX
 **Source**: Zheng et al., *Science* 374, eabf3067 (2021), Fig. 4A / Data S3; http://ccmi.org/nest/. Local file: `nest/NeST Map - Main Model.cx2`.
-**Description**: A hierarchy of **395 protein systems** ("Nested Systems in Tumors") under mutational selection across 13 cancer types, derived from the IAS network by multiscale community detection (CliXO/HiDeF) and HiSig. Nodes = protein systems (at scales from complexes to broad processes); edges = containment (system-within-system).
+**Description**: A hierarchy of **395 protein systems** ("Nested Systems in Tumors") under mutational selection across 13 cancer types, derived from the IAS network by multiscale community detection (CliXO/HiDeF) and HiSig. Nodes = protein systems (from complexes to broad processes); edges = containment (system-within-system).
 
-### Verified source structure (`nest/NeST Map - Main Model.cx2`)
+### Verified source structure
 - **395 nodes** (systems), **466 edges** (containment).
-- **Node attributes**: `NEST ID` (e.g. `NEST:60`), `name` (`n`), `Genes` (space-separated HGNC symbols = the system's member proteins), `Size`, `Annotation` (curator-assigned system name, e.g. "Nuclear receptor transcription pathway"), `adjusted p-value` / `-log10 adjusted p-value`, `No. significantly mutated cancer types (aggregate)`, `Significantly mutated cancer types (aggregate)`, and per-cohort `Mutation frequency:<TYPE>` for all 13 tumor types (BLCA, BRCA, COAD, GBM, HNSC, KIRC, LIHC, LUAD, LUSC, OV, SKCM, STAD, UCEC).
-- **Edges**: all `interaction = "interacts with"`, split by a `Tree_edge` boolean — **343 `true`** (primary containment; solid arrows in Fig. 4A), **72 `false`** (additional containment = pleiotropy; dashed arrows), **51 unset**. This boolean is the containment semantics and should be preserved (e.g. distinct predicates or a qualifier), not collapsed.
-- **Membership**: the `Genes` attribute lists the proteins in each system — the system→protein link. The root node `NEST` lists all ~19,035 genes; individual systems list their members. Some member symbols will be proteins not retained by the interaction-network filter — mint protein IRIs from the union of both sources.
+- **Node attributes**: `NEST ID` (e.g. `NEST:60`), `name` (`n`, identical to `NEST ID` on all 395), `Genes` (space-separated HGNC symbols), `Size`, `Size-Log`, `Annotation` (curator-assigned name), `adjusted  p-value` *(note: two spaces)* / `-log10 adjusted p-value`, `Weight`, `No. significantly mutated cancer types [(aggregate)]`, `Significantly mutated cancer types [(aggregate)]`, and per-cohort `Mutation frequency:<CODE>` for all 13 tumor types.
+- **Edge attributes**: `name` (a Cytoscape label built from *stale* `Cluster…` ids), `interaction` (constant `"interacts with"` on all 466), `Tree_edge` (boolean, present on 415).
+- **Containment is real mereology** (verified): for **all 466 edges** the child's gene set is a strict subset of the parent's, and child `Size` < parent `Size`. 0 violations.
+- **It is a DAG, not a tree**: **62 of 395** nodes have more than one parent (54×2, 6×3, 2×4).
 
 ---
 
-## HCX conversion — linking to the IAS interaction network (implemented)
+## 2. HCX conversion — linking to the IAS interaction network (implemented)
 
 The main model is converted to **HCX** (Hierarchical CX2, spec: https://cytoscape.org/cx/cx2/hcx-specification/) so NDEx/HiView renders it as a browsable hierarchy whose systems link to nodes of the IAS interaction network.
 
 **Script:** [nest/build_hcx_hierarchy.py](nest/build_hcx_hierarchy.py) → [nest/NeST_hierarchy_HCX.cx2](nest/NeST_hierarchy_HCX.cx2).
 
-**The link mechanism:** NDEx preserves CX2 node ids, so IAS node id *N* (name = gene symbol) in [nest/IAS_network.cx2](nest/IAS_network.cx2) is the **same id** in the uploaded NDEx network (verified: id 0→A1BG … id 16839→ZSCAN32, all 16,840 identical). The converter maps each system's `Genes` symbols → those IAS node ids and stores them as `HCX::members`.
-
-**What the converter adds** (all original aspects — nodes, edges, visualProperties, nodeBypasses, etc. — are preserved):
+**The link mechanism:** NDEx preserves CX2 node ids, so IAS node id *N* (name = gene symbol) in [nest/IAS_network.cx2](nest/IAS_network.cx2) is the **same id** in the uploaded NDEx network. The converter maps each system's `Genes` symbols → those IAS node ids and stores them as `HCX::members`. **This is the link the RDF membership mapping uses (§4.4)** — not the `Genes` strings.
 
 | level | attribute | value |
 |---|---|---|
 | network | `ndexSchema` | `"hierarchy_v0.1"` (required) |
-| network | `HCX::modelFileCount` | `2` (this hierarchy + the interaction network; required) |
-| network | `HCX::interactionNetworkUUID` | `e3bb3a6d-878e-11f1-857e-005056ae3c32` (NDEx UUID of the IAS network) |
+| network | `HCX::modelFileCount` | `2` |
+| network | `HCX::interactionNetworkUUID` | `4731187a-8796-11f1-857e-005056ae3c32` (verified 2026-08-03 against the NDEx API) |
 | node | `HCX::isRoot` (boolean) | `true` on the root, `false` on the other 394 |
 | node | `HCX::members` (`list_of_long`) | IAS node ids of the system's genes — **the link** |
-| node | `HCX::memberNames` (`list_of_string`) | parallel gene symbols (circle-packing labels) |
+| node | `HCX::memberNames` (`list_of_string`) | parallel gene symbols |
 
-- **Root** = the unique node never a containment *target* (edges run parent `s` → child `t`); resolves to `NEST` (id 41341). One `isRoot=true`, 394 `false`.
-- **Coverage:** 55,572 / 57,771 gene slots (96.2%) map to an IAS node; **2,195 distinct symbols don't** — the root's full-genome padding plus IL36G/SPAAR (no IAS edge above the 0.18 floor, so no node to link). These stay in the untouched `Genes` attribute but are absent from `HCX::members` (`members ⊆ Genes`). Root: 16,840 of its 19,035 genes become members.
-- **Validated:** all 55,572 `HCX::members` ids resolve to the correct IAS node (0 missing, 0 id→name mismatches); members are integers (`long`).
+- **Root** = the unique node never a containment *target*; resolves to `NEST` (cx id 41341).
+- **Coverage (verified both directions):** all 55,572 `HCX::members` ids resolve to a real IAS node with a matching name — **0 dangling ids, 0 id→name mismatches**. Conversely all 16,840 IAS proteins are members of *some* system, though **6,635 (39.4 %) belong to no non-root system**.
+- **2,199 gene slots (2,195 distinct symbols) have no IAS node.** All but 4 are the root's full-genome padding. Only three real systems lose anything: NEST:2 (IL36G, SPAAR), NEST:8 (IL36G), NEST:29 (SPAAR).
 
-**To publish:** upload `NeST_hierarchy_HCX.cx2` to NDEx; HiView resolves `HCX::interactionNetworkUUID` to render systems over the IAS network. (Upload is a manual step — not done by the script.)
-
----
-
-## 2. Dataset Characteristics
-
-### 2.1 Network Structure
-
-**To be documented:**
-- Number of sample networks available
-- Typical network size (nodes/edges)
-- Network domain (e.g., gene regulation, protein interactions, pathways)
-
-### 2.2 Entity Types
-
-**Node Types** (TBD):
-```
-Examples to document:
-- What types of biological entities are represented?
-- Are they proteins, genes, complexes, processes?
-- How are entity types indicated in node attributes?
-```
-
-### 2.3 Relationship Types
-
-**Edge Types** (TBD):
-```
-Examples to document:
-- What types of relationships exist between entities?
-- Regulatory relationships? Physical interactions?
-- How are relationships encoded in edge attributes?
-```
-
-### 2.4 Evidence and Metadata
-
-**Evidence Structure** (TBD):
-```
-Questions to answer:
-- How is evidence for relationships stored?
-- Is there HTML formatting like NCI-PID 2.0?
-- Are there confidence scores?
-- What are the evidence sources?
-```
+**NDEx deposit:** `4f9210a1-8797-11f1-857e-005056ae3c32` ("NeST Map - Main Model (Hiview version)", 395/466 — verified). Currently `UNLISTED`; see [IAS_NETWORK_GENERATION.md §9](IAS_NETWORK_GENERATION.md).
 
 ---
 
-## 3. Sample CX2 Structure
+## 3. Source attribute inventory
 
-**Please provide a sample CX2 network file for analysis.**
+Every node attribute, what it actually contains (verified against the data), and its fate.
 
-### 3.1 Sample Network Attributes
+| attribute | verified meaning | fate |
+|---|---|---|
+| `NEST ID` | published stable id, `NEST` or `NEST:<n>`; 395 distinct | → IRI + `dcterms:identifier` |
+| `name` (`n`) | identical to `NEST ID` on all 395 | dropped (redundant) |
+| `Annotation` | curator-assigned name; 395 distinct, but **55 are just the NEST id** and 43 are composite prose | → `rdfs:label` only (§4.7) |
+| `Genes` | space-separated HGNC symbols | not used directly — see `HCX::members` |
+| `Size` | **exactly** `len(Genes)` on all 395 | → `ndexv:memberCount` |
+| `Size-Log` | **exactly** `log2(Size)` | dropped — node-size visual mapping |
+| `Weight` | HiSig Lasso coefficient; 394/395 non-zero (the zero is the root), median 0.37 | → `nestv:hisigWeight` on the **system node** (§4.2) |
+| `adjusted  p-value` | Benjamini–Hochberg-corrected **permutation** p-value from HiSig, pan-cancer. Present on all 395; **277 are exactly 1.0**, 112 are < 0.05 | → `nestv:hisigAdjustedPValue` on the **system node** (§4.2) |
+| `-log10 adjusted p-value` | **exactly** `-log10(adjusted p-value)` | dropped — display |
+| `Significantly mutated cancer types` | the system's **own** per-cohort HiSig hits; 319 systems have ≥1 | → drives the per-cohort associations (§4.5a) |
+| `No. significantly mutated cancer types` | **exactly** the cardinality of the above | dropped — derivable |
+| `… (aggregate)` (both) | **union over the system and all its descendants** — matches 395/395 when traversing **all 466 edges**, but only 373/395 over `Tree_edge` alone | dropped — derivable via `part_of+` (§4.3) |
+| `Mutation frequency:<CODE>` ×13 | fraction of tumors of that cohort with ≥1 mutation in any member gene | → `nestv:tumorsMutatedFraction`, **only for flagged cohorts** (§4.5a) |
+| `HCX::isRoot` | structural | dropped — entailed by having no outgoing `part_of` |
+| `HCX::members` / `HCX::memberNames` | IAS node ids / symbols | → `biolink:has_member` (§4.4) |
 
-```json
-{
-  "networkAttributes": [
-    // TBD: Paste example network attributes
-  ]
-}
+> **The two analyses are independent.** Pan-cancer significance and per-cohort significance
+> do not agree: 225 systems have per-cohort hits but adjusted p ≥ 0.05, and 18 have
+> adjusted p < 0.05 with no per-cohort hit at all. They are modelled as two association
+> families (§4.5), not merged.
+
+Edge attributes: `name` (stale `Cluster…` ids) and `interaction` (constant) are both
+dropped; `Tree_edge` is dropped (§4.3). **Containment edges therefore carry no information
+beyond source→target**, so nothing about them needs reifying.
+
+---
+
+## 4. RDF design
+
+### 4.1 Namespaces
+
+| prefix | IRI |
+|---|---|
+| `nest` | `https://www.ndexbio.org/identifiers/` — **all** minted entity IRIs |
+| `ndexv` | `https://www.ndexbio.org/vocab/` — terms shared by any CX2/HCX conversion |
+| `nestv` | `https://www.ndexbio.org/vocab/nest/` — NeST-specific terms |
+| `biolink` | `https://w3id.org/biolink/vocab/` |
+| `MONDO` | `http://purl.obolibrary.org/obo/MONDO_` |
+| `ECO` | `http://purl.obolibrary.org/obo/ECO_` |
+| `NCIT` | `http://purl.obolibrary.org/obo/NCIT_` |
+| `SIO` | `http://semanticscience.org/resource/SIO_` |
+| `uniprot` | `http://purl.uniprot.org/uniprot/` |
+
+Rationale for the ndexbio.org bases (Proto-OKN publishes no namespace for contributors) is
+in [IAS_NETWORK_GENERATION.md §8](IAS_NETWORK_GENERATION.md).
+
+### 4.2 System nodes
+
+**IRI:** `nest:` + `NEST ID` with `:` → `-`. So `NEST:284` → `nest:NEST-284`; the root →
+`nest:NEST`. Verified: 395 distinct, Turtle-safe, no escaping, no collisions.
+
+```turtle
+nest:NEST-284 a ndexv:ProteinSystem ;
+    rdfs:label         "Collagen I, III, V" ;
+    dcterms:identifier "NEST:284" ;
+    ndexv:memberCount        5 ;
+    nestv:hisigWeight        0.65 ;
+    nestv:hisigAdjustedPValue 1.0 .
 ```
 
-### 3.2 Sample Nodes
+> **Rule: node-level attributes are always emitted, for every node that has them.**
+> The size cutoff (§4.6) gates only `has_member` and the associations. Scalar attributes
+> that describe the system itself are never suppressed — so the 19 systems above the cutoff
+> still carry their `memberCount`, weight and p-value, even though their membership and
+> associations are not emitted.
 
-```json
-{
-  "nodes": [
-    {
-      "id": 1,
-      "v": {
-        // TBD: Paste example node attributes
-      }
-    }
-  ]
-}
+`ndexv:memberCount` is emitted explicitly rather than left to `COUNT(has_member)`: `Size` is
+the source-reported figure and the two differ where members are suppressed or unresolvable.
+
+`nestv:hisigWeight` and `nestv:hisigAdjustedPValue` are the two outputs of the same
+pan-cancer HiSig run, one value per system. They are node properties because they do not
+vary by cohort — unlike `tumorsMutatedFraction`, which does and therefore stays on the
+associations (§4.5a). Keeping them together on the node means a weight is never published
+without the significance that qualifies it.
+
+- `nestv:hisigAdjustedPValue` — all **395** nodes have a value (277 of them exactly 1.0).
+- `nestv:hisigWeight` — emitted for the **394** non-zero values; **skipped for the root**, the only 0.0.
+
+> **Why not `biolink:adjusted_p_value`.** That slot's domain is `biolink:Association`; using
+> it on a `ProteinSystem` node would be a domain violation. Hence a minted property (§6),
+> the same reasoning that applies to `nestv:hisigWeight`.
+
+**All 395 nodes are emitted regardless of size.**
+
+### 4.3 Containment → `biolink:part_of`
+
+Child as subject, over **all 466 edges**, no reification:
+
+```turtle
+nest:NEST-284 biolink:part_of nest:NEST-217 .
 ```
 
-### 3.3 Sample Edges
+- **Why `part_of`**: containment here is genuine mereology — child gene sets are strict subsets of parents' on all 466 edges. `biolink:subclass_of` was rejected: systems carry instance-level data (a specific p-value, per-cohort frequencies), so they are individuals, not classes.
+- **`Tree_edge` is dropped.** It exists to collapse the DAG to a tree for tree/circle-packing layouts — a display concern. Note the source encoding is subtle: 343 `true` + **51 unset** together form a spanning tree (exactly one primary parent per non-root node), and 72 `false` are additional/pleiotropic containment. All 466 are real containment and all are emitted.
+- **Traverse all edges, not just the tree.** The `(aggregate)` columns reconcile 395/395 over the full DAG and only 373/395 over the spanning tree — evidence the authors' own tooling treats the non-tree edges as genuine containment. A query reproducing those columns must use `part_of+` over everything.
+- Inverses (`has_part`) are not emitted; they are entailed.
 
-```json
-{
-  "edges": [
-    {
-      "id": 1,
-      "s": 1,
-      "t": 2,
-      "v": {
-        // TBD: Paste example edge attributes
-      }
-    }
-  ]
-}
+### 4.4 Membership → `biolink:has_member`
+
+System as subject, resolved through `HCX::members` → the IAS node's `represents`:
+
+```turtle
+nest:NEST-284 biolink:has_member uniprot:P02452, uniprot:P08123, uniprot:P02461,
+                                 uniprot:P20908, uniprot:P05997 .
 ```
 
-### 3.4 Attribute Declarations
+- Resolving via `HCX::members` (the HCX-spec link) rather than the NeST-specific `Genes` string is what keeps the mechanism general to any HCX hierarchy.
+- `biolink:has_member` maps exactly to `RO:0002351`, already used for gene families by the NCI-PID adapter.
+- **Gated by the size cutoff (§4.6).** The root is Size 19,035 and is therefore suppressed automatically — no special-casing needed.
+- **Known loss:** below the cutoff, exactly one system loses one member — NEST:29 loses `SPAAR`, which has no IAS node. Accepted rather than building a second resolution path for one protein.
 
-```json
-{
-  "attributeDeclarations": [
-    // TBD: Paste example attribute declarations
-  ]
-}
+### 4.5 Cancer associations
+
+Two families, both `biolink:Association` with predicate `biolink:genetically_associated_with`
+(domain/range `NamedThing`, so no domain violation — `gene_associated_with_condition` was
+rejected because its domain is `Gene` and a system is not a gene).
+
+#### (a) Per-cohort — one per significantly-mutated cancer type
+
+**The mutation frequency is evidence *for* the assertion, not an assertion of its own.**
+Frequencies for cohorts the system is *not* flagged in are dropped: a frequency is not a
+finding. The root scores 1.0 in every cohort, and NEST:41 is flagged in OV at 0.455 while
+*not* flagged in SKCM at 0.866 — frequency and significance are independent.
+
+```turtle
+nest:NEST-284-SKCM a biolink:Association ;
+    biolink:subject             nest:NEST-284 ;
+    biolink:predicate           biolink:genetically_associated_with ;
+    biolink:object              MONDO:0005012 ;   # cutaneous melanoma
+    nestv:tumorsMutatedFraction 0.518 ;
+    biolink:knowledge_level     biolink:statistical_association ;
+    biolink:agent_type          biolink:data_analysis_pipeline ;
+    biolink:has_evidence        ECO:0007672 .     # computational evidence
 ```
 
----
+IRI: `nest:<systemLocal>-<COHORT>`. Neither HiSig statistic appears here — both are
+per-system and live on the node (§4.2).
 
-## 4. RDF Mapping Requirements
+#### (b) Pan-cancer HiSig selection — only where adjusted p < 0.05
 
-### 4.1 Entity Type Mapping
-
-**Node types → RDF classes** (TBD):
-
-| CX2 Node Type | RDF Class | Notes |
-|---------------|-----------|-------|
-| TBD | `oknr:TBD` | TBD |
-
-### 4.2 Relationship Mapping
-
-**Edge types → RDF predicates** (TBD):
-
-| Relationship Text | RDF Predicate | Ontology Mapping | Notes |
-|-------------------|---------------|------------------|-------|
-| TBD | `oknr:TBD` | TBD | TBD |
-
-### 4.3 Ontology Alignment
-
-**Which ontologies should Nest Hierarchy relationships map to?**
-
-Options to consider:
-- **Relations Ontology (RO)**: For standard biological relations
-- **Gene Ontology (GO)**: For biological processes, molecular functions
-- **Sequence Ontology (SO)**: For sequence features
-- **Systems Biology Ontology (SBO)**: For systems biology concepts
-- **Custom ontologies**: Dataset-specific vocabularies
-
-**TBD**: Specify which ontologies are most appropriate for Nest Hierarchy relationships.
-
----
-
-## 5. Adapter Implementation Plan
-
-### 5.1 Adapter Interface Implementation
-
-```typescript
-export class NestHierarchyAdapter implements DatasetAdapter {
-  readonly datasetId = 'nest-hierarchy';
-  readonly datasetName = 'Nest Hierarchy';
-
-  canHandle(cx2Data: ParsedCX2): boolean {
-    // TBD: How to detect if a CX2 network is from Nest Hierarchy?
-    // Options:
-    // - Check for specific network attribute names
-    // - Pattern matching on network name
-    // - Presence of unique node/edge attributes
-    return false; // To be implemented
-  }
-
-  parseEntityType(node: CX2Node): string {
-    // TBD: How to extract entity type from node attributes?
-    return 'unknown';
-  }
-
-  parseRelationships(edge: CX2Edge): ParsedRelationship[] {
-    // TBD: How to extract relationships from edge attributes?
-    return [];
-  }
-
-  getOntologyMapping(predicate: string): OntologyMapping {
-    // TBD: Map predicates to ontology terms
-    return {};
-  }
-
-  getNamespaces(): Record<string, string> {
-    // TBD: What namespace prefixes are needed?
-    return {};
-  }
-
-  getConfig(): DatasetConfig {
-    // TBD: Dataset-specific configuration
-    return {};
-  }
-}
+```turtle
+nest:NEST-48-hisig a biolink:Association ;
+    biolink:subject          nest:NEST-48 ;
+    biolink:predicate        biolink:genetically_associated_with ;
+    biolink:object           MONDO:0004992 ;   # cancer
+    biolink:knowledge_level  biolink:statistical_association ;
+    biolink:agent_type       biolink:data_analysis_pipeline ;
+    biolink:has_evidence     ECO:0007672 .
 ```
 
-### 5.2 Relationship Parser
+This association carries **no statistic** — it is the *assertion* that HiSig selected the
+system pan-cancer; the p-value that justifies it is `nestv:hisigAdjustedPValue` on the
+subject node (§4.2), where it is available for all 395 systems rather than only the
+significant ones.
 
-**What format are relationships stored in?**
+Emitted only for the 112 systems below p = 0.05 — asserting it for the other 283 would state
+a non-finding as a positive edge. **This family is required, not optional**: 76 systems have
+no flagged cohort at all, and 18 of those *are* pan-cancer significant — including
+**NEST:48 "Actin cytoskeleton", the most significant system in the map (p = 3.18e-97)**,
+which would otherwise have no disease link whatsoever.
 
-- [ ] HTML formatted (like NCI-PID 2.0)
-- [ ] Plain text
-- [ ] JSON object
-- [ ] Other: [describe]
+### 4.6 The size cutoff — 400
 
-**Implementation Strategy** (TBD):
-```typescript
-// Example if HTML formatted:
-class NestHierarchyHTMLParser {
-  parse(html: string): ParsedRelationship[] {
-    // TBD
-  }
-}
+All 395 nodes and all 466 `part_of` edges are always emitted. The cutoff gates **only**
+`has_member` and associations.
 
-// Example if JSON formatted:
-class NestHierarchyJSONParser {
-  parse(json: any): ParsedRelationship[] {
-    // TBD
-  }
-}
+**Why systems are not deleted:** the large systems *are* the upper structure of the DAG.
+Removing them orphans 41 % of survivors and shatters the hierarchy into a forest of 151
+roots; transitive rewiring recovers **zero** edges, because the orphans' ancestors are all
+removed too. So the payload is filtered, not the graph.
+
+**Why 400:** mutation frequency saturates with system size — a large system is "mutated" in
+nearly every tumor and therefore discriminates nothing.
+
+| size band | n | median mean-frequency |
+|---|---:|---:|
+| 0–20 | 263 | 0.119 |
+| 50–100 | 32 | 0.481 |
+| 200–500 | 14 | 0.787 |
+| 500–1000 | 8 | **0.909** |
+| 1000+ | 10 | **0.987** |
+
+All ten systems ≥ 1000 ("Cytoplasm and extracellular space", "Ribonucleoprotein complexes", …)
+are mutated in 91–100 % of tumors. 400 keeps recognizable biology (Extracellular matrix
+organization at 373, Protein processing in ER at 372) while excluding the broad categories.
+
+**The cutoff barely affects the science:** associations move 700 → 701 → 701 across cutoffs
+300/400/500, because the large systems mostly have no flagged cohort anyway. It is
+essentially a membership-volume knob.
+
+### 4.7 What is deliberately dropped
+
+| dropped | why |
+|---|---|
+| `Size-Log`, `-log10 adjusted p-value` | exactly derivable; display artifacts |
+| `No. significantly mutated cancer types` (both) | exactly the set cardinality |
+| `Significantly mutated cancer types (aggregate)` | union over descendants — recomputable via `part_of+` |
+| `Tree_edge`, edge `name`, edge `interaction` | display / stale / constant (§3) |
+| frequencies for non-flagged cohorts | a frequency is not a finding (§4.5a) |
+| `Annotation` → GO/Reactome mapping | **attempted and rejected** — see below |
+| `HCX::isRoot` | entailed structurally |
+
+> **On `Annotation` → ontology terms.** The source CX2 contains **zero** ontology
+> identifiers (0 matches for `GO:`, `R-HSA-`, `CORUM`). Deriving terms by label search
+> failed verification: of 8 spot-checked OLS `exact=true` hits, only 2 were true label
+> matches — "Inflammasome complex" resolved to *negative regulation of NLRP3 inflammasome
+> complex assembly*. 55 of 395 Annotations are just the NEST id repeated and 43 are
+> composite prose. Separately the relation was wrong: a GO *biological process* is not a
+> `skos:closeMatch` for a *set of proteins*. **`Annotation` becomes `rdfs:label` and
+> nothing more.** If revisited, it needs the authors' enrichment output plus anchor
+> verification, not display labels.
+
+---
+
+## 5. Cancer type → MONDO
+
+MONDO is the OKN-recommended disease vocabulary. All 13 TCGA cohort codes resolve; the
+mapping is **generated and verified**, not hand-typed.
+
+**Script:** [nest/map_cancer_types_to_mondo.py](nest/map_cancer_types_to_mondo.py) ·
+**input:** [nest/nest_cancer_types.tsv](nest/nest_cancer_types.tsv) ·
+**output:** [nest/cancer_type_mondo_map.tsv](nest/cancer_type_mondo_map.tsv)
+
+The script searches broadly, then **verifies each candidate against a named anchor**, ranked
+`override` → `oncotree_xref` → `exact_synonym` → `exact_label` → `synonym_match`, and flags
+anything resolved only weakly. This matters: a plain label search gets it wrong — `LUSC`
+hits *Luscan-Lumish syndrome*, `BRCA` hits *BRCA1-related cancer predisposition*, and the
+correct BLCA term (`MONDO:0005611`) is invisible to label search because its alignment lives
+in its synonym `BLCA` and xref `ONCOTREE:BLCA`.
+
+| TCGA | MONDO | label | anchor |
+|---|---|---|---|
+| BLCA | `MONDO:0005611` | bladder transitional cell carcinoma | `ONCOTREE:BLCA` |
+| BRCA | `MONDO:0006256` | invasive breast carcinoma | `ONCOTREE:BRCA` |
+| COAD | `MONDO:0002271` | colon adenocarcinoma | `ONCOTREE:COAD` |
+| GBM | `MONDO:0018177` | glioblastoma | synonym `GBM` |
+| HNSC | `MONDO:0010150` | head and neck squamous cell carcinoma | `ONCOTREE:HNSC` |
+| KIRC | `MONDO:0005005` | clear cell renal carcinoma | exact label |
+| LIHC | `MONDO:0007256` | hepatocellular carcinoma | exact label |
+| LUAD | `MONDO:0005061` | lung adenocarcinoma | `ONCOTREE:LUAD` |
+| LUSC | `MONDO:0005097` | squamous cell lung carcinoma | `ONCOTREE:LUSC` |
+| OV | `MONDO:0006046` | ovarian serous cystadenocarcinoma | curator override |
+| SKCM | `MONDO:0005012` | cutaneous melanoma | `ONCOTREE:SKCM` |
+| STAD | `MONDO:0005036` | gastric adenocarcinoma | `ONCOTREE:STAD` |
+| UCEC | `MONDO:0000553` | uterine corpus endometrial carcinoma | curator override |
+
+13/13 resolved, 0 flagged for review. The two overrides carry written reasons in the data
+file. `--check-cx2` re-derives the cohort list from the hierarchy and confirms the data file
+covers it exactly; `--offline` reproduces the output byte-identically from the committed
+cache. Pan-cancer uses `MONDO:0004992` (cancer).
+
+---
+
+## 6. Minted vocabulary
+
+Proto-OKN requires `rdf:type rdfs:Class` on every class and `rdfs:domain`/`rdfs:range` on
+every property. **Drafted below; not yet reviewed.**
+
+```turtle
+ndexv:ProteinSystem a rdfs:Class, owl:Class ;
+    rdfs:label      "protein system" ;
+    rdfs:comment    "A set of proteins identified as functioning together, derived by
+                     multiscale community detection over a protein-association network.
+                     Spans scales from protein complexes to broad cellular processes." ;
+    rdfs:subClassOf biolink:BiologicalEntity .
+
+ndexv:memberCount a rdf:Property, owl:DatatypeProperty ;
+    rdfs:label         "member count" ;
+    rdfs:comment       "Number of distinct member proteins in the system as reported by the
+                        source (CX2 `Size`). NOT necessarily equal to the number of emitted
+                        biolink:has_member triples: membership is suppressed above the size
+                        cutoff, and a few members have no node in the interaction network." ;
+    rdfs:subPropertyOf biolink:has_count ;
+    rdfs:domain        ndexv:ProteinSystem ;
+    rdfs:range         xsd:nonNegativeInteger .
+
+nestv:tumorsMutatedFraction a rdf:Property, owl:DatatypeProperty ;
+    rdfs:label         "tumors mutated fraction" ;
+    rdfs:comment       "Fraction of tumors in the cohort carrying at least one somatic
+                        mutation in any member gene of the system. Numerator: patients with
+                        >=1 mutated member. Denominator: patients in the cohort." ;
+    rdfs:subPropertyOf biolink:has_quotient ;
+    rdfs:domain        biolink:Association ;
+    rdfs:range         xsd:double .
+
+nestv:hisigWeight a rdf:Property, owl:DatatypeProperty ;
+    rdfs:label    "HiSig weight" ;
+    rdfs:comment  "Lasso coefficient assigned to the system by HiSig — how much of the
+                   observed mutational signal the model attributes to it. One value per
+                   system, from the pan-cancer run; it does not vary by cohort, hence a
+                   node property rather than an association slot. NOT a significance
+                   measure: read it together with nestv:hisigAdjustedPValue, which is
+                   emitted on the same node for every system." ;
+    rdfs:seeAlso  STATO:0000565 ;   # regression coefficient — the kind of quantity this is
+    rdfs:domain   ndexv:ProteinSystem ;
+    rdfs:range    xsd:double .
+
+nestv:hisigAdjustedPValue a rdf:Property, owl:DatatypeProperty ;
+    rdfs:label    "HiSig adjusted p-value" ;
+    rdfs:comment  "Benjamini-Hochberg-corrected empirical p-value from HiSig's permutation
+                   test, pan-cancer. One value per system, emitted for all 395 (277 are
+                   exactly 1.0, i.e. not significant). Node property rather than
+                   biolink:adjusted_p_value because that slot's domain is
+                   biolink:Association." ;
+    rdfs:seeAlso  OBI:0000175 ,     # p-value
+                  NCIT:C61596 ;     # Benjamini-Hochberg Procedure — the correction applied
+    rdfs:domain   ndexv:ProteinSystem ;
+    rdfs:range    xsd:double .
 ```
 
-### 5.3 URI Construction
+**Known modelling caveats**, recorded rather than papered over:
 
-**How should entities be identified in RDF?**
-
-Options:
-- Use existing identifiers (UniProt, HGNC, etc.)
-- Generate custom URIs based on node IDs
-- Use a combination of both
-
-**TBD**: Specify URI construction strategy.
-
----
-
-## 6. Questions to Answer
-
-Please provide information for the following:
-
-### 6.1 Dataset Detection
-- [ ] What unique attributes or patterns can identify a Nest Hierarchy network?
-- [ ] Are there specific network attribute names or values?
-- [ ] Is there a standard naming convention for these networks?
-
-### 6.2 Entity Information
-- [ ] What types of biological entities are in Nest Hierarchy networks?
-- [ ] How are entity types indicated?
-- [ ] What identifiers are used (UniProt, HGNC, GO, custom)?
-- [ ] Are there entity hierarchies or classifications?
-
-### 6.3 Relationship Information
-- [ ] What types of relationships exist between entities?
-- [ ] How are relationships encoded in CX2 edges?
-- [ ] Is there a controlled vocabulary for relationship types?
-- [ ] How is directionality handled?
-
-### 6.4 Evidence and Provenance
-- [ ] How is evidence for relationships represented?
-- [ ] What are the evidence sources?
-- [ ] Are there confidence scores or quality metrics?
-- [ ] How should provenance be tracked in RDF?
-
-### 6.5 Ontology Preferences
-- [ ] Which biological ontologies are most relevant?
-- [ ] Are there existing ontology mappings to follow?
-- [ ] Should we create new ontology terms?
+- **No standard class fits a data-derived protein set.** `biolink:GeneFamily` is grouping
+  "by common descent" (wrong mechanism); `biolink:MacromolecularComplex` is a "*stable*
+  assembly" — true for the median system (Size 10) but false for the large ones. Hence a
+  minted class, with **no `skos:closeMatch` to `GO:0032991`**: it would be accurate only for
+  the small end of the range, so the alignment is left unasserted rather than approximated.
+- **No ontology term exists for the mutation frequency.** Checked: NCIT "Mutation Rate" and
+  "Somatic Variation Rate" are per-*sample*; `STATO:0000254`/`NCIT:C154665`/`SO:0002119`
+  allele frequency are allele-level; `STATO:0000607` "proportion" is correct but generic and
+  is a class, not a predicate. The quantity is a patient-level prevalence over a gene set.
+- **`biolink:has_quotient` comes from the `FrequencyQuantifier` mixin**, which bare
+  `biolink:Association` does not include (only four classes do). Treated as a documented
+  extension.
+- **No standard predicate exists for a regression coefficient.** `STATO:0000565` "regression
+  coefficient" defines the quantity exactly but is a *class* (a data item), not a property,
+  and Biolink's `aggregate_statistic` children (`has_count`/`has_total`/`has_quotient`/
+  `has_percentage`) do not cover it. Hence a minted property with `rdfs:seeAlso` to STATO
+  rather than a claimed equivalence.
+- **`nestv:hisigWeight` on the node is a bare statistic.** Unlike the association slots it
+  carries no `knowledge_level`, `agent_type` or `has_evidence` alongside it; that context
+  lives only in the `rdfs:comment`. Accepted as the cost of attaching a per-system value to
+  the system itself. The correction method is likewise documented once on
+  `nestv:hisigAdjustedPValue` (`rdfs:seeAlso NCIT:C61596`) rather than repeated as a triple
+  on all 395 systems, since it is constant.
 
 ---
 
-## 7. Sample Networks Needed
+## 7. Worked example — NEST:284
 
-To implement the Nest Hierarchy adapter, please provide:
+Source: `Annotation` "Collagen I, III, V", `Size` 5, one parent (NEST:217), no children,
+flagged in HNSC/LUAD/LUSC/SKCM/UCEC, `adjusted p-value` 1.0, `Weight` 0.65.
 
-1. **Small example network** (10-50 nodes) for initial testing
-2. **Medium example network** (100-500 nodes) for integration testing
-3. **Large example network** (1000+ nodes) for performance testing
-4. **Documentation** of the dataset structure, if available
+```turtle
+nest:NEST-284 a ndexv:ProteinSystem ;
+    rdfs:label         "Collagen I, III, V" ;
+    dcterms:identifier "NEST:284" ;
+    ndexv:memberCount        5 ;
+    nestv:hisigWeight        0.65 ;
+    nestv:hisigAdjustedPValue 1.0 .
 
-**Where to find sample networks:**
-- [ ] Public repository URL: [TBD]
-- [ ] NDEx collection: [TBD]
-- [ ] Other source: [TBD]
+nest:NEST-284 biolink:part_of nest:NEST-217 .          # Collagens I, III, V, VI
 
----
+nest:NEST-284 biolink:has_member uniprot:P02452, uniprot:P08123, uniprot:P02461,
+                                 uniprot:P20908, uniprot:P05997 .
 
-## 8. Implementation Checklist
+nest:NEST-284-SKCM a biolink:Association ;
+    biolink:subject             nest:NEST-284 ;
+    biolink:predicate           biolink:genetically_associated_with ;
+    biolink:object              MONDO:0005012 ;
+    nestv:tumorsMutatedFraction 0.518 ;
+    biolink:knowledge_level     biolink:statistical_association ;
+    biolink:agent_type          biolink:data_analysis_pipeline ;
+    biolink:has_evidence        ECO:0007672 .
+# ... and HNSC 0.133, LUAD 0.28, LUSC 0.258, UCEC 0.227
 
-Once the above information is provided, the adapter implementation will proceed through these steps:
+# no nest:NEST-284-hisig : adjusted p = 1.0 is not a finding.
+```
 
-- [ ] Analyze sample CX2 files
-- [ ] Document attribute structure
-- [ ] Design RDF mapping strategy
-- [ ] Select appropriate ontologies
-- [ ] Implement `NestHierarchyAdapter` class
-- [ ] Implement relationship parser
-- [ ] Configure ontology mappings
-- [ ] Write unit tests
-- [ ] Write integration tests
-- [ ] Document adapter usage
-- [ ] Register adapter in `AdapterRegistry`
+NEST:284 shows why both HiSig statistics sit on the node. Its weight of **0.65** is well
+above the 0.37 median, but its adjusted p-value is **1.0** — the system was not selected
+pan-cancer. Both numbers are present, so the weight cannot be read as a finding on its own;
+it also gets no `nest:NEST-284-hisig` association, which is the assertion it does not
+support. Its real findings are the five per-cohort associations.
 
----
-
-## 9. Contact and Collaboration
-
-**Primary Contact:** [Your name/email]
-**Dataset Owner:** [TBD]
-**Documentation:** [TBD]
-
-**Questions or Feedback:**
-Please open an issue in the bio-cx2-to-rdf repository or contact the team directly.
+Its five members form a **complete clique** in the IAS network — all 10 pairs present, all
+`core`, scores 0.642–0.749 — emitted by the IAS half of the export
+([IAS_NETWORK_GENERATION.md §6](IAS_NETWORK_GENERATION.md)).
 
 ---
 
-## Next Steps
+## 8. Volumes (cutoff 400)
 
-1. **Provide sample CX2 files** from Nest Hierarchy dataset
-2. **Fill in TBD sections** with dataset-specific information
-3. **Review and approve** the RDF mapping strategy
-4. **Begin adapter implementation** following the plan above
+| | count |
+|---|---:|
+| system nodes — type, label, identifier, `memberCount` (395 × 4) | 1,580 |
+| `nestv:hisigWeight` (394 non-zero) | 394 |
+| `nestv:hisigAdjustedPValue` (all 395) | 395 |
+| `part_of` | 466 |
+| `has_member` | 11,348 |
+| per-cohort associations (589 × 8) | 4,712 |
+| pan-cancer associations (112 × 7) | 784 |
+| vocabulary axioms | ~30 |
+| **hierarchy total** | **~19,700** |
+
+375 systems emit payload, 20 suppressed; membership covers 5,339 distinct proteins.
+
+For context the combined export is ~1,318,000 triples — **the hierarchy is 1.4 % of it**;
+the IAS interaction network is the rest.
 
 ---
 
-**Last Updated:** [Date]
-**Status:** Awaiting dataset information
+## 9. Decisions and open items
+
+### Resolved (2026-08-03)
+1. All 395 nodes and all 466 `part_of` edges emitted; the cutoff gates payload only. ✅
+2. Containment = `biolink:part_of`, child-subject, full DAG, unreified; `Tree_edge` dropped. ✅
+3. Node class = `ndexv:ProteinSystem`; IRI `nest:NEST-<n>`. ✅
+4. `Size` → `ndexv:memberCount` (subPropertyOf `biolink:has_count`). ✅
+5. Membership = `biolink:has_member` via `HCX::members`; root suppressed by the cutoff. ✅
+6. Size cutoff = **400**. ✅
+7. Associations = `biolink:genetically_associated_with`; per-cohort with frequency as evidence, plus pan-cancer where adjusted p < 0.05. ✅
+8. Cancer types → MONDO via the verified anchor-based mapping (13/13). ✅
+9. `Annotation` → `rdfs:label` only; no ontology mapping. ✅
+10. Namespaces under `ndexbio.org`; `okn:` retired. ✅
+11. Derived/display attributes dropped (§4.7). ✅
+
+12. **Node-level attributes are always emitted, for every node that has them** — the size cutoff gates only `has_member` and the associations (§4.2, §4.6). ✅
+12a. **Both HiSig statistics are node properties**: `nestv:hisigWeight` (394 non-zero, root skipped) and `nestv:hisigAdjustedPValue` (all 395, including the 277 at 1.0). Minted rather than `biolink:adjusted_p_value`, whose domain is `biolink:Association`. The pan-cancer association therefore carries no statistic — it is the assertion, the node holds the evidence (§4.2, §4.5b). ✅
+12b. **`nestv:correctionMethod` removed** — constant across all records, so documented once as `rdfs:seeAlso NCIT:C61596` on the p-value property instead of repeated 395 times. ✅
+13. **No `skos:closeMatch GO:0032991`** on `ndexv:ProteinSystem` — dropped as inaccurate for the larger systems. ✅
+
+### Open
+1. **Vocabulary axioms (§6) are drafted, not reviewed** — in particular whether
+   `SIO:000616` (collection) is worth carrying as a superclass.
+2. **Adapter not implemented.** Blocked on converter-level gaps: `RdfOutput` has no
+   literal-triple type (blocks `memberCount`, every p-value and frequency), the
+   `ReifiedStatement` shape hardcodes NCI-PID evidence fields, there is no adapter registry,
+   the retired `okn:` base is still hardcoded in two files, and there is no streaming output.
+
+Shared open items — the NDEx deposits' visibility, the Bioregistry `ndex` record, and
+`merge_cx2.py`'s stale stem — are tracked in
+[IAS_NETWORK_GENERATION.md §9](IAS_NETWORK_GENERATION.md).
+
+---
+
+## 10. Pipeline artifacts (in `nest/`)
+
+| file | kind | description |
+|---|---|---|
+| `NeST Map - Main Model.cx2` | input | source hierarchy (395 systems, 466 edges) |
+| `build_hcx_hierarchy.py` | script | main model + IAS CX2 → HCX (adds `HCX::members`, the link) |
+| `NeST_hierarchy_HCX.cx2` | output | **the HCX hierarchy** deposited as `4f9210a1-…` |
+| `nest_cancer_types.tsv` | input | the 13 cohorts, curated MONDO search terms, 2 overrides |
+| `map_cancer_types_to_mondo.py` | script | anchor-verified cohort → MONDO resolver |
+| `cancer_type_mondo_map.tsv` | output | **the mapping** (13/13, 0 review) |
+| `mondo_lookup_cache.json` | cache | OLS responses; commit for offline/deterministic re-runs |
+| `symbol_curie_map.tsv` | input | symbol → `uniprot:`/`hgnc:` (from the IAS pipeline) |
+
+---
+
+**Last updated:** 2026-08-03
+**Reviewer:** (pending)

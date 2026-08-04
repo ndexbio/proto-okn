@@ -1,0 +1,32 @@
+# Cancer types (TCGA cohorts) appearing in the NeST hierarchy.
+#
+# Source of the code list: "NeST Map - Main Model.cx2" / NeST_hierarchy_HCX.cx2 —
+# the 13 `Mutation frequency:<CODE>` node attributes, identical to the set of codes
+# used in `Significantly mutated cancer types [(aggregate)]`.
+# Verify with:  python3 map_cancer_types_to_mondo.py --check-cx2 NeST_hierarchy_HCX.cx2
+#
+# Columns
+#   code            cohort code exactly as it appears in the CX2 attribute names
+#   cohort_name     official TCGA study name (provenance/label only; not used for matching)
+#   search_terms    pipe-separated disease labels to look up in MONDO, most preferred first.
+#                   Curated: a TCGA study name is often not a MONDO label (e.g. "Kidney Renal
+#                   Clear Cell Carcinoma" vs "clear cell renal carcinoma").
+#   override_mondo  curator-pinned MONDO id; skips lookup, but the term is still fetched and
+#                   validated (must exist, must not be obsolete). Use only where the automatic
+#                   anchors disagree with the intended cohort — always give a reason.
+#   override_reason free text, required when override_mondo is set
+#
+code	cohort_name	search_terms	override_mondo	override_reason
+BLCA	Bladder Urothelial Carcinoma	bladder urothelial carcinoma|bladder transitional cell carcinoma
+BRCA	Breast Invasive Carcinoma	invasive breast carcinoma|breast carcinoma
+COAD	Colon Adenocarcinoma	colon adenocarcinoma
+GBM	Glioblastoma Multiforme	glioblastoma
+HNSC	Head and Neck Squamous Cell Carcinoma	head and neck squamous cell carcinoma
+KIRC	Kidney Renal Clear Cell Carcinoma	clear cell renal carcinoma|clear cell renal cell carcinoma
+LIHC	Liver Hepatocellular Carcinoma	hepatocellular carcinoma
+LUAD	Lung Adenocarcinoma	lung adenocarcinoma
+LUSC	Lung Squamous Cell Carcinoma	squamous cell lung carcinoma|lung squamous cell carcinoma
+OV	Ovarian Serous Cystadenocarcinoma	ovarian serous cystadenocarcinoma	MONDO:0006046	Label matches the TCGA cohort verbatim. The OncoTree anchor (ONCOTREE:SOC) sits on MONDO:0005211 "ovarian serous adenocarcinoma", OncoTree's broader serous-ovarian bucket, so the xref route would lose specificity.
+SKCM	Skin Cutaneous Melanoma	cutaneous melanoma
+STAD	Stomach Adenocarcinoma	gastric adenocarcinoma|stomach adenocarcinoma
+UCEC	Uterine Corpus Endometrial Carcinoma	uterine corpus endometrial carcinoma	MONDO:0000553	Label matches the TCGA cohort verbatim and is a child of MONDO:0002447 "endometrial carcinoma", which is what carries ONCOTREE:UCEC. The xref route would resolve to the less specific parent.
