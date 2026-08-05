@@ -8,6 +8,14 @@ This document outlines the implementation plan for the **bio-cx2-to-rdf** conver
 1. **Standalone CLI Tool**: Command-line application for batch conversion of CX2 files
 2. **Library for Cytoscape Web**: Browser-compatible JavaScript/TypeScript library for real-time RDF serialization
 
+> **Status note (2026-08-04).** This plan anticipated adapters for all three datasets. Only
+> the **NCI-PID 2.0** adapter was built. NeST and the IAS network ship as standalone
+> converters (`nest/nest_to_rdf.{py,mjs}` → `nest/nest.ttl`, 1,318,375 triples) and **no
+> adapter for them is planned** — see
+> [CX2_TO_RDF_DESIGN.md §1](CX2_TO_RDF_DESIGN.md) and
+> [NEST_HIERARCHY_DATASET.md §9](NEST_HIERARCHY_DATASET.md). Read the multi-dataset framing
+> below as the original design intent, not as current scope.
+
 The implementation follows a **modular architecture with dataset-specific adapters**, enabling:
 - Support for multiple biological network datasets (NCI-PID 2.0, the IAS interaction network, the NeST hierarchy, and future additions; see [IAS_NETWORK_GENERATION.md](IAS_NETWORK_GENERATION.md))
 - Shared core infrastructure for CX2 parsing and RDF generation

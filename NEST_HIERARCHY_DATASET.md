@@ -1,9 +1,15 @@
 # NeST Hierarchy — CX2 → RDF Design Specification
 
-**Status:** ✅ RDF design settled (2026-08-03) · 🚧 adapter not implemented
+**Status:** ✅ RDF design settled (2026-08-03) · ✅ **implemented and generated** (2026-08-04)
 
 This document specifies how the **NeST hierarchy** (395 protein systems) is converted from
 CX2 to RDF for the OKN.
+
+> **The graph exists.** [nest/nest_to_rdf.py](nest/nest_to_rdf.py) and
+> [nest/nest_to_rdf.mjs](nest/nest_to_rdf.mjs) implement this specification and emit
+> [nest/nest.ttl](nest/nest.ttl) — **1,318,375 triples**, hierarchy and IAS network together.
+> Build instructions are in [IAS_NETWORK_GENERATION.md §0](IAS_NETWORK_GENERATION.md);
+> artifacts in §10. What remains is **deposit and deployment**, not conversion (§9).
 
 > **Scope.** The hierarchy and the IAS interaction network are **exported together into one
 > Turtle file**, but are specified separately:
@@ -486,17 +492,53 @@ the IAS interaction network is the rest.
 12b. **`nestv:correctionMethod` removed** — constant across all records, so documented once as `rdfs:seeAlso NCIT:C61596` on the p-value property instead of repeated 395 times. ✅
 13. **No `skos:closeMatch GO:0032991`** on `ndexv:ProteinSystem` — dropped as inaccurate for the larger systems. ✅
 
+### Resolved (2026-08-04)
+14. **Implemented.** Two equivalent converters, [nest/nest_to_rdf.py](nest/nest_to_rdf.py)
+    and [nest/nest_to_rdf.mjs](nest/nest_to_rdf.mjs), emit this specification plus the IAS
+    half into one Turtle file. Their outputs are **byte-identical** — diffing them is the
+    regression test — and both reproduce the committed [nest/nest.ttl](nest/nest.ttl)
+    exactly (sha256 `3a7a8a58…`, verified 2026-08-04). ✅
+
+    | | emitted |
+    |---|---:|
+    | system nodes | 395 (20 above the cutoff emit no payload) |
+    | `part_of` | 466 |
+    | `has_member` | 11,348 |
+    | per-cohort associations | 589 |
+    | pan-cancer associations | 112 |
+    | IAS protein nodes | 16,840 |
+    | IAS interactions / statements | 209,956 (5,220 backbone; 40 self-loops dropped) |
+    | **total triples** | **1,318,375** |
+
+    Every figure matches the §8 projection. The converters read the **NDEx deposits by UUID**
+    rather than the local CX2 files (§10).
+
 ### Open
-1. **Vocabulary axioms (§6) are drafted, not reviewed** — in particular whether
-   `SIO:000616` (collection) is worth carrying as a superclass.
-2. **Adapter not implemented.** Blocked on converter-level gaps: `RdfOutput` has no
-   literal-triple type (blocks `memberCount`, every p-value and frequency), the
-   `ReifiedStatement` shape hardcodes NCI-PID evidence fields, there is no adapter registry,
-   the retired `okn:` base is still hardcoded in two files, and there is no streaming output.
+1. **Vocabulary axioms (§6) are emitted but not reviewed** — in particular whether
+   `SIO:000616` (collection) is worth carrying as a superclass. Note the shipped
+   `rdfs:comment` strings are lightly reworded from the §6 draft (the counts specific to this
+   build were generalized); §6 remains the design of record, `nest.ttl` the exact text.
+2. **No adapter under `bio-cx2-to-rdf/src/adapters/`, and none planned** — superseding the
+   earlier blocked item. NeST conversion ships as the standalone converters above; that
+   TypeScript converter stays NCI-PID-only. The gaps it *would* have needed — no
+   literal-triple type on `RdfOutput`, a `ReifiedStatement` shape hardcoding NCI-PID evidence
+   fields, no adapter registry, no streaming output, and the retired `okn:`/`example.org`
+   base still hardcoded in `namespace-manager.ts`, `turtle-writer.ts` and
+   `adapters/nci-pid/index.ts` — remain open **as NCI-PID-side debt**, but no longer block
+   anything here.
+3. **Not deployed.** There is no `nest` entry in the OKN registry and no live SPARQL
+   endpoint; `apps.okn.us/nest/sparql` returns the registry web application, not a query
+   service. Deposit is gated on open item 1 of
+   [IAS_NETWORK_GENERATION.md §9](IAS_NETWORK_GENERATION.md) — both NDEx source networks are
+   still `UNLISTED` and owned by `cjtest` (re-verified 2026-08-04).
 
 Shared open items — the NDEx deposits' visibility, the Bioregistry `ndex` record, and
 `merge_cx2.py`'s stale stem — are tracked in
 [IAS_NETWORK_GENERATION.md §9](IAS_NETWORK_GENERATION.md).
+
+> **See [remaining_issues.md](remaining_issues.md)** for the full cross-graph audit
+> (2026-08-04), including defects in the *deployed* NCI-PID graph and the blockers gating
+> NeST publication, each with a reproduction command.
 
 ---
 
@@ -510,10 +552,21 @@ Shared open items — the NDEx deposits' visibility, the Bioregistry `ndex` reco
 | `nest_cancer_types.tsv` | input | the 13 cohorts, curated MONDO search terms, 2 overrides |
 | `map_cancer_types_to_mondo.py` | script | anchor-verified cohort → MONDO resolver |
 | `cancer_type_mondo_map.tsv` | output | **the mapping** (13/13, 0 review) |
-| `mondo_lookup_cache.json` | cache | OLS responses; commit for offline/deterministic re-runs |
+| `mondo_lookup_cache.json` | cache | OLS responses; committed for offline/deterministic re-runs |
 | `symbol_curie_map.tsv` | input | symbol → `uniprot:`/`hgnc:` (from the IAS pipeline) |
+| `nest_to_rdf.py` | script | **the RDF converter** — hierarchy UUID → Turtle (hierarchy + IAS) |
+| `nest_to_rdf.mjs` | script | equivalent Node implementation; byte-identical output (§9) |
+| `nest.ttl` | output | **the knowledge graph** — 1,318,375 triples |
+| `.ndex-cache/` | cache | downloaded CX2 keyed by UUID; **untracked** (≈55 MB), rebuilt on first online run |
+
+> **The RDF stage does not read the local CX2 files.** `nest_to_rdf` takes the *hierarchy's
+> NDEx UUID*, reads `HCX::interactionNetworkUUID` off it to locate the IAS network, and
+> downloads both — so the graph is generated from the deposited artifacts a third party can
+> also fetch, not from working copies. `--offline` reuses `.ndex-cache/` and fails rather
+> than downloading. The local `NeST Map - Main Model.cx2` and `IAS_network.cx2` remain the
+> *inputs to the deposits*, one stage upstream.
 
 ---
 
-**Last updated:** 2026-08-03
+**Last updated:** 2026-08-04
 **Reviewer:** (pending)

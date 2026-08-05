@@ -1,6 +1,6 @@
 # IAS Interaction Network — Generation Specification
 
-**Status:** ✅ CX2 network implemented ([nest/build_cx2_network.py](nest/build_cx2_network.py) → [nest/IAS_network.cx2](nest/IAS_network.cx2)) · 🚧 RDF adapter pending
+**Status:** ✅ CX2 network implemented ([nest/build_cx2_network.py](nest/build_cx2_network.py) → [nest/IAS_network.cx2](nest/IAS_network.cx2)) · ✅ **RDF implemented and generated** 2026-08-04 ([nest/nest_to_rdf.py](nest/nest_to_rdf.py) → [nest/nest.ttl](nest/nest.ttl), 1,318,375 triples)
 **Purpose:** Define exactly how the NeST / IAS protein-association network (Data S1 of Zheng et al., *Science* 374, eabf3067, 2021) is turned into a CX2 network and, downstream, into RDF for the OKN. This is the **interaction network** only. The NeST *hierarchy* (395 systems) is a separate graph, specified elsewhere ([NEST_HIERARCHY_DATASET.md](NEST_HIERARCHY_DATASET.md)).
 
 **Companion docs:** symbol→identifier resolution is specified in [SYMBOL_TO_PROTEIN_MAPPING.md](SYMBOL_TO_PROTEIN_MAPPING.md). Pipeline of scripts and outputs is listed in §10.
@@ -9,7 +9,11 @@
 
 ## 0. How to build (end-to-end)
 
-Three steps, all in `nest/`. Each script is parameterized (`--help` for options); defaults reproduce the committed outputs.
+Four steps, all in `nest/`. Each script is parameterized (`--help` for options); defaults reproduce the committed outputs.
+
+> Steps 1–3 build the **CX2 network**, which is then deposited to NDEx. Step 4 builds the
+> **RDF**, and reads from the NDEx deposits rather than the local files — see the note after
+> the block.
 
 ```bash
 cd nest
@@ -42,9 +46,37 @@ python3 build_cx2_network.py \
   --map symbol_curie_map.tsv \
   --out IAS_network.cx2
 #   -> IAS_network.cx2 : 16,840 nodes, 209,996 edges
+
+# --- 4. generate the RDF (NDEx deposits -> one Turtle file) ---
+#   Takes the HIERARCHY's UUID; the IAS network is located automatically via that
+#   network's HCX::interactionNetworkUUID. Both are downloaded and cached (~55 MB),
+#   so re-runs work with --offline.
+python3 nest_to_rdf.py 4f9210a1-8797-11f1-857e-005056ae3c32 -o nest.ttl
+#   -> nest.ttl : 1,318,375 triples
+#      395 systems / 466 part_of / 11,348 has_member / 589 + 112 associations
+#      16,840 protein nodes / 209,956 interactions (5,220 backbone, 40 self-loops dropped)
 ```
 
-To regenerate at a different stringency, change `--ias-floor` in step 1 and re-run steps 1 and 3 (step 2 is threshold-independent — it maps every symbol in the source). Step details are in §3 (filter), §7 (mapping), §4 (CX2 model). Full artifact list in §10.
+**Step 4 has an equivalent Node implementation**, [nest/nest_to_rdf.mjs](nest/nest_to_rdf.mjs),
+taking the same arguments. The two emit **byte-identical** output, and diffing them is the
+regression test for the converter:
+
+```bash
+python3 nest_to_rdf.py <uuid> --offline -o /tmp/py.ttl
+node     nest_to_rdf.mjs <uuid> --offline -o /tmp/js.ttl
+cmp /tmp/py.ttl /tmp/js.ttl        # and both match the committed nest.ttl
+```
+
+> **Step 4 reads NDEx, not the local CX2.** This is deliberate: the published graph is
+> derived from the artifacts cited in its own `prov:wasDerivedFrom` (§11), which a third
+> party can re-download and diff. It also means **the deposits must be current** before
+> regenerating RDF — editing `IAS_network.cx2` locally has no effect on `nest.ttl` until it
+> is re-uploaded.
+
+To regenerate at a different stringency, change `--ias-floor` in step 1, re-run steps 1 and 3
+(step 2 is threshold-independent — it maps every symbol in the source), re-deposit, then
+re-run step 4. Step details are in §3 (filter), §7 (mapping), §4 (CX2 model), §6 (RDF
+mapping). Full artifact list in §10.
 
 ---
 
@@ -408,7 +440,7 @@ node ids (nodes `0…16839`, edges `16840…226835`).
 6. **CX2 edge predicate label = `"interacts with"`** (a display label in the CX2; the RDF predicate is `biolink:interacts_with`, §5). ✅
 7. **Network metadata** — `author`/`disease`/`organism` borrowed from the NDEx deposit; source of truth remains Data S1, not the deposit's 100K subsample. ✅ (§4)
 
-### Resolved (RDF stage — decided 2026-08-03, not yet built)
+### Resolved (RDF stage — decided 2026-08-03, **built and verified 2026-08-04**)
 8. **RDF predicate = `biolink:interacts_with`**, superseding `RO:0002434`; the general slot is used deliberately (§5). ✅
 9. **One triple per edge**; symmetry is not materialized — consumers must query both directions (§6a). ✅
 10. **Only `Integrated score` is exported**; the five per-evidence columns and their ECO typing are dropped (§6b). ✅
@@ -425,12 +457,18 @@ node ids (nodes `0…16839`, edges `16840…226835`).
 20. **Statement IRIs = `nest:e<cx2EdgeId>`** — verified collision-free across all 211,117 minted locals. Not stable across re-filters (100 % of ids move); accepted because statements are reached by query, not lookup (§8). ✅
 21. **Self-loops from accession collision are dropped** — 40 edges, where both endpoints' symbols resolve to one UniProt accession (§7). ✅
 22. **Release policy: always replace the published graph wholesale, never merge.** Minted IRIs are build-scoped, and raising the size cutoff or IAS floor *removes* triples, which an RDF merge cannot express. `pav:version` must be incremented every release (§11). ✅
+23. **Implemented as two standalone converters**, [nest/nest_to_rdf.py](nest/nest_to_rdf.py) and [nest/nest_to_rdf.mjs](nest/nest_to_rdf.mjs) (§0), **not** as an adapter inside `bio-cx2-to-rdf`. They stream Turtle directly, so the converter-level gaps that would have blocked an adapter (no literal-triple type, NCI-PID-specific reification shape, no adapter registry, no streaming) were routed around rather than fixed; those remain open as NCI-PID-side debt. Output is byte-identical between the two and reproduces the committed [nest/nest.ttl](nest/nest.ttl) exactly — sha256 `3a7a8a58…`, **1,318,375 triples**, verified 2026-08-04. ✅
 
 ### Open (RDF stage)
 1. **The two NDEx deposits are `UNLISTED` and owned by `cjtest`** (§11). The UUIDs themselves are settled and verified, but provenance IRIs that do not resolve for third parties are worse than none. Make both **PUBLIC** under a durable owner before publishing RDF.
 2. **Bioregistry `ndex` record has no `rdf_uri_format`** (only a `uri_format` pointing at the viewer page), so the converter's automatic canonicalization will not pick it up and the IRI stem must be set deliberately. **Action:** contribute an `rdf_uri_format` to the Bioregistry `ndex` record — NDEx is our own resource, so this is ours to fix. Once merged and pulled into the vendored snapshot (`npm run refresh:bioregistry`), the manual override can be removed and every downstream consumer converges on the same IRI.
 3. **`merge_cx2.py` writes the old NDEx stem.** Its `@context` binds `ndex → https://www.ndexbio.org/v3/networks/`; change it to the viewer form and regenerate the merged NCI-PID networks, otherwise two IRI forms for NDEx networks coexist in one graph.
-4. **RDF adapter:** implement a NeST/IAS adapter in `bio-cx2-to-rdf/src/adapters/` (detect this network; map edges per §6). Not started.
+4. **Not deployed.** The Turtle exists but is not served: there is no `nest` entry in the OKN registry and no SPARQL endpoint (`apps.okn.us/nest/sparql` returns the registry web application, not a query service). Gated on item 1 above. NCI-PID, by contrast, is live at `apps.okn.us/ncipidkg/sparql`.
+5. **`nest.ttl` is committed to git at 57 MB.** Convenient for review and for running the use cases offline, but it is a generated artifact reproducible byte-for-byte from two cached inputs. Decide whether it belongs in the repository long-term or in a release/LFS.
+
+> **See [remaining_issues.md](remaining_issues.md)** for the full cross-graph audit
+> (2026-08-04) — these items in context, plus defects found in the *deployed* NCI-PID graph,
+> each with a reproduction command.
 
 ---
 
@@ -451,15 +489,23 @@ node ids (nodes `0…16839`, edges `16840…226835`).
 | `ias_visual_style.json` | input | visual style extracted from the NDEx 100K display network; applied by the builder |
 | `build_cx2_network.py` | script | filtered TSV + symbol map + style → CX2 |
 | `IAS_network.cx2` | output | **the CX2 network** (16,840 nodes, 209,996 edges) with visual style |
+| `nest_to_rdf.py` | script | **the RDF converter** — NDEx hierarchy UUID → Turtle (§0 step 4) |
+| `nest_to_rdf.mjs` | script | equivalent Node implementation; byte-identical output (§9 item 23) |
+| `nest.ttl` | output | **the knowledge graph** — 1,318,375 triples, hierarchy + IAS |
+| `.ndex-cache/` | cache | CX2 downloaded from NDEx, keyed by UUID; **untracked** (≈55 MB) |
+
+The RDF stage consumes the **NDEx deposits**, not `IAS_network.cx2` directly — see the note
+in §0. Everything above `nest_to_rdf.py` in this table is the pipeline that produces what is
+deposited.
 
 ---
 
 ## 11. Provenance
 
 > **Scope: the whole export, not just IAS.** Provenance covers the combined Turtle file —
-> the NeST hierarchy and the IAS network are emitted together. This section lives here
-> because it is the doc that is currently accurate; hoist it to a shared design doc when
-> [NEST_HIERARCHY_DATASET.md](NEST_HIERARCHY_DATASET.md) is written.
+> the NeST hierarchy and the IAS network are emitted together by one converter (§0 step 4),
+> so this section describes both halves and is referenced from
+> [NEST_HIERARCHY_DATASET.md](NEST_HIERARCHY_DATASET.md) rather than duplicated there.
 
 ### Granularity: dataset-level, not per-entity
 
@@ -486,22 +532,28 @@ per-entity `prov:wasDerivedFrom` would add 17,000+ triples restating one fact.
 
 ### The block
 
+As emitted in [nest/nest.ttl](nest/nest.ttl) (`dcterms:created` is the build date;
+`pav:version` defaults to `1.0` and is settable with `--dataset-version`):
+
 ```turtle
-<https://www.ndexbio.org/identifiers/nest-kg> a void:Dataset , prov:Entity ;
+nest:nest-kg a void:Dataset , prov:Entity ;
     dcterms:title       "NeST cancer systems map with IAS protein-association network" ;
-    dcterms:description "NeST 1.0 hierarchy of 395 protein systems under mutational
+    dcterms:description "NeST 1.0 hierarchy of protein systems under mutational
                          selection across 13 cancer types, with the filtered IAS
                          protein-association network its members are drawn from." ;
     dcterms:publisher   <https://www.ndexbio.org> ;
     dcterms:source      <https://doi.org/10.1126/science.abf3067> ;
-    dcterms:created     "YYYY-MM-DD"^^xsd:date ;
+    dcterms:created     "2026-08-04"^^xsd:date ;
     pav:version         "1.0" ;
-    prov:wasDerivedFrom ndex:4f9210a1-8797-11f1-857e-005056ae3c32 ,   # NeST hierarchy (HCX)
-                        ndex:4731187a-8796-11f1-857e-005056ae3c32 ;  # IAS network
+    prov:wasDerivedFrom ndex:4f9210a1-8797-11f1-857e-005056ae3c32 ;  # NeST hierarchy (HCX)
+    prov:wasDerivedFrom ndex:4731187a-8796-11f1-857e-005056ae3c32 ;  # IAS network
     prov:wasGeneratedBy [ a prov:Activity ;
         prov:wasAssociatedWith <https://github.com/ndexbio/proto-okn> ;
-        pav:version "bio-cx2-to-rdf <version>" ] .
+        pav:version "nest_to_rdf 1.0" ] .
 ```
+
+The tool string is `nest_to_rdf <version>`, not `bio-cx2-to-rdf` — conversion is the
+standalone converter, not the TypeScript pipeline (§9 item 23).
 
 - `dcterms:source` uses the **DOI**, per the OKN recommendation to prefer DOIs for publications.
 - `prov:wasDerivedFrom` cites the **NDEx deposits** — the artifacts a consumer can actually
@@ -528,7 +580,7 @@ Consumers therefore need `pav:version` on the dataset node to tell builds apart,
 must be incremented on every release. When updating the graph in the OKN landing zone, use
 the full-replacement path rather than an incremental update.
 
-### NDEx deposits (verified 2026-08-03 against the NDEx API)
+### NDEx deposits (re-verified 2026-08-04 against the NDEx API)
 
 | UUID | network | nodes / edges |
 |---|---|---|
@@ -541,12 +593,14 @@ IAS network; the previously documented `e3bb3a6d-878e-11f1-857e-005056ae3c32` wa
 has been corrected in [NEST_HIERARCHY_DATASET.md](NEST_HIERARCHY_DATASET.md) and
 `nest/build_hcx_hierarchy.py`.
 
-> **⚠️ Both networks are `UNLISTED` and owned by the account `cjtest`.** Citing them as
-> `prov:wasDerivedFrom` in published RDF means the provenance IRIs will not resolve for
-> anyone else. Before publishing, both must be made **PUBLIC** and moved to a durable
-> owner account. See §9 open item 1.
+> **⚠️ Both networks are still `UNLISTED` and owned by the account `cjtest`** (re-checked
+> 2026-08-04). Citing them as `prov:wasDerivedFrom` in published RDF means the provenance
+> IRIs will not resolve for anyone else — and [nest.ttl](nest/nest.ttl) already cites them,
+> so this is now a live defect in a generated artifact rather than a future concern. Before
+> publishing, both must be made **PUBLIC** and moved to a durable owner account. See §9 open
+> item 1.
 
 ---
 
-**Last updated:** 2026-08-03
+**Last updated:** 2026-08-04
 **Reviewer:** (pending)

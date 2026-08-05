@@ -5,10 +5,57 @@
 
 This document describes the architecture and design for the **bio-cx2-to-rdf** converter, a multi-dataset tool for converting biological networks in Cytoscape CX2 format into RDF (Resource Description Framework) expressed in Turtle syntax.
 
-**Project Scope**: The converter uses a **dataset-specific adapter pattern** to support multiple biological network datasets, each with unique characteristics and semantic requirements. Currently supported datasets:
-1. **NCI-PID 2.0** - NCI Pathway Interaction Database version 2.0 networks
-2. **IAS Interaction Network** - integrated protein-association network (NeST / Zheng et al. 2021, Data S1). CX2 generation implemented; RDF adapter planned. See [IAS_NETWORK_GENERATION.md](IAS_NETWORK_GENERATION.md), [SYMBOL_TO_PROTEIN_MAPPING.md](SYMBOL_TO_PROTEIN_MAPPING.md).
-3. **NeST Hierarchy** - nested hierarchical systems map derived from the IAS network (adapter in development). See [NEST_HIERARCHY_DATASET.md](NEST_HIERARCHY_DATASET.md).
+**Project Scope**: The converter uses a **dataset-specific adapter pattern**. **This document describes `bio-cx2-to-rdf`, which currently implements exactly one adapter: NCI-PID 2.0.**
+
+> **⚠️ The NeST and IAS datasets are converted outside this tool.** They were specified as
+> future adapters, but the implementation shipped as two standalone converters —
+> [nest/nest_to_rdf.py](nest/nest_to_rdf.py) and [nest/nest_to_rdf.mjs](nest/nest_to_rdf.mjs)
+> — which emit both datasets into one Turtle file ([nest/nest.ttl](nest/nest.ttl), 1,318,375
+> triples, generated 2026-08-04). **No NeST adapter exists under `src/adapters/`, and none is
+> planned.** Do not read the sections below as describing how NeST is converted; see
+> [NEST_HIERARCHY_DATASET.md](NEST_HIERARCHY_DATASET.md) and
+> [IAS_NETWORK_GENERATION.md](IAS_NETWORK_GENERATION.md) for that.
+
+| dataset | conversion route | status |
+|---|---|---|
+| **NCI-PID 2.0** | `bio-cx2-to-rdf`, `src/adapters/nci-pid/` — **this document** | live at `apps.okn.us/ncipidkg/sparql` |
+| **IAS interaction network** | standalone `nest/nest_to_rdf.{py,mjs}` | generated; not deployed |
+| **NeST hierarchy** | standalone `nest/nest_to_rdf.{py,mjs}` | generated; not deployed |
+
+See [IAS_NETWORK_GENERATION.md](IAS_NETWORK_GENERATION.md),
+[NEST_HIERARCHY_DATASET.md](NEST_HIERARCHY_DATASET.md) and
+[SYMBOL_TO_PROTEIN_MAPPING.md](SYMBOL_TO_PROTEIN_MAPPING.md) for the two standalone datasets.
+
+### 1.1 Where this document diverges from the shipped converter
+
+**Audited 2026-08-04** against `src/`, the generated `merged.ttl`, and the deployed graph at
+`https://apps.okn.us/ncipidkg/sparql`. Four documented shapes were never implemented as
+written. **The implementation is correct and the deployed graph is consistent — it is this
+document that is out of date**, so where they disagree, trust the right-hand column.
+
+| # | This document says | The converter actually emits | Evidence |
+|---|---|---|---|
+| 1 | `okn:` = `http://purl.org/okn/` (§4.1) | `http://example.org/okn/` | `namespace-manager.ts:20`; §4.9.1 of this doc already said `example.org` |
+| 2 | PTM = a second `rdf:type` on the statement: `a rdf:Statement, GO:0016925` | a **predicate**, `okn:processType GO:0016925` | 0 statements carry a GO type; 10,662 `okn:processType` triples live |
+| 3 | Statement IRI `okn:e227_1`, or `net:e227_1` with `net: = okn:n_{networkId}/` | `okn:statement_<edgeId>_<i>`; **no `net:` scheme exists** | `okn:statement_0_0` live; §4.4 of this doc already said `statement_<edge>_<i>` |
+| 4 | `dcterms:source "INDRA"` + `prov:wasDerivedFrom <evidence>` | `okn:evidenceUrl <evidence>`; **neither of the other two is emitted at all** | live counts: `dcterms:source` 0, `prov:wasDerivedFrom` 0, `okn:evidenceUrl` 83,704 |
+
+> **⚠️ Consequence for anyone copying from this document.** Divergences 2 and 3 break the
+> example SPARQL: a query written as `?stmt a GO:0006468` returns **zero rows** against the
+> published graph. §4.1, §4.4.3 and §4.6 below have been corrected; the longer worked
+> examples in §4.4.1–4.4.2, §6.2–6.3 and §11 have **not** been rewritten and still show the
+> old shapes. Read them for the modelling rationale, not as literal output.
+
+Divergences 1 and 4 are deliberate-looking but undecided: `example.org` is a placeholder that
+the NeST/IAS graphs already retired in favour of `https://www.ndexbio.org/vocab/`
+([IAS_NETWORK_GENERATION.md §8](IAS_NETWORK_GENERATION.md)), and NCI-PID should follow before
+its next release. That is tracked as NCI-PID-side debt in
+[NEST_HIERARCHY_DATASET.md §9](NEST_HIERARCHY_DATASET.md).
+
+> **The deployed graph has defects this document cannot show you.** The same audit found
+> filesystem paths leaked into entity IRIs, relative scheme-less IRIs, small molecules typed
+> as proteins, and the entire §4.8 pathway-provenance feature missing from what is served.
+> See **[remaining_issues.md](remaining_issues.md)**, each item with a reproduction command.
 
 **NCI-PID 2.0 Adapter**: This document primarily describes the NCI-PID 2.0 adapter implementation. The NCI Pathway Interaction Database (NCI-PID) version 2.0 networks have been enhanced with INDRA (Integrated Network and Dynamical Reasoning Assembler) evidence and have specific characteristics including:
 - Protein entities identified with UniProt IDs
@@ -168,8 +215,8 @@ networks keep an unchanged prefix block. `pathway:` (= `…/okn/pathway/`) exist
 compact (the trailing slash is not a valid CURIE local-name character under `okn:`).
 
 ```turtle
-@prefix okn: <http://purl.org/okn/> .
-@prefix pathway: <http://purl.org/okn/pathway/> .  # merged networks only; compacts pathway IRIs
+@prefix okn: <http://example.org/okn/> .           # placeholder base — see §1.1 divergence 1
+@prefix pathway: <http://example.org/okn/pathway/> .  # merged networks only; compacts pathway IRIs
 @prefix uniprot: <http://purl.uniprot.org/uniprot/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -308,7 +355,7 @@ Post-translational modifications don't have direct RO predicates. We use:
 - GO terms are universally recognized and well-maintained
 - No custom predicates to maintain
 - Specific PTM type is captured via statement typing
-- Supports both generic queries (`?x RO:0002578 ?y`) and specific queries (`?stmt a GO:0016567`)
+- Supports both generic queries (`?x RO:0002578 ?y`) and specific queries (`?stmt okn:processType GO:0016567`)
 
 ### 4.4 Reification Pattern for Relationship Metadata
 
@@ -369,12 +416,28 @@ okn:evidenceCount a owl:DatatypeProperty ;
     rdfs:comment "Number of supporting evidences for this relationship" ;
     rdfs:domain rdf:Statement ;
     rdfs:range xsd:integer .
+
+okn:evidenceUrl a owl:ObjectProperty ;
+    rdfs:label "evidence URL" ;
+    rdfs:comment "Link to the supporting evidence (an INDRA statement query)." ;
+    rdfs:domain rdf:Statement ;
+    rdfs:range rdfs:Resource .
+
+okn:processType a owl:ObjectProperty ;
+    rdfs:label "process type" ;
+    rdfs:comment "The GO biological-process term naming the post-translational modification this statement asserts. Carried as a property rather than a second rdf:type — see §1.1 divergence 2." ;
+    rdfs:domain rdf:Statement ;
+    rdfs:range owl:Class .
 ```
 
-All other metadata uses standard vocabularies:
-- `rdf:subject`, `rdf:predicate`, `rdf:object` - Standard RDF reification
-- `dcterms:source` - Evidence source database(s)
-- `prov:wasDerivedFrom` - Link to detailed evidence
+Standard reification vocabulary carries the rest:
+- `rdf:subject`, `rdf:predicate`, `rdf:object` — standard RDF reification
+
+> **Not emitted, despite appearing in the examples below.** `dcterms:source` and
+> `prov:wasDerivedFrom` are shown in §4.4.1–4.4.2, §6.2–6.3 and §11 but the converter writes
+> neither — verified 0 occurrences of each in the deployed graph, against 83,704
+> `okn:evidenceUrl`. The evidence link is `okn:evidenceUrl`; the source database is not
+> currently exported at all. See §1.1 divergence 4.
 
 **Evidence URL encoding:** the `okn:evidenceUrl` value is a free-form INDRA URL and can contain
 IRI-illegal characters (notably spaces, e.g. `subject=phosphatidic acid`). Such characters are
@@ -452,7 +515,7 @@ SELECT ?subject ?object ?evidenceCount WHERE {
 #### Query all phosphorylation events (PTM-specific)
 ```sparql
 SELECT ?kinase ?substrate ?evidenceCount WHERE {
-    ?stmt a GO:0006468 ;  # protein phosphorylation
+    ?stmt okn:processType GO:0006468 ;  # protein phosphorylation
           rdf:subject ?kinase ;
           rdf:object ?substrate ;
           okn:evidenceCount ?evidenceCount .
@@ -466,10 +529,16 @@ SELECT ?subject ?object ?ptmType WHERE {
           rdf:predicate RO:0002578 ;  # directly regulates
           rdf:subject ?subject ;
           rdf:object ?object ;
-          a ?ptmType .
-    FILTER(STRSTARTS(STR(?ptmType), "http://purl.obolibrary.org/obo/GO_"))
+          okn:processType ?ptmType .
 }
 ```
+
+> Both queries use `okn:processType`, **not** `a GO:...`. Written as a type test they return
+> zero rows — see §1.1 divergence 2. Verified against
+> `https://apps.okn.us/ncipidkg/sparql`, where `okn:processType` resolves 10,662 statements
+> across ten modification types (7,497 phosphorylation, 1,402 dephosphorylation, 806
+> ubiquitination, 405 acetylation, 173 deubiquitination, 135 deacetylation, 101 methylation,
+> 90 sumoylation, 45 demethylation, 8 desumoylation).
 
 ### 4.7 Benefits of Hybrid Standards-First Approach
 
@@ -492,8 +561,8 @@ SELECT ?protein WHERE { ?protein RO:0002436 ?target }  # all binding
 # Query all positive regulation (activation + increase amount)
 SELECT ?protein WHERE { ?protein RO:0002629 ?target }
 
-# Query specific PTMs via GO typing
-SELECT ?kinase ?substrate WHERE { ?stmt a GO:0006468 ; rdf:subject ?kinase ; rdf:object ?substrate }
+# Query specific PTMs via the GO process type
+SELECT ?kinase ?substrate WHERE { ?stmt okn:processType GO:0006468 ; rdf:subject ?kinase ; rdf:object ?substrate }
 
 # Query all PTMs generically
 SELECT ?subject ?object WHERE {
@@ -2046,15 +2115,10 @@ SELECT ?subject ?object ?evidenceCount WHERE {
     FILTER(?evidenceCount > 10)
 }
 
-# Query 3: Find proteins involved in sumoylation (using GO process type)
+# Query 3: Find proteins involved in sumoylation (using the GO process type)
 SELECT DISTINCT ?protein WHERE {
-    ?stmt a GO:0016925 ;  # protein sumoylation
-          rdf:subject ?protein .
-}
-UNION
-SELECT DISTINCT ?protein WHERE {
-    ?stmt a GO:0016925 ;
-          rdf:object ?protein .
+    ?stmt okn:processType GO:0016925 .   # protein sumoylation
+    { ?stmt rdf:subject ?protein } UNION { ?stmt rdf:object ?protein }
 }
 
 # Query 4: Calculate total evidence count for a protein pair

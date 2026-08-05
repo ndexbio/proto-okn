@@ -337,15 +337,17 @@ Core Library (platform-agnostic)
          │
          ▼
 Dataset Adapters (pluggable)
-  ├── NCI-PID 2.0 Adapter (implemented)
-  ├── IAS Interaction Network Adapter (not implemented — see note)
-  └── NeST Hierarchy Adapter (not implemented — see note)
+  ├── NCI-PID 2.0 Adapter (implemented — the only one)
+  ├── IAS Interaction Network Adapter (not planned — see note)
+  └── NeST Hierarchy Adapter (not planned — see note)
 ```
 
-> **NeST / IAS are converted outside this pipeline.** Their RDF mapping is fully specified
-> and implemented, but by the standalone `nest/nest_to_rdf.{py,mjs}` scripts above rather
-> than as adapters here. Routing them through this package first requires core changes that
-> the current design cannot express:
+> **NeST / IAS are converted outside this pipeline, and that is the settled decision.** Their
+> RDF mapping is fully specified and implemented, but by the standalone
+> `nest/nest_to_rdf.{py,mjs}` scripts above rather than as adapters here — they emit
+> `nest/nest.ttl` (1,318,375 triples) directly. This package stays NCI-PID-only. The gaps
+> below are therefore **NCI-PID-side debt**, not a blocked port; they are what routing NeST
+> through here *would* have required:
 >
 > - `RdfOutput` has no literal-valued triple type — `directTriples` takes IRI objects only,
 >   which blocks every score, p-value and count
