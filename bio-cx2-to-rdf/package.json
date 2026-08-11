@@ -9,9 +9,12 @@
   },
   "scripts": {
     "build": "tsc",
+    "test": "npm run build && node --test \"tests/**/*.test.js\"",
+    "test:only": "node --test \"tests/**/*.test.js\"",
     "start": "node dist/cli/index.js",
     "dev": "tsc --watch",
-    "refresh:bioregistry": "node scripts/refresh-bioregistry.js"
+    "refresh:bioregistry": "node scripts/refresh-bioregistry.js",
+    "normalize:chemicals": "node scripts/normalize-chemicals.js"
   },
   "keywords": [
     "cx2",

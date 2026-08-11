@@ -35,22 +35,31 @@ document that is out of date**, so where they disagree, trust the right-hand col
 
 | # | This document says | The converter actually emits | Evidence |
 |---|---|---|---|
-| 1 | `okn:` = `http://purl.org/okn/` (§4.1) | `http://example.org/okn/` | `namespace-manager.ts:20`; §4.9.1 of this doc already said `example.org` |
-| 2 | PTM = a second `rdf:type` on the statement: `a rdf:Statement, GO:0016925` | a **predicate**, `okn:processType GO:0016925` | 0 statements carry a GO type; 10,662 `okn:processType` triples live |
-| 3 | Statement IRI `okn:e227_1`, or `net:e227_1` with `net: = okn:n_{networkId}/` | `okn:statement_<edgeId>_<i>`; **no `net:` scheme exists** | `okn:statement_0_0` live; §4.4 of this doc already said `statement_<edge>_<i>` |
-| 4 | `dcterms:source "INDRA"` + `prov:wasDerivedFrom <evidence>` | `okn:evidenceUrl <evidence>`; **neither of the other two is emitted at all** | live counts: `dcterms:source` 0, `prov:wasDerivedFrom` 0, `okn:evidenceUrl` 83,704 |
+| 1 | ~~`okn:` = `http://purl.org/okn/` (§4.1)~~ **RESOLVED 2026-08-10** | `ncipid:` = `https://www.ndexbio.org/identifiers/` (entities), `ncipidv:` = `https://www.ndexbio.org/vocab/ncipid/` (vocabulary) | `namespace-manager.ts`; matches the NeST/IAS convention. See [4.1.3](#413-minted-entity-iris) |
+| 2 | PTM = a second `rdf:type` on the statement: `a rdf:Statement, GO:0016925` | a **predicate**, `ncipidv:processType GO:0016925` | 0 statements carry a GO type; 10,662 `ncipidv:processType` triples live |
+| 3 | Statement IRI `ncipid:e227_1`, or `net:e227_1` with `net: = ncipid:n_{networkId}/` | `ncipid:statement_<edgeId>_<i>`; **no `net:` scheme exists** | `ncipid:statement_0_0` live; §4.4 of this doc already said `statement_<edge>_<i>` |
+| 4 | `dcterms:source "INDRA"` + `prov:wasDerivedFrom <evidence>` | `ncipidv:evidenceUrl <evidence>`; **neither of the other two is emitted at all** | live counts: `dcterms:source` 0, `prov:wasDerivedFrom` 0, `ncipidv:evidenceUrl` 83,704 |
 
 > **⚠️ Consequence for anyone copying from this document.** Divergences 2 and 3 break the
 > example SPARQL: a query written as `?stmt a GO:0006468` returns **zero rows** against the
 > published graph. §4.1, §4.4.3 and §4.6 below have been corrected; the longer worked
 > examples in §4.4.1–4.4.2, §6.2–6.3 and §11 have **not** been rewritten and still show the
 > old shapes. Read them for the modelling rationale, not as literal output.
+>
+> **Namespace (2026-08-10).** The normative sections — §4.1 through §4.9 — now use
+> `ncipid:` / `ncipidv:`, matching the converter. The historical worked examples in
+> **§6.4, §8.6, §10.1 and §11.1** still show the retired `okn:` prefix and were left as-is
+> rather than rewritten; they illustrate statement-IRI construction and network metadata, not
+> current output. Anywhere they disagree with §4, §4 is correct.
 
-Divergences 1 and 4 are deliberate-looking but undecided: `example.org` is a placeholder that
-the NeST/IAS graphs already retired in favour of `https://www.ndexbio.org/vocab/`
-([IAS_NETWORK_GENERATION.md §8](IAS_NETWORK_GENERATION.md)), and NCI-PID should follow before
-its next release. That is tracked as NCI-PID-side debt in
-[NEST_HIERARCHY_DATASET.md §9](NEST_HIERARCHY_DATASET.md).
+Divergence 1 is **resolved**: the `example.org` placeholder was retired on 2026-08-10 in
+favour of `https://www.ndexbio.org/identifiers/` (entities) and
+`https://www.ndexbio.org/vocab/ncipid/` (vocabulary), matching the NeST/IAS graphs
+([IAS_NETWORK_GENERATION.md §8](IAS_NETWORK_GENERATION.md)). Divergence 4 remains undecided.
+
+> **The deployed graph still carries the old base.** These fixes are in the converter; the
+> published graph at `apps.okn.us/ncipidkg` predates them and needs a re-publish. Statements
+> quoting live counts below describe the *deployed* graph, not current converter output.
 
 > **The deployed graph has defects this document cannot show you.** The same audit found
 > filesystem paths leaked into entity IRIs, relative scheme-less IRIs, small molecules typed
@@ -212,11 +221,12 @@ All Evidences (<a href="...">49</a>)
 Note: `biolink:`, `PW:`, and `pathway:` below are emitted **only for merged networks that contain
 pathway provenance nodes** (see [4.8](#48-merged-network-handling-pathway-provenance)); pathway-free
 networks keep an unchanged prefix block. `pathway:` (= `…/okn/pathway/`) exists so pathway IRIs
-compact (the trailing slash is not a valid CURIE local-name character under `okn:`).
+compact (the trailing slash is not a valid CURIE local-name character under `ncipid:`).
 
 ```turtle
-@prefix okn: <http://example.org/okn/> .           # placeholder base — see §1.1 divergence 1
-@prefix pathway: <http://example.org/okn/pathway/> .  # merged networks only; compacts pathway IRIs
+@prefix ncipid: <https://www.ndexbio.org/identifiers/> .      # minted entity IRIs
+@prefix ncipidv: <https://www.ndexbio.org/vocab/ncipid/> .    # vocabulary this converter defines
+@prefix pathway: <https://www.ndexbio.org/identifiers/pathway/> .  # merged networks only; compacts pathway IRIs
 @prefix uniprot: <http://purl.uniprot.org/uniprot/> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -253,7 +263,7 @@ This converter uses a **hybrid approach** to minimize maintenance overhead while
 | PTMs (phosphorylation, etc.) | Reification + GO process types | No standard predicates exist; GO terms capture specificity |
 
 This eliminates custom relationship predicates (`oknr:*`) entirely, using only:
-- `okn:` namespace for network-specific entities (statements, networks)
+- `ncipid:` namespace for network-specific entities (statements, networks), `ncipidv:` for vocabulary
 - Standard ontologies (RO, GO) for all relationship semantics
 
 ### 4.1.1 Identifier Canonicalization (Bioregistry)
@@ -287,38 +297,124 @@ browser/Cytoscape-Web use).
 **Scope.** This solves *namespace/base* canonicalization (same identifier, canonical IRI base). It
 does **not** resolve *entity equivalence* — e.g. a non-canonical UniProt isoform accession, or a
 gene symbol vs Entrez ID. Those are emitted with `owl:sameAs` links (from the node `alias` list) and
-left to a downstream node normalizer (FRINK), which is the appropriate tool for open-ended
-cross-identifier equivalence.
+left to a downstream node normalizer, which is the appropriate tool for open-ended cross-identifier
+equivalence. For chemicals that normalization is run **by this pipeline**, not by FRINK — see
+[4.1.2](#412-chemical-identifier-normalization-node-normalizer).
+
+**Prefix case.** Prefix lookup is **case-insensitive**, with exact match preferred. CX2 files are
+not internally consistent: NCI-PID declares `"chebi"` in `@context` but writes `CHEBI:16618` on
+every node. An exact-only lookup failed for all of them and emitted the CURIE verbatim, producing
+relative, scheme-less IRIs (`<CHEBI:16618>`) that carry no identity and join with nothing.
+
+### 4.1.2 Chemical Identifier Normalization (Node Normalizer)
+
+Bioregistry canonicalization answers *"given prefix `chebi`, what IRI stem?"*. It does not answer
+*"which identifier space should a chemical use?"* — and OKN's
+[biomedical identifier guidance](https://registry.okn.us/book/biomedical-identifiers/) is explicit
+about that:
+
+> Chemical entities (compounds, substances): prefer **PubChem CIDs**
+> (`http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID$1`). **CAS registry numbers are imprecise.**
+
+NCI-PID `smallmolecule` nodes are identified by `CHEBI:` (113) or `cas:` (40) CURIEs, so neither
+matches the preferred space. The same page names the RENCI **Node Normalizer** as the conversion
+tool and phrases it as something the graph producer *may use* — **FRINK does not normalize uploaded
+graphs**, so this is our step, not the infrastructure's.
+
+**Policy**, applied per distinct source identifier: PubChem CID → else ChEBI → else the source
+identifier unchanged. The entity's ChEBI/PubChem counterpart plus its original `represents` are
+emitted as `skos:exactMatch`, so a consumer holding the source identifier can still reach the
+entity.
+
+`skos:exactMatch` rather than `owl:sameAs`: these are cross-vocabulary identifier equivalences
+asserted by a third-party service, not OWL-strength claims, and a reasoner acting on `sameAs` would
+merge cliques deliberately kept apart.
+
+**Normalization is not automatically safe.** The tool emits a review table, not just a map, and
+carries curated overrides for cases where the normalizer is wrong:
+
+- **Collisions.** `CHEBI:16066` (11-cis-retinal) and `CHEBI:17898` (all-trans-retinal) both
+  normalize to PubChem CID 638015 ("Retinal"). Their isomerization *is* the photon-detection step
+  of visual signal transduction; accepting the merge would reduce the pathway's central reaction to
+  a self-loop — which the converter then drops, since it discards self-loops. Both are kept on
+  ChEBI.
+- **Wrong compound.** `CHEBI:28940` (calciol, vitamin D3) resolves to a clique whose ChEBI and
+  PubChem entries are both ergocalciferol, vitamin D2. Rejected.
+- **Source data errors.** Glutathione is recorded as `cas:17-18-8`, which is not a valid registry
+  number; the correct CAS is 70-18-8.
+
+Like the Bioregistry map, the result is a **vendored, committed snapshot**
+(`src/core/chemical-normalization.ts`), regenerated by `npm run normalize:chemicals`, so conversion
+stays deterministic and offline.
+
+### 4.1.3 Minted Entity IRIs
+
+Entities the source leaves unidentified are minted under the graph's own identifier base rather
+than emitted as bare names. A bare-name `represents` (`ETS`, `PLC`, `MIR34A`, `LPS` — 19 distinct)
+serialized as a relative IRI `<ACTR2>`, which has no identity and joins with nothing. Each becomes
+`<base>entity/<slug>` and retains its `rdfs:label`.
+
+The base itself is **`https://www.ndexbio.org/identifiers/`** for entities and
+**`https://www.ndexbio.org/vocab/ncipid/`** for vocabulary terms. `http://example.org/` is reserved
+for documentation (RFC 6761) and must never carry production identity; the NeST/IAS graphs already
+retired it in favour of these stems ([IAS §8](IAS_NETWORK_GENERATION.md)), and NCI-PID now matches.
 
 ### 4.2 Entity Type Mapping
 
 | CX2 Type | RDF Class | Notes |
 |----------|-----------|-------|
 | protein | `SIO:010043` (protein) | Semanticscience Integrated Ontology |
-| complex | `SIO:010046` (protein complex) | Semanticscience Integrated Ontology |
-| proteinfamily | `SIO:001380` (protein family) | Semanticscience Integrated Ontology |
-| smallmolecule | `CHEBI:23367` (molecular entity) | ChEBI ontology; entity URI uses the specific CHEBI ID (e.g., `CHEBI:37550`) |
+| complex | `SIO:010497` (protein complex) | Semanticscience Integrated Ontology |
+| proteinfamily | `SIO:001380` (protein family) | SIO. **Note:** the converter types family *nodes* as `biolink:GeneFamily` instead — see [4.9](#49-proteingene-family-nodes-type-proteinfamily) |
+| smallmolecule | `CHEBI:23367` (molecular entity) | ChEBI ontology; entity URI is normalized to PubChem CID where one exists — see [4.1.2](#412-chemical-identifier-normalization-node-normalizer) |
 | chemical | `CHEBI:24431` (chemical entity) | ChEBI ontology |
 | drug | `CHEBI:23888` (drug) | ChEBI ontology |
 | gene | `SO:0000704` (gene) | Sequence Ontology |
-| geneproduct | `SIO:010430` (gene product) | Semanticscience Integrated Ontology |
-| variant | `SO:0001060` (sequence variant) | Sequence Ontology |
-| rna | `SIO:010450` (RNA) | Semanticscience Integrated Ontology |
-| RnaReference | `SIO:010450` (RNA) | Semanticscience Integrated Ontology (legacy CamelCase) |
+| variant | `SO:0001060` (sequence_variant) | Sequence Ontology |
+| rna | `CHEBI:33697` (ribonucleic acid) | ChEBI. SIO has no generic "RNA" class — `SIO:010450` is *RNA transcript*, which is narrower |
+| RnaReference | `SO:0000655` (ncRNA) | Legacy BioPAX CamelCase type. Its NCI-PID members are miRNA (`MIR34A`, `MIR17`, …) and lncRNA (`DLEU1`, `DLEU2`) genes, so ncRNA is the most specific class true of all of them |
 | mrna | `SO:0000234` (mRNA) | Sequence Ontology |
 | mirna | `SO:0000276` (miRNA) | Sequence Ontology |
-| antibody | `SIO:010298` (antibody) | Semanticscience Integrated Ontology |
+| lncrna | `SO:0001877` (lncRNA) | Sequence Ontology |
+| antibody | `SIO:010465` (antibody) | Semanticscience Integrated Ontology |
 | disease | `MONDO:0000001` (disease) | Monarch Disease Ontology |
 | phenotype | `UPHENO:0001001` (phenotype) | Unified Phenotype Ontology |
-| cellularcomponent | `GO:0005575` (cellular component) | Gene Ontology |
-| biologicalprocess | `GO:0008150` (biological process) | Gene Ontology |
-| molecularfunction | `GO:0003674` (molecular function) | Gene Ontology |
+| cellularcomponent | `GO:0005575` (cellular_component) | Gene Ontology |
+| biologicalprocess | `GO:0008150` (biological_process) | Gene Ontology |
+| molecularfunction | `GO:0003674` (molecular_function) | Gene Ontology |
 | pathway | `biolink:Pathway` (pathway) | Biolink Model, for FRINK harmonization; asserted `owl:equivalentClass PW:0000001` (Pathway Ontology) to retain the OBO link. Used to type merged-network pathway provenance nodes (see [4.8](#48-merged-network-handling-pathway-provenance)). |
 | tissue | `UBERON:0000479` (tissue) | Uberon anatomy ontology |
-| signal | `SIO:000552` (signal) | Semanticscience Integrated Ontology |
-| stimulus | `NCIT:C53415` (stimulus) | NCI Thesaurus |
+| signal | `SIO:010438` (signal) | Semanticscience Integrated Ontology |
+| stimulus | `NCIT:C41210` (Stimulus) | NCI Thesaurus |
 
-**Note:** Type values in CX2 files typically use lowercase without spaces (e.g., `smallmolecule`, `proteinfamily`) except for legacy types like `RnaReference` which use CamelCase.
+**Note:** Type values in CX2 files typically use lowercase without spaces (e.g., `smallmolecule`, `proteinfamily`) except for legacy types like `RnaReference` which use CamelCase. The implementation lowercases before lookup, so both resolve through one table.
+
+> **Every term above has been verified against the ontology that defines it** (parsed SIO release
+> labels; OLS for OBO terms). This table previously carried six IDs that resolve to unrelated
+> concepts, and they were copied into no code only by luck — `SIO:010046` is *biological entity*
+> (not protein complex), `SIO:010430` is *test role* (not gene product), `SIO:010298` is *medical
+> data* (not antibody), `SIO:000552` is the **property** *has parameter* (not signal),
+> `SIO:010450` is *RNA transcript* (not RNA), and `NCIT:C53415` is *Locally Aggressive Lesion*
+> (not stimulus). `geneproduct` has been dropped: SIO defines no "gene product" class, and no
+> verified substitute was found. **Verify a term before adding a row here.**
+
+#### 4.2.1 No Default Type
+
+There is deliberately **no fallback class**. An earlier implementation defaulted every unmatched
+type to protein, which published small molecules — cholesterol, cAMP, 11-cis-retinal — as
+`SIO:010043`, so a consumer asking for "all proteins" received chemicals.
+
+CX2 already expresses "assume protein" declaratively: `attributeDeclarations` carries
+`{"type": {"v": "protein"}}` and the parser materializes it (see
+[3.2.1](#321-attribute-declarations-aliases-and-defaults)). A type that reaches the mapper
+unmatched is therefore genuinely unknown, and is not guessed.
+
+One narrow inference remains, and it is an entailment rather than a guess: when a node carries no
+usable `type`, the class is read off the **identifier space** — `uniprot:` → protein, `chebi:` →
+molecular entity — because those registries contain only one kind of member. This is needed
+because the merged networks omit the `type` declaration default that the per-pathway files carry,
+leaving 55 UniProt nodes untyped. Nodes matching neither path are emitted **without** `rdf:type`,
+and the converter warns.
 
 ### 4.3 Relationship Predicate Mapping
 
@@ -355,7 +451,7 @@ Post-translational modifications don't have direct RO predicates. We use:
 - GO terms are universally recognized and well-maintained
 - No custom predicates to maintain
 - Specific PTM type is captured via statement typing
-- Supports both generic queries (`?x RO:0002578 ?y`) and specific queries (`?stmt okn:processType GO:0016567`)
+- Supports both generic queries (`?x RO:0002578 ?y`) and specific queries (`?stmt ncipidv:processType GO:0016567`)
 
 ### 4.4 Reification Pattern for Relationship Metadata
 
@@ -379,11 +475,11 @@ direct triple is recoverable from any of them.
 uniprot:O75928 RO:0002436 uniprot:P63279 .  # PIAS1 molecularly interacts with UBE2I
 
 # Reified statement for metadata
-okn:e227_1 a rdf:Statement ;
+ncipid:e227_1 a rdf:Statement ;
     rdf:subject uniprot:O75928 ;
     rdf:predicate RO:0002436 ;
     rdf:object uniprot:P63279 ;
-    okn:evidenceCount 32 ;
+    ncipidv:evidenceCount 32 ;
     dcterms:source "INDRA" ;
     prov:wasDerivedFrom <https://db.indra.bio/statements/...> .
 ```
@@ -395,11 +491,11 @@ okn:e227_1 a rdf:Statement ;
 uniprot:O75928 RO:0002578 uniprot:Q13547 .  # PIAS1 directly regulates HDAC1
 
 # Reified statement typed with GO process for PTM specificity
-okn:e231_1 a rdf:Statement, GO:0016925 ;  # also typed as "protein sumoylation"
+ncipid:e231_1 a rdf:Statement, GO:0016925 ;  # also typed as "protein sumoylation"
     rdf:subject uniprot:O75928 ;
     rdf:predicate RO:0002578 ;
     rdf:object uniprot:Q13547 ;
-    okn:evidenceCount 8 ;
+    ncipidv:evidenceCount 8 ;
     dcterms:source "INDRA" ;
     prov:wasDerivedFrom <https://db.indra.bio/statements/...> .
 ```
@@ -411,19 +507,19 @@ okn:e231_1 a rdf:Statement, GO:0016925 ;  # also typed as "protein sumoylation"
 Only minimal custom properties are needed (for metadata, not relationships):
 
 ```turtle
-okn:evidenceCount a owl:DatatypeProperty ;
+ncipidv:evidenceCount a owl:DatatypeProperty ;
     rdfs:label "evidence count" ;
     rdfs:comment "Number of supporting evidences for this relationship" ;
     rdfs:domain rdf:Statement ;
     rdfs:range xsd:integer .
 
-okn:evidenceUrl a owl:ObjectProperty ;
+ncipidv:evidenceUrl a owl:ObjectProperty ;
     rdfs:label "evidence URL" ;
     rdfs:comment "Link to the supporting evidence (an INDRA statement query)." ;
     rdfs:domain rdf:Statement ;
     rdfs:range rdfs:Resource .
 
-okn:processType a owl:ObjectProperty ;
+ncipidv:processType a owl:ObjectProperty ;
     rdfs:label "process type" ;
     rdfs:comment "The GO biological-process term naming the post-translational modification this statement asserts. Carried as a property rather than a second rdf:type — see §1.1 divergence 2." ;
     rdfs:domain rdf:Statement ;
@@ -436,10 +532,10 @@ Standard reification vocabulary carries the rest:
 > **Not emitted, despite appearing in the examples below.** `dcterms:source` and
 > `prov:wasDerivedFrom` are shown in §4.4.1–4.4.2, §6.2–6.3 and §11 but the converter writes
 > neither — verified 0 occurrences of each in the deployed graph, against 83,704
-> `okn:evidenceUrl`. The evidence link is `okn:evidenceUrl`; the source database is not
+> `ncipidv:evidenceUrl`. The evidence link is `ncipidv:evidenceUrl`; the source database is not
 > currently exported at all. See §1.1 divergence 4.
 
-**Evidence URL encoding:** the `okn:evidenceUrl` value is a free-form INDRA URL and can contain
+**Evidence URL encoding:** the `ncipidv:evidenceUrl` value is a free-form INDRA URL and can contain
 IRI-illegal characters (notably spaces, e.g. `subject=phosphatidic acid`). Such characters are
 percent-encoded at serialization time (only the RFC 3987-forbidden set — space, control chars, and
 `< > " { } | \ ^ \``) so the emitted IRI is valid Turtle and still dereferences/round-trips.
@@ -449,7 +545,7 @@ One additional custom property links a reified statement to the pathway(s) it be
 a merged network (see [4.8](#48-merged-network-handling-pathway-provenance)):
 
 ```turtle
-okn:inPathway a owl:ObjectProperty ;
+ncipidv:inPathway a owl:ObjectProperty ;
     rdfs:label "in pathway" ;
     rdfs:comment "The pathway(s) this reified interaction belongs to, derived from co-membership of its endpoints (both subject and object participate in the pathway)." ;
     rdfs:domain rdf:Statement ;
@@ -473,7 +569,7 @@ okn:inPathway a owl:ObjectProperty ;
 | Term | Label | Usage |
 |------|-------|-------|
 | `biolink:Pathway` | pathway | Type for pathway provenance nodes (`owl:equivalentClass PW:0000001`) |
-| `okn:inPathway` | in pathway | Reified statement → pathway membership (heuristic, both endpoints participate) |
+| `ncipidv:inPathway` | in pathway | Reified statement → pathway membership (heuristic, both endpoints participate) |
 
 #### Gene Ontology (GO) - Used as Statement Types for PTMs
 
@@ -508,17 +604,17 @@ SELECT ?subject ?object ?evidenceCount WHERE {
           rdf:predicate RO:0002629 ;  # directly positively regulates
           rdf:subject ?subject ;
           rdf:object ?object ;
-          okn:evidenceCount ?evidenceCount .
+          ncipidv:evidenceCount ?evidenceCount .
 }
 ```
 
 #### Query all phosphorylation events (PTM-specific)
 ```sparql
 SELECT ?kinase ?substrate ?evidenceCount WHERE {
-    ?stmt okn:processType GO:0006468 ;  # protein phosphorylation
+    ?stmt ncipidv:processType GO:0006468 ;  # protein phosphorylation
           rdf:subject ?kinase ;
           rdf:object ?substrate ;
-          okn:evidenceCount ?evidenceCount .
+          ncipidv:evidenceCount ?evidenceCount .
 }
 ```
 
@@ -529,13 +625,13 @@ SELECT ?subject ?object ?ptmType WHERE {
           rdf:predicate RO:0002578 ;  # directly regulates
           rdf:subject ?subject ;
           rdf:object ?object ;
-          okn:processType ?ptmType .
+          ncipidv:processType ?ptmType .
 }
 ```
 
-> Both queries use `okn:processType`, **not** `a GO:...`. Written as a type test they return
+> Both queries use `ncipidv:processType`, **not** `a GO:...`. Written as a type test they return
 > zero rows — see §1.1 divergence 2. Verified against
-> `https://apps.okn.us/ncipidkg/sparql`, where `okn:processType` resolves 10,662 statements
+> `https://apps.okn.us/ncipidkg/sparql`, where `ncipidv:processType` resolves 10,662 statements
 > across ten modification types (7,497 phosphorylation, 1,402 dephosphorylation, 806
 > ubiquitination, 405 acetylation, 173 deubiquitination, 135 deacetylation, 101 methylation,
 > 90 sumoylation, 45 demethylation, 8 desumoylation).
@@ -562,7 +658,7 @@ SELECT ?protein WHERE { ?protein RO:0002436 ?target }  # all binding
 SELECT ?protein WHERE { ?protein RO:0002629 ?target }
 
 # Query specific PTMs via the GO process type
-SELECT ?kinase ?substrate WHERE { ?stmt okn:processType GO:0006468 ; rdf:subject ?kinase ; rdf:object ?substrate }
+SELECT ?kinase ?substrate WHERE { ?stmt ncipidv:processType GO:0006468 ; rdf:subject ?kinase ; rdf:object ?substrate }
 
 # Query all PTMs generically
 SELECT ?subject ?object WHERE {
@@ -606,9 +702,9 @@ ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf a biolink:Pathway ;
   `ndex:<uuid>` → `https://www.ndexbio.org/v3/networks/<uuid>`. **Fallback:** when `represents`
   is absent or its prefix is undeclared (e.g. an older merge's non-resolvable
   `pathway:IL5-mediated signaling events _v2_0_` placeholder, emitted when no NDEx UUID was
-  available), the converter mints `http://example.org/okn/pathway/<slug|uuid>` from the cleaned
+  available), the converter mints `https://www.ndexbio.org/identifiers/pathway/<slug|uuid>` from the cleaned
   name (or the node's `uuid`), serialized with the dedicated `pathway:` prefix so it compacts (the
-  trailing slash is not a valid CURIE local-name character under `okn:`).
+  trailing slash is not a valid CURIE local-name character under `ncipid:`).
 - **Type:** `biolink:Pathway` (`owl:equivalentClass PW:0000001`).
 - **Label:** the pathway name, cleaned of a trailing version marker left by the source filename
   (e.g. ` _v2_0_`).
@@ -623,7 +719,7 @@ direction), using `RO:0000056` (participates in). No reification is produced.
 uniprot:A0AVQ5 RO:0000056 ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf .   # LYN participates_in IL5
 ```
 
-#### 4.8.3 Edge → pathway membership (`okn:inPathway`)
+#### 4.8.3 Edge → pathway membership (`ncipidv:inPathway`)
 
 Because each interaction is already reified as an `rdf:Statement` node (§4.4), the pathway context
 of an interaction can be attached directly to that node. The converter assigns a statement to a
@@ -632,21 +728,21 @@ pathway when **both** of its endpoints participate in that pathway:
 > `statement(A,B) ∈ pathway P` ⟺ `A participates_in P` **and** `B participates_in P`
 
 ```turtle
-okn:statement_582_0 a rdf:Statement ;
+ncipid:statement_582_0 a rdf:Statement ;
     rdf:subject uniprot:A8K1D9 ; rdf:predicate RO:0002629 ; rdf:object uniprot:A0AVQ5 ;
-    okn:evidenceCount 6 ; okn:evidenceUrl <https://db.indra.bio/...> ;
-    okn:inPathway ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf,
+    ncipidv:evidenceCount 6 ; ncipidv:evidenceUrl <https://db.indra.bio/...> ;
+    ncipidv:inPathway ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf,
                   ndex:7bc65b82-2a2f-11ed-ac45-0ac135e8bacf .
 ```
 
 Implementation: build a `proteinURI → {pathwayURI}` map from the membership edges, then for each
-reified statement add `okn:inPathway` for every pathway in `pathways(subject) ∩ pathways(object)`.
+reified statement add `ncipidv:inPathway` for every pathway in `pathways(subject) ∩ pathways(object)`.
 
 **Caveat — this is an over-approximation, not curated provenance.** In a source pathway,
 *edge A–B in P ⟹ A,B both in P* is always true, but the **converse is not**: A and B can both be
 in P while their interaction was only curated in pathway Q. The merge collapses edges and drops
 per-edge pathway provenance, and INDRA evidence URLs are identical across pathways, so edge
-membership cannot be recovered exactly from the merged file alone. `okn:inPathway` therefore yields
+membership cannot be recovered exactly from the merged file alone. `ncipidv:inPathway` therefore yields
 a **superset** of true edge memberships (over-assigning for pathways that share both endpoints).
 This is acceptable for pathway-scoped subgraph queries; the deliberately distinct, non-curated
 predicate name signals that it is co-membership-derived. The exact alternative is to have the merge
@@ -660,8 +756,8 @@ SELECT ?protein WHERE { ?protein RO:0000056 ndex:f7585a28-45d0-11ed-b7d0-0ac135e
 
 # All interactions (with evidence) belonging to a pathway
 SELECT ?s ?p ?o ?evidence WHERE {
-    ?stmt okn:inPathway ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf ;
-          rdf:subject ?s ; rdf:predicate ?p ; rdf:object ?o ; okn:evidenceCount ?evidence .
+    ?stmt ncipidv:inPathway ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf ;
+          rdf:subject ?s ; rdf:predicate ?p ; rdf:object ?o ; ncipidv:evidenceCount ?evidence .
 }
 ```
 
@@ -680,7 +776,7 @@ with identical membership converge to a single IRI across pathways while familie
 a name but differ in members stay distinct:
 
 ```
-http://example.org/okn/family/<name-slug>-<hash8(sorted members)>
+https://www.ndexbio.org/identifiers/family/<name-slug>-<hash8(sorted members)>
 ```
 
 - `<name-slug>` is a readable slug of the family name (e.g. `RAS-family`).
@@ -811,12 +907,12 @@ For each edge:
      triple nor the reified statement (see [4.4](#44-reification-pattern-for-relationship-metadata))
    - Generate:
      * **Direct triple**: `subject RO-predicate object` (e.g., `uniprot:O75928 RO:0002578 uniprot:Q13547`)
-     * **Reified statement**: URI like `okn:e231_1` with:
+     * **Reified statement**: URI like `ncipid:e231_1` with:
        - Type: `rdf:Statement` (plus GO process type for PTMs, e.g., `GO:0016925`)
-       - Properties: `rdf:subject`, `rdf:predicate`, `rdf:object`, `okn:evidenceCount`
+       - Properties: `rdf:subject`, `rdf:predicate`, `rdf:object`, `ncipidv:evidenceCount`
        - Provenance: `dcterms:source`, `prov:wasDerivedFrom`
-       - **Pathway membership** (merged networks, see [4.8.3](#483-edge--pathway-membership-okninpathway)):
-         add `okn:inPathway <pathway>` for every pathway in
+       - **Pathway membership** (merged networks, see [4.8.3](#483-edge--pathway-membership-ncipidvinpathway)):
+         add `ncipidv:inPathway <pathway>` for every pathway in
          `pathways(subject) ∩ pathways(object)`, using the `proteinURI → {pathwayURI}` map built
          in Step 2
 
@@ -896,13 +992,13 @@ uniprot:O75928 RO:0002436 uniprot:P63279 .  # molecularly interacts with
 
 # Reified statement for metadata
 # URI pattern depends on whether network ID is provided (see Section 8.6)
-# With network ID:    net:e227_1  (where net: = okn:n_{networkId}/)
-# Without network ID: okn:e227_1
-okn:e227_1 a rdf:Statement ;
+# With network ID:    net:e227_1  (where net: = ncipid:n_{networkId}/)
+# Without network ID: ncipid:e227_1
+ncipid:e227_1 a rdf:Statement ;
     rdf:subject uniprot:O75928 ;
     rdf:predicate RO:0002436 ;
     rdf:object uniprot:P63279 ;
-    okn:evidenceCount 32 ;
+    ncipidv:evidenceCount 32 ;
     dcterms:source "INDRA" ;
     prov:wasDerivedFrom <https://db.indra.bio/statements/from_agents?subject=PIAS1&object=UBE2I&type=Complex&format=html&expand_all=true> .
 ```
@@ -945,33 +1041,33 @@ okn:e227_1 a rdf:Statement ;
 # Relationship 1: Sumoylation (8 evidences) - PTM uses RO:0002578 + GO type
 uniprot:O75928 RO:0002578 uniprot:Q13547 .  # directly regulates
 
-okn:e231_1 a rdf:Statement, GO:0016925 ;  # typed as "protein sumoylation"
+ncipid:e231_1 a rdf:Statement, GO:0016925 ;  # typed as "protein sumoylation"
     rdf:subject uniprot:O75928 ;
     rdf:predicate RO:0002578 ;
     rdf:object uniprot:Q13547 ;
-    okn:evidenceCount 8 ;
+    ncipidv:evidenceCount 8 ;
     dcterms:source "INDRA" ;
     prov:wasDerivedFrom <https://db.indra.bio/statements/from_agents?subject=PIAS1&object=HDAC1&type=Sumoylation&format=html&expand_all=true> .
 
 # Relationship 2: Binding (3 evidences) - uses RO:0002436 directly
 uniprot:O75928 RO:0002436 uniprot:Q13547 .  # molecularly interacts with
 
-okn:e231_2 a rdf:Statement ;
+ncipid:e231_2 a rdf:Statement ;
     rdf:subject uniprot:O75928 ;
     rdf:predicate RO:0002436 ;
     rdf:object uniprot:Q13547 ;
-    okn:evidenceCount 3 ;
+    ncipidv:evidenceCount 3 ;
     dcterms:source "INDRA" ;
     prov:wasDerivedFrom <https://db.indra.bio/statements/from_agents?subject=PIAS1&object=HDAC1&type=Complex&format=html&expand_all=true> .
 
 # Relationship 3: Desumoylation (2 evidences) - PTM uses RO:0002578 + GO type
 uniprot:O75928 RO:0002578 uniprot:Q13547 .  # directly regulates (duplicate triple, no harm)
 
-okn:e231_3 a rdf:Statement, GO:0016926 ;  # typed as "protein desumoylation"
+ncipid:e231_3 a rdf:Statement, GO:0016926 ;  # typed as "protein desumoylation"
     rdf:subject uniprot:O75928 ;
     rdf:predicate RO:0002578 ;
     rdf:object uniprot:Q13547 ;
-    okn:evidenceCount 2 ;
+    ncipidv:evidenceCount 2 ;
     dcterms:source "INDRA" ;
     prov:wasDerivedFrom <https://db.indra.bio/statements/from_agents?subject=PIAS1&object=HDAC1&type=Desumoylation&format=html&expand_all=true> .
 ```
@@ -1260,14 +1356,14 @@ Statement URIs are constructed based on whether a **network ID** parameter is pr
 
 **With Network ID (recommended for multi-network scenarios):**
 ```turtle
-# Pattern: okn:n_{networkId}/e{edgeId}_{index}
+# Pattern: ncipid:n_{networkId}/e{edgeId}_{index}
 okn:n_e5c9f6a2-3b1d-11ed-a261-0ac135e8bacf/e231_1
 ```
 
 **Without Network ID (simple single-network use):**
 ```turtle
 # Pattern: okn:e{edgeId}_{index}
-okn:e231_1
+ncipid:e231_1
 ```
 
 **URI Construction Logic:**
@@ -2046,7 +2142,7 @@ net:e227_1 a rdf:Statement ;
     rdf:subject uniprot:O75928 ;
     rdf:predicate RO:0002436 ;
     rdf:object uniprot:P63279 ;
-    okn:evidenceCount 32 ;
+    ncipidv:evidenceCount 32 ;
     dcterms:source "INDRA" ;
     prov:wasDerivedFrom <https://db.indra.bio/statements/from_agents?subject=PIAS1&object=UBE2I&type=Complex&format=html&expand_all=true> .
 
@@ -2055,7 +2151,7 @@ net:e231_1 a rdf:Statement, GO:0016925 ;  # protein sumoylation
     rdf:subject uniprot:O75928 ;
     rdf:predicate RO:0002578 ;
     rdf:object uniprot:Q13547 ;
-    okn:evidenceCount 8 ;
+    ncipidv:evidenceCount 8 ;
     dcterms:source "INDRA" ;
     prov:wasDerivedFrom <https://db.indra.bio/statements/from_agents?subject=PIAS1&object=HDAC1&type=Sumoylation&format=html&expand_all=true> .
 
@@ -2064,7 +2160,7 @@ net:e231_2 a rdf:Statement ;
     rdf:subject uniprot:O75928 ;
     rdf:predicate RO:0002436 ;
     rdf:object uniprot:Q13547 ;
-    okn:evidenceCount 3 ;
+    ncipidv:evidenceCount 3 ;
     dcterms:source "INDRA" ;
     prov:wasDerivedFrom <https://db.indra.bio/statements/from_agents?subject=PIAS1&object=HDAC1&type=Complex&format=html&expand_all=true> .
 ```
@@ -2075,9 +2171,9 @@ net:e231_2 a rdf:Statement ;
 - **PTM specificity via GO types** - sumoylation statement typed with `GO:0016925`
 - **Standard reification** - uses `rdf:Statement` with standard properties
 - **Network-scoped statement URIs** - `net:e231_1` expands to globally unique URI
-- **Minimal custom vocabulary** - only `okn:evidenceCount` for metadata
+- **Minimal custom vocabulary** - only `ncipidv:evidenceCount` for metadata
 
-**Note:** If no network ID is provided, statement URIs would use `okn:e231_1` instead (see Section 8.6).
+**Note:** If no network ID is provided, statement URIs would use `ncipid:e231_1` instead (see Section 8.6).
 
 ## 12. Testing Strategy
 
@@ -2111,13 +2207,13 @@ SELECT ?subject ?object ?evidenceCount WHERE {
           rdf:predicate RO:0002629 ;  # directly positively regulates
           rdf:subject ?subject ;
           rdf:object ?object ;
-          okn:evidenceCount ?evidenceCount .
+          ncipidv:evidenceCount ?evidenceCount .
     FILTER(?evidenceCount > 10)
 }
 
 # Query 3: Find proteins involved in sumoylation (using the GO process type)
 SELECT DISTINCT ?protein WHERE {
-    ?stmt okn:processType GO:0016925 .   # protein sumoylation
+    ?stmt ncipidv:processType GO:0016925 .   # protein sumoylation
     { ?stmt rdf:subject ?protein } UNION { ?stmt rdf:object ?protein }
 }
 
@@ -2126,7 +2222,7 @@ SELECT ?protein1 ?protein2 (SUM(?count) as ?totalEvidence) WHERE {
     ?stmt a rdf:Statement ;
           rdf:subject ?protein1 ;
           rdf:object ?protein2 ;
-          okn:evidenceCount ?count .
+          ncipidv:evidenceCount ?count .
 }
 GROUP BY ?protein1 ?protein2
 
@@ -2137,7 +2233,7 @@ SELECT ?stmt ?ptmType ?subject ?object ?source ?evidenceCount WHERE {
           rdf:subject ?subject ;
           rdf:object ?object ;
           dcterms:source ?source ;
-          okn:evidenceCount ?evidenceCount ;
+          ncipidv:evidenceCount ?evidenceCount ;
           a ?ptmType .
     FILTER(STRSTARTS(STR(?ptmType), "http://purl.obolibrary.org/obo/GO_"))
 }
@@ -2149,7 +2245,7 @@ SELECT ?partner ?evidenceCount WHERE {
           rdf:predicate RO:0002436 ;
           rdf:subject uniprot:O75928 ;
           rdf:object ?partner ;
-          okn:evidenceCount ?evidenceCount .
+          ncipidv:evidenceCount ?evidenceCount .
 }
 ```
 

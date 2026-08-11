@@ -12,26 +12,40 @@ import type {
   RdfOutput,
   NamespaceMap,
 } from '../../core/types.js';
-import { createNamespaceMap } from '../../core/namespace-manager.js';
 import {
-  nodeTypeToSioUri,
+  createNamespaceMap,
+  resolvePrefix,
+  NDEX_IDENTIFIERS_BASE,
+  NDEX_VOCAB_BASE,
+} from '../../core/namespace-manager.js';
+import {
+  nodeTypeToClassUri,
+  inferClassFromIdentifier,
   buildStatementUri,
   buildPathwayUri,
   buildFamilyUri,
+  buildEntityUri,
+  isBareName,
   buildUri,
   BIOLINK_PATHWAY,
   BIOLINK_GENE_FAMILY,
 } from '../../core/uri-builder.js';
+import { CHEMICAL_NORMALIZATION } from '../../core/chemical-normalization.js';
 import { parseRelationships } from './relationship-parser.js';
 import { getRdfMapping } from './indra-type-mapper.js';
 
-const OKN_BASE_URI = 'http://example.org/okn/';
+/** Minted entity IRIs (statements, families, fallback pathways). */
+const OKN_BASE_URI = NDEX_IDENTIFIERS_BASE;
+/** Vocabulary terms this converter defines. */
+const OKN_VOCAB_URI = NDEX_VOCAB_BASE;
+
+const CHEMICAL_TYPE = 'smallmolecule';
 
 // Pathway-provenance handling (merged NCI-PID networks). See CX2_TO_RDF_DESIGN.md §4.8.
 const PATHWAY_TYPE = 'pathway';
 const PARTICIPATES_IN_INTERACTION = 'participates in';
 const RO_PARTICIPATES_IN = 'http://purl.obolibrary.org/obo/RO_0000056';
-const OKN_IN_PATHWAY = `${OKN_BASE_URI}inPathway`;
+const OKN_IN_PATHWAY = `${OKN_VOCAB_URI}inPathway`;
 
 // Protein/gene family handling. A family node's `member` list (hgnc.symbol CURIEs)
 // becomes `family RO:0002351 gene` (has member) triples; biolink:has_member maps
@@ -65,13 +79,13 @@ function isResolvableIdentifier(identifier: string, namespaces: NamespaceMap): b
     return true;
   }
   const colon = identifier.indexOf(':');
-  return colon !== -1 && namespaces[identifier.substring(0, colon)] !== undefined;
+  return colon !== -1 && resolvePrefix(identifier.substring(0, colon), namespaces) !== undefined;
 }
 
 /**
  * Add OKN provenance prefixes for tidy output, ordered so the most specific
  * prefix wins N3's first-match compaction:
- *  - `pathway:`/`family:` before `okn:` so those IRIs compact (the trailing slash
+ *  - `pathway:`/`family:` before `ncipid:` so those IRIs compact (the trailing slash
  *    is not a valid CURIE local-name char, so dedicated prefixes are required);
  *  - `PW:` before `obo:` so PW terms render as `PW:0000001` rather than `obo:PW_0000001`.
  * `biolink:` is added when either pathway or family nodes are present (both type
@@ -85,7 +99,7 @@ function addOknPrefixes(
   const out: NamespaceMap = {};
   for (const [prefix, uri] of Object.entries(ns)) {
     if (prefix === 'obo' && opts.pathway) out.PW = 'http://purl.obolibrary.org/obo/PW_';
-    if (prefix === 'okn') {
+    if (prefix === 'ncipid') {
       if (opts.pathway) out.pathway = `${OKN_BASE_URI}pathway/`;
       if (opts.family) out.family = `${OKN_BASE_URI}family/`;
     }
@@ -263,11 +277,53 @@ function processNodes(parsed: ParsedCX2, namespaces: NamespaceMap): {
       continue;
     }
 
+    // Declared type first; then the identifier space, which entails a class for
+    // uniprot/chebi. No blanket default — guessing a class from nothing is how
+    // small molecules came to be published as proteins.
+    const type =
+      nodeTypeToClassUri(node.v.type) ?? inferClassFromIdentifier(node.v.represents);
+    if (!type) {
+      console.warn(
+        `Node ${node.id} (${node.v.represents}): type ${JSON.stringify(node.v.type)} ` +
+          `unrecognized and identifier implies no class — emitting without rdf:type`
+      );
+    }
+
+    // Small molecules are re-identified onto the OKN-preferred identifier
+    // (PubChem CID, else ChEBI) from the vendored normalization snapshot; the rest
+    // of the clique becomes skos:exactMatch. Identifiers absent from the map have
+    // nothing better to point at and keep their source IRI.
+    const normalized =
+      node.v.type?.toLowerCase() === CHEMICAL_TYPE
+        ? CHEMICAL_NORMALIZATION[node.v.represents]
+        : undefined;
+
+    // A bare-name `represents` cannot form a real IRI; mint one under the graph's
+    // identifier base so the entity has an identity instead of a relative IRI.
+    const minted = isBareName(node.v.represents)
+      ? buildEntityUri(OKN_BASE_URI, node.v.represents)
+      : undefined;
+
+    const subjectUri = normalized?.iri ?? minted;
+    if (subjectUri) {
+      parsed.nodeIdToUri.set(node.id, subjectUri);
+    }
+
+    // The subject IRI moved, so record the identifier it moved from — otherwise a
+    // consumer holding the source ChEBI/CAS id can no longer reach this entity.
+    // Resolved here rather than in the snapshot because only the network's own
+    // @context knows the stem for prefixes Bioregistry does not canonicalize (cas).
+    const exactMatch = normalized
+      ? [...new Set([...normalized.exactMatch, buildUri(node.v.represents, namespaces)])]
+          .filter((iri) => iri !== normalized.iri)
+      : undefined;
+
     declarations.push({
-      uri: node.v.represents,
+      uri: subjectUri ?? node.v.represents,
       label: node.v.name,
-      type: nodeTypeToSioUri(node.v.type),
+      type,
       aliases: node.v.alias,
+      exactMatch: exactMatch?.length ? exactMatch : undefined,
     });
   }
 

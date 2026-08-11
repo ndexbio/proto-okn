@@ -10,7 +10,7 @@ import type {
   ReifiedStatement,
   NamespaceMap,
 } from './types.js';
-import { expandUri } from './namespace-manager.js';
+import { expandUri, resolvePrefix, NDEX_VOCAB_BASE } from './namespace-manager.js';
 import { toSafeIri } from './uri-builder.js';
 
 const { namedNode, literal } = DataFactory;
@@ -25,14 +25,16 @@ const RDF_OBJECT = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#object';
 const RDF_STATEMENT = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement';
 const RDFS_LABEL = 'http://www.w3.org/2000/01/rdf-schema#label';
 const OWL_SAMEAS = 'http://www.w3.org/2002/07/owl#sameAs';
+const SKOS_EXACT_MATCH = 'http://www.w3.org/2004/02/skos/core#exactMatch';
 
 /**
- * OKN custom predicates
+ * Vocabulary terms this converter defines. Under the NDEx vocab base, not the
+ * retired `example.org` placeholder — see namespace-manager.ts.
  */
-const OKN_EVIDENCE_COUNT = 'http://example.org/okn/evidenceCount';
-const OKN_EVIDENCE_URL = 'http://example.org/okn/evidenceUrl';
-const OKN_PROCESS_TYPE = 'http://example.org/okn/processType';
-const OKN_IN_PATHWAY = 'http://example.org/okn/inPathway';
+const OKN_EVIDENCE_COUNT = `${NDEX_VOCAB_BASE}evidenceCount`;
+const OKN_EVIDENCE_URL = `${NDEX_VOCAB_BASE}evidenceUrl`;
+const OKN_PROCESS_TYPE = `${NDEX_VOCAB_BASE}processType`;
+const OKN_IN_PATHWAY = `${NDEX_VOCAB_BASE}inPathway`;
 
 /**
  * Write RDF output to Turtle format
@@ -80,12 +82,15 @@ function writeNodeDeclaration(
 ): void {
   const subjectUri = resolveUri(node.uri, namespaces);
 
-  // Type triple
-  writer.addQuad(
-    namedNode(subjectUri),
-    namedNode(RDF_TYPE),
-    namedNode(node.type)
-  );
+  // Type triple (omitted when the CX2 type was missing or unrecognized — the
+  // adapter warns in that case rather than defaulting to a class)
+  if (node.type) {
+    writer.addQuad(
+      namedNode(subjectUri),
+      namedNode(RDF_TYPE),
+      namedNode(node.type)
+    );
+  }
 
   // Label triple (only when a label is present; avoid emitting empty literals)
   if (node.label) {
@@ -104,6 +109,21 @@ function writeNodeDeclaration(
         namedNode(subjectUri),
         namedNode(OWL_SAMEAS),
         namedNode(aliasUri)
+      );
+    }
+  }
+
+  // Equivalent identifiers from node normalization. skos:exactMatch rather than
+  // owl:sameAs: these are cross-vocabulary identifier equivalences asserted by a
+  // third-party normalizer, not OWL-strength claims that every property carries
+  // over — and a reasoner acting on sameAs would merge cliques we deliberately
+  // kept apart (see the retinal isomers in scripts/normalize-chemicals.js).
+  if (node.exactMatch) {
+    for (const match of node.exactMatch) {
+      writer.addQuad(
+        namedNode(subjectUri),
+        namedNode(SKOS_EXACT_MATCH),
+        namedNode(resolveUri(match, namespaces))
       );
     }
   }
@@ -192,13 +212,12 @@ function resolveUri(uri: string, namespaces: NamespaceMap): string {
     return uri;
   }
 
-  // Try to expand prefixed form
+  // Try to expand prefixed form. Prefix resolution is case-insensitive: CX2 files
+  // declare `chebi:` in @context but write `CHEBI:` on nodes, and an exact-only
+  // match left those as relative, scheme-less IRIs.
   const colonIndex = uri.indexOf(':');
-  if (colonIndex !== -1) {
-    const prefix = uri.substring(0, colonIndex);
-    if (prefix in namespaces) {
-      return expandUri(uri, namespaces);
-    }
+  if (colonIndex !== -1 && resolvePrefix(uri.substring(0, colonIndex), namespaces)) {
+    return expandUri(uri, namespaces);
   }
 
   // Return as-is (will likely fail validation)

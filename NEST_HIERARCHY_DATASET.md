@@ -522,10 +522,12 @@ the IAS interaction network is the rest.
    earlier blocked item. NeST conversion ships as the standalone converters above; that
    TypeScript converter stays NCI-PID-only. The gaps it *would* have needed — no
    literal-triple type on `RdfOutput`, a `ReifiedStatement` shape hardcoding NCI-PID evidence
-   fields, no adapter registry, no streaming output, and the retired `okn:`/`example.org`
-   base still hardcoded in `namespace-manager.ts`, `turtle-writer.ts` and
-   `adapters/nci-pid/index.ts` — remain open **as NCI-PID-side debt**, but no longer block
-   anything here.
+   fields, no adapter registry, and no streaming output — remain open **as NCI-PID-side
+   debt**, but no longer block anything here. The `okn:`/`example.org` base is **no longer
+   among them**: NCI-PID retired it on 2026-08-10 for
+   `https://www.ndexbio.org/identifiers/` and `https://www.ndexbio.org/vocab/ncipid/`,
+   matching the convention here. Base IRIs are still hardcoded in `namespace-manager.ts`
+   rather than adapter-supplied, so a second adapter would need its own.
 3. **Not deployed.** There is no `nest` entry in the OKN registry and no live SPARQL
    endpoint; `apps.okn.us/nest/sparql` returns the registry web application, not a query
    service. Deposit is gated on open item 1 of

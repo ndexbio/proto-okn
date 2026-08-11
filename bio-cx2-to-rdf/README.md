@@ -85,17 +85,22 @@ bio-cx2-to-rdf/
 │   │   ├── cx2-parser.ts             # CX2 JSON parser (normalizes node/edge attributes)
 │   │   ├── namespace-manager.ts      # RDF namespaces + Bioregistry @context canonicalization
 │   │   ├── bioregistry-prefixes.ts   # Vendored Bioregistry canonical prefix map (generated)
+│   │   ├── chemical-normalization.ts # Vendored chemical id normalization map (generated)
 │   │   ├── turtle-writer.ts          # RDF to Turtle serialization
 │   │   └── uri-builder.ts            # URI construction utilities
 ├── scripts/
-│   └── refresh-bioregistry.js        # Build-time: regenerate bioregistry-prefixes.ts
+│   ├── refresh-bioregistry.js        # Build-time: regenerate bioregistry-prefixes.ts
+│   └── normalize-chemicals.js        # Build-time: normalize smallmolecule ids via RENCI Node Normalizer
 │   └── adapters/
 │       └── nci-pid/
 │           ├── index.ts                  # NCI-PID adapter entry
 │           ├── relationship-parser.ts   # HTML/evidence parsing
 │           └── indra-type-mapper.ts     # INDRA to RDF mappings
 ├── dist/                         # Compiled JavaScript output
-├── tests/                        # Test directory
+├── tests/                        # node:test suite (runs against dist/)
+│   ├── helpers/cx2.js                # CX2 fixture builders
+│   ├── regression.test.js            # one test per published-graph defect
+│   └── *.test.js                     # per-module unit tests
 ├── package.json
 └── tsconfig.json
 ```
@@ -127,6 +132,43 @@ npm run dev
 npm start <input.cx2> -o <output.ttl>
 ```
 
+## Tests
+
+```bash
+npm test        # builds, then runs the suite
+npm run test:only   # skip the build (use after `npm run dev`)
+```
+
+102 tests on Node's built-in runner — **no test framework dependency**, matching the
+zero-network, zero-extra-tooling posture of the rest of the package. The suite runs against
+`dist/`, not `src/`: `tsconfig.json` excludes `tests/`, so what is tested is exactly the
+JavaScript the CLI ships.
+
+| File | Covers |
+|---|---|
+| `attribute-declarations.test.js` | alias resolution, default materialization, falsy-value handling |
+| `namespace-manager.test.js` | prefix resolution (incl. case-insensitivity), Bioregistry canonicalization, base IRIs |
+| `uri-builder.test.js` | type mapping, identifier-space inference, minted IRIs, slug/IRI helpers |
+| `cx2-parser.test.js` | end-to-end aspect parsing, `@context` handling, id lookups |
+| `indra-mapping.test.js` | INDRA type → RO/GO mapping, relationship/evidence parsing |
+| `nci-pid-adapter.test.js` | node typing, chemical normalization, families, pathway membership, dedup, self-loops |
+| `turtle-writer.test.js` | serialization: `rdf:type` omission, `skos:exactMatch`, IRI escaping |
+| `regression.test.js` | one end-to-end test per defect in [remaining_issues.md](../remaining_issues.md) |
+
+`regression.test.js` is the important one. Each test corresponds to a numbered issue found in
+the published graph and asserts on **serialized Turtle**, so it fails if any layer — type
+mapping, prefix resolution, or serialization — reintroduces the defect:
+
+- **issue 2** — bare names must not leak as unresolvable identifiers
+- **issue 3** — no relative, scheme-less IRIs anywhere in the document
+- **issue 6** — "select all proteins" must return no chemicals
+- **issue 7** — the `example.org` placeholder must appear nowhere
+- **issue 9** — ChEBI must canonicalize despite a lowercase `@context`
+
+The suite was mutation-checked: reintroducing each original bug in turn (the
+default-to-protein fallback, `smallmolecule` missing from the type map, case-sensitive prefix
+lookup, and an override leaking its rejected clique) fails 2, 5, 9 and 1 tests respectively.
+
 ## Ontologies and Standards
 
 The tool generates RDF using the following standard ontologies:
@@ -152,6 +194,10 @@ entity IRIs, the converter **canonicalizes each `@context` prefix against
 - A prefix without one (Bioregistry's canonical is just a provider webpage — `cas`, `hgnc.symbol`,
   `hprd`, `kegg.compound`) keeps its `@context` value.
 
+Prefix lookup is **case-insensitive** (exact match preferred). CX2 files declare `"chebi"` in
+`@context` but write `CHEBI:16618` on nodes; an exact-only lookup left every ChEBI entity as a
+relative, scheme-less IRI (`<CHEBI:16618>`) that joins with nothing.
+
 The canonical stems are **vendored as a committed snapshot** in `src/core/bioregistry-prefixes.ts`.
 This file is generated, but it is **checked into the repo** (not produced at build time): it is a
 compile-time `import`, and pinning a snapshot of the live Bioregistry API is what keeps conversion
@@ -173,7 +219,81 @@ if the snapshot is absent.
 > [CX2_TO_RDF_DESIGN.md §4.1.1](../CX2_TO_RDF_DESIGN.md).
 
 This handles namespace canonicalization only; entity *equivalence* (e.g. a non-canonical UniProt
-isoform accession) is left to `owl:sameAs` links plus a downstream node normalizer (FRINK).
+isoform accession) is left to `owl:sameAs` links plus a downstream node normalizer — but note that
+running the normalizer is **our** job, not the infrastructure's (see below).
+
+## Chemical Identifier Normalization (Node Normalizer)
+
+Bioregistry canonicalization answers *"given prefix `chebi`, what IRI stem?"*. It does **not**
+answer *"which identifier space should a chemical use?"* — and for that, OKN's
+[biomedical identifier guidance](https://registry.okn.us/book/biomedical-identifiers/) is explicit:
+
+> Chemical entities (compounds, substances): prefer **PubChem CIDs**
+> (`http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID$1`). **CAS registry numbers are imprecise.**
+
+NCI-PID `type: "smallmolecule"` nodes are identified by `CHEBI:` or `cas:` CURIEs, so neither
+matches the preferred space. The same page names the RENCI **Node Normalizer** as the conversion
+tool, and phrases it as something the graph producer *may use* — **FRINK does not normalize
+uploaded graphs.** `scripts/normalize-chemicals.js` is that step.
+
+```bash
+npm run build                # required: the tool reuses dist/core/cx2-parser.js
+npm run normalize:chemicals  # queries the Node Normalizer, writes the review set
+```
+
+Resolution policy, applied per distinct source identifier:
+
+1. **PubChem CID** from the normalizer clique → preferred subject IRI
+2. else **ChEBI** from the clique → fallback subject IRI
+3. else the **source identifier is kept unchanged** (nothing better exists)
+
+The full clique is retained so the converter can emit it as `skos:exactMatch`. That is what keeps
+step 3 recoverable and makes the normalizer's merges auditable instead of silent.
+
+### Outputs
+
+Written to `../chemical-normalization/` (override with `--out`):
+
+| File | Purpose |
+|---|---|
+| `snapshot.json` | Full normalizer result per identifier — the durable artifact |
+| `review.tsv` | One row per distinct identifier, for spreadsheet review |
+| `review.md` | Same table plus per-flag summary counts |
+
+### Review flags
+
+**Normalization is not automatically safe, which is why this emits a table and not just a map.**
+Rows are sorted worst-first:
+
+| Flag | Meaning |
+|---|---|
+| `COLLISION` | Two+ distinct source ids normalize onto the **same** id — accepting merges separate CX2 nodes into one RDF entity. Resolve before accepting. |
+| `CHEBI-DRIFT` | Clique ChEBI differs from the source: a stereoisomer, salt, or class merge. Review. |
+| `NO-CID` | No PubChem CID in the clique; fell back to ChEBI. Expected for lipid/compound classes. |
+| `OK` | Resolved to a PubChem CID. |
+| `UNRESOLVED` | Normalizer does not recognize the id — a compound *class* (ceramide, sphingomyelin) or a bad source CAS number. |
+| `NO-ID` | Node `represents` is a bare name, not a CURIE. Not normalizable. |
+
+`COLLISION` exists because a collision is a property of the *set*, invisible when checking one row
+at a time. In NCI-PID it catches a real defect: `CHEBI:16066` (11-cis-retinal) and `CHEBI:17898`
+(all-trans-retinal) both normalize to PubChem CID 638015 ("Retinal"). Their isomerization *is* the
+photon-detection step of visual signal transduction, so accepting that merge would turn the central
+reaction of the pathway into a self-loop.
+
+### Options
+
+| Option | Default | Description |
+|---|---|---|
+| `--out <dir>` | `../chemical-normalization` | Output directory |
+| `--types <list>` | `smallmolecule` | Comma-separated CX2 node types to collect |
+| `--batch <n>` | `200` | Identifiers per normalizer request |
+| `--offline` | off | Re-render tables from an existing `snapshot.json`, no network calls |
+
+Trailing arguments override the scanned corpus (files or directories); the default is
+`../data_files` plus any `.cx2` at the repo root.
+
+> Like the Bioregistry snapshot, this is a **build-time** tool producing a committed artifact —
+> conversion itself stays deterministic and offline.
 
 ## CX2 Attribute Handling
 
@@ -209,10 +329,10 @@ single-pathway files untouched. Full design: [CX2_TO_RDF_DESIGN.md §4.8](../CX2
   (`owl:equivalentClass PW:0000001`) and labelled with the pathway name (a trailing version marker
   like ` _v2_0_` is stripped). When `represents` is absent or its prefix is undeclared (e.g. the
   merge's non-resolvable `pathway:<name>` placeholder, emitted when no NDEx UUID was available), the
-  converter falls back to a minted `…/okn/pathway/<slug|uuid>` IRI (the `pathway:` prefix).
+  converter falls back to a minted `…/identifiers/pathway/<slug|uuid>` IRI (the `pathway:` prefix).
 - **Node membership** → `protein RO:0000056 pathway` (participates in), flipped to protein-subject;
   a direct triple, no reification.
-- **Edge → pathway** → each reified interaction statement gets `okn:inPathway <pathway>` for every
+- **Edge → pathway** → each reified interaction statement gets `ncipidv:inPathway <pathway>` for every
   pathway in which **both** endpoints participate.
 
 ```turtle
@@ -221,13 +341,13 @@ ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf a biolink:Pathway ;
 
 uniprot:A0AVQ5 RO:0000056 ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf .   # LYN participates_in IL5
 
-okn:statement_582_0 a rdf:Statement ;
+ncipid:statement_582_0 a rdf:Statement ;
     rdf:subject uniprot:A8K1D9 ; rdf:predicate RO:0002629 ; rdf:object uniprot:A0AVQ5 ;
-    okn:evidenceCount 6 ; okn:evidenceUrl <…> ;
-    okn:inPathway ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf .
+    ncipidv:evidenceCount 6 ; ncipidv:evidenceUrl <…> ;
+    ncipidv:inPathway ndex:f7585a28-45d0-11ed-b7d0-0ac135e8bacf .
 ```
 
-> **Note:** `okn:inPathway` is a **co-membership heuristic** (both endpoints in the pathway), which
+> **Note:** `ncipidv:inPathway` is a **co-membership heuristic** (both endpoints in the pathway), which
 > yields a *superset* of true edge memberships — the merge drops exact per-edge pathway provenance.
 > It is intended for pathway-scoped queries; exact provenance is a planned `merge_cx2.py` follow-up.
 
@@ -246,7 +366,7 @@ family:Gq-family-57a2b211 a biolink:GeneFamily ;
     RO:0002351 hgnc.symbol:GNA11, hgnc.symbol:GNA14, hgnc.symbol:GNA15, hgnc.symbol:GNAQ .
 ```
 
-The minted IRI (`family:` = `…/okn/family/<slug>-<hash>`) also replaces the family's id→IRI entry,
+The minted IRI (`family:` = `…/identifiers/family/<slug>-<hash>`) also replaces the family's id→IRI entry,
 so interaction edges touching the family resolve to it rather than the bare name.
 
 ## Output Format
@@ -354,8 +474,9 @@ Dataset Adapters (pluggable)
 > - `ReifiedStatement` hardcodes the NCI-PID evidence fields (`evidenceCount`,
 >   `evidenceUrl`, `processType`) rather than carrying generic qualifiers
 > - there is no adapter registry; `cli/index.ts` calls the NCI-PID adapter directly
-> - the retired `okn:`/`example.org` base is still hardcoded in `namespace-manager.ts`,
->   `turtle-writer.ts` and `adapters/nci-pid/index.ts`
+> - the base IRIs are hardcoded in `namespace-manager.ts` rather than adapter-supplied — they
+>   are now the correct NDEx stems (`example.org` was retired 2026-08-10), but a second adapter
+>   would still need its own
 > - output is accumulated in memory, which will not scale to the ~1.3 M triples NeST emits
 
 ## License

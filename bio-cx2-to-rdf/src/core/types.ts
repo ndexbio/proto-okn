@@ -140,8 +140,18 @@ export interface ReifiedStatement {
 export interface NodeDeclaration {
   uri: string;
   label?: string;
-  type: string;
+  /**
+   * RDF class IRI. Absent when the CX2 `type` is missing or unrecognized — the
+   * converter emits the entity untyped rather than guessing a class.
+   */
+  type?: string;
   aliases?: string[];
+  /**
+   * Equivalent identifiers as full IRIs, emitted as `skos:exactMatch`. Populated
+   * for chemicals re-identified onto an OKN-preferred identifier, so the merge
+   * stays auditable and joins still work through the identifiers not used here.
+   */
+  exactMatch?: string[];
 }
 
 /**

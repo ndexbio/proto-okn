@@ -1,0 +1,237 @@
+{
+ "_source": "NDEx 'Integrated association score (IAS) network, NeST project' (100K-edge display network)",
+ "_note": "edgeMapping references attribute 'Integrated score'; the build pipeline remaps it to this network's column names (see build_cx2_network.py COLUMN_REMAP).",
+ "visualProperties": [
+  {
+   "default": {
+    "edge": {
+     "EDGE_SOURCE_ARROW_SIZE": 6.0,
+     "EDGE_LABEL_OPACITY": 1.0,
+     "EDGE_TARGET_ARROW_SHAPE": "none",
+     "EDGE_WIDTH": 10.0,
+     "EDGE_SOURCE_ARROW_SHAPE": "none",
+     "EDGE_LINE_COLOR": "#009900",
+     "EDGE_LABEL_MAX_WIDTH": 200.0,
+     "EDGE_OPACITY": 1.0,
+     "EDGE_LABEL_FONT_FACE": {
+      "FONT_FAMILY": "sans-serif",
+      "FONT_STYLE": "normal",
+      "FONT_WEIGHT": "normal"
+     },
+     "EDGE_VISIBILITY": "element",
+     "EDGE_LABEL_FONT_SIZE": 10,
+     "EDGE_LABEL_COLOR": "#000000",
+     "EDGE_SELECTED_PAINT": "#FF0000",
+     "EDGE_SELECTED": "false",
+     "EDGE_SOURCE_ARROW_COLOR": "#000000",
+     "EDGE_CURVED": true,
+     "EDGE_LINE_STYLE": "solid",
+     "EDGE_TARGET_ARROW_COLOR": "#000000",
+     "EDGE_TARGET_ARROW_SIZE": 6.0
+    },
+    "network": {
+     "NETWORK_BACKGROUND_COLOR": "#000000"
+    },
+    "node": {
+     "NODE_Y_LOCATION": "0.0",
+     "NODE_IMAGE_4_POSITION": {
+      "HORIZONTAL_ALIGN": "center",
+      "VERTICAL_ALIGN": "center",
+      "HORIZONTAL_ANCHOR": "center",
+      "VERTICAL_ANCHOR": "center",
+      "MARGIN_X": 0.0,
+      "MARGIN_Y": 0.0
+     },
+     "NODE_IMAGE_4_SIZE": {
+      "WIDTH": 50.0,
+      "HEIGHT": 50.0
+     },
+     "NODE_BACKGROUND_COLOR": "#FFFFFF",
+     "NODE_IMAGE_7_SIZE": {
+      "WIDTH": 50.0,
+      "HEIGHT": 50.0
+     },
+     "NODE_IMAGE_1_POSITION": {
+      "HORIZONTAL_ALIGN": "center",
+      "VERTICAL_ALIGN": "center",
+      "HORIZONTAL_ANCHOR": "center",
+      "VERTICAL_ANCHOR": "center",
+      "MARGIN_X": 0.0,
+      "MARGIN_Y": 0.0
+     },
+     "NODE_WIDTH": 20.0,
+     "NODE_IMAGE_9_POSITION": {
+      "HORIZONTAL_ALIGN": "center",
+      "VERTICAL_ALIGN": "center",
+      "HORIZONTAL_ANCHOR": "center",
+      "VERTICAL_ANCHOR": "center",
+      "MARGIN_X": 0.0,
+      "MARGIN_Y": 0.0
+     },
+     "COMPOUND_NODE_SHAPE": "ROUND_RECTANGLE",
+     "NODE_IMAGE_8_SIZE": {
+      "WIDTH": 50.0,
+      "HEIGHT": 50.0
+     },
+     "NODE_LABEL_POSITION": {
+      "HORIZONTAL_ALIGN": "left",
+      "VERTICAL_ALIGN": "top",
+      "HORIZONTAL_ANCHOR": "center",
+      "VERTICAL_ANCHOR": "bottom",
+      "MARGIN_X": 0.0,
+      "MARGIN_Y": 0.0,
+      "JUSTIFICATION": "center"
+     },
+     "NODE_Z_LOCATION": "0.0",
+     "NODE_IMAGE_2_SIZE": {
+      "WIDTH": 50.0,
+      "HEIGHT": 50.0
+     },
+     "NODE_BORDER_STYLE": "solid",
+     "NODE_IMAGE_1_SIZE": {
+      "WIDTH": 50.0,
+      "HEIGHT": 50.0
+     },
+     "NODE_IMAGE_5_SIZE": {
+      "WIDTH": 50.0,
+      "HEIGHT": 50.0
+     },
+     "NODE_VISIBILITY": "element",
+     "NODE_BACKGROUND_OPACITY": 1.0,
+     "NODE_IMAGE_7_POSITION": {
+      "HORIZONTAL_ALIGN": "center",
+      "VERTICAL_ALIGN": "center",
+      "HORIZONTAL_ANCHOR": "center",
+      "VERTICAL_ANCHOR": "center",
+      "MARGIN_X": 0.0,
+      "MARGIN_Y": 0.0
+     },
+     "NODE_LABEL_COLOR": "#FFFFFF",
+     "NODE_SELECTED": false,
+     "NODE_BORDER_COLOR": "#FFFFFF",
+     "NODE_IMAGE_8_POSITION": {
+      "HORIZONTAL_ALIGN": "center",
+      "VERTICAL_ALIGN": "center",
+      "HORIZONTAL_ANCHOR": "center",
+      "VERTICAL_ANCHOR": "center",
+      "MARGIN_X": 0.0,
+      "MARGIN_Y": 0.0
+     },
+     "NODE_IMAGE_6_SIZE": {
+      "WIDTH": 50.0,
+      "HEIGHT": 50.0
+     },
+     "NODE_IMAGE_9_SIZE": {
+      "WIDTH": 50.0,
+      "HEIGHT": 50.0
+     },
+     "NODE_SHAPE": "ellipse",
+     "NODE_IMAGE_2_POSITION": {
+      "HORIZONTAL_ALIGN": "center",
+      "VERTICAL_ALIGN": "center",
+      "HORIZONTAL_ANCHOR": "center",
+      "VERTICAL_ANCHOR": "center",
+      "MARGIN_X": 0.0,
+      "MARGIN_Y": 0.0
+     },
+     "NODE_LABEL_FONT_SIZE": 12,
+     "NODE_X_LOCATION": "0.0",
+     "NODE_BORDER_OPACITY": 1.0,
+     "NODE_IMAGE_5_POSITION": {
+      "HORIZONTAL_ALIGN": "center",
+      "VERTICAL_ALIGN": "center",
+      "HORIZONTAL_ANCHOR": "center",
+      "VERTICAL_ANCHOR": "center",
+      "MARGIN_X": 0.0,
+      "MARGIN_Y": 0.0
+     },
+     "NODE_BORDER_WIDTH": 0.0,
+     "NODE_IMAGE_3_POSITION": {
+      "HORIZONTAL_ALIGN": "center",
+      "VERTICAL_ALIGN": "center",
+      "HORIZONTAL_ANCHOR": "center",
+      "VERTICAL_ANCHOR": "center",
+      "MARGIN_X": 0.0,
+      "MARGIN_Y": 0.0
+     },
+     "NODE_IMAGE_6_POSITION": {
+      "HORIZONTAL_ALIGN": "center",
+      "VERTICAL_ALIGN": "center",
+      "HORIZONTAL_ANCHOR": "center",
+      "VERTICAL_ANCHOR": "center",
+      "MARGIN_X": 0.0,
+      "MARGIN_Y": 0.0
+     },
+     "NODE_HEIGHT": 20.0,
+     "NODE_LABEL_OPACITY": 0.0,
+     "COMPOUND_NODE_PADDING": "10.0",
+     "NODE_LABEL_FONT_FACE": {
+      "FONT_FAMILY": "sans-serif",
+      "FONT_STYLE": "normal",
+      "FONT_WEIGHT": "normal"
+     },
+     "NODE_SELECTED_PAINT": "#FFFF00",
+     "NODE_LABEL_MAX_WIDTH": 200.0,
+     "NODE_IMAGE_3_SIZE": {
+      "WIDTH": 50.0,
+      "HEIGHT": 50.0
+     }
+    }
+   },
+   "edgeMapping": {
+    "EDGE_LINE_COLOR": {
+     "type": "CONTINUOUS",
+     "definition": {
+      "map": [
+       {
+        "max": 0.181,
+        "maxVPValue": "#666666",
+        "includeMin": false,
+        "includeMax": false
+       },
+       {
+        "min": 0.181,
+        "max": 0.37000000858306886,
+        "maxVPValue": "#E66C5C",
+        "minVPValue": "#999999",
+        "includeMin": true,
+        "includeMax": true
+       },
+       {
+        "min": 0.37000000858306886,
+        "max": 0.49999998688697816,
+        "maxVPValue": "#FDC527",
+        "minVPValue": "#E66C5C",
+        "includeMin": true,
+        "includeMax": true
+       },
+       {
+        "min": 0.49999998688697816,
+        "max": 0.9730000000000001,
+        "maxVPValue": "#F0F921",
+        "minVPValue": "#FDC527",
+        "includeMin": true,
+        "includeMax": true
+       },
+       {
+        "min": 0.9730000000000001,
+        "minVPValue": "#F0F921",
+        "includeMin": true,
+        "includeMax": false
+       }
+      ],
+      "attribute": "Integrated score"
+     }
+    }
+   },
+   "nodeMapping": {
+    "NODE_LABEL": {
+     "type": "PASSTHROUGH",
+     "definition": {
+      "attribute": "name"
+     }
+    }
+   }
+  }
+ ]
+}

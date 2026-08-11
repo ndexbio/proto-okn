@@ -23,14 +23,14 @@ Companion docs: [CX2_TO_RDF_DESIGN.md](CX2_TO_RDF_DESIGN.md),
 | # | Issue | Graph | Severity |
 |---|---|---|---|
 | 1 | NDEx source deposits are `UNLISTED` / owned by `cjtest`, and `nest.ttl` already cites them | NeST | **blocker** |
-| 2 | `file:///mnt/repo/...` filesystem paths leaked into entity IRIs | NCI-PID | **blocker** |
-| 3 | 30 entities carry relative (scheme-less) IRIs | NCI-PID | **blocker** |
+| 2 | `file:///mnt/repo/...` filesystem paths leaked into entity IRIs | NCI-PID | **blocker** — *converter fixed, needs re-publish* |
+| 3 | 30 entities carry relative (scheme-less) IRIs | NCI-PID | **blocker** — *converter fixed, needs re-publish* |
 | 4 | NeST is generated but not deposited or served | NeST | high |
 | 5 | Pathway provenance (design §4.8) is absent from the deployed graph | NCI-PID | high |
-| 6 | 61 non-protein entities typed `SIO:010043` (protein) | NCI-PID | high |
-| 7 | `example.org` placeholder base still in the published graph | NCI-PID | medium |
+| 6 | 61 non-protein entities typed `SIO:010043` (protein) | NCI-PID | high — *converter fixed, needs re-publish* |
+| 7 | `example.org` placeholder base still in the published graph | NCI-PID | medium — *converter fixed, needs re-publish* |
 | 8 | Cross-graph joins silently lose 79% of overlap without `owl:sameAs` | both | medium |
-| 9 | Bioregistry canonicalization not applied to `chebi` / `cas` | NCI-PID | medium |
+| 9 | Bioregistry canonicalization not applied to `chebi` / `cas` | NCI-PID | medium — *converter fixed, needs re-publish* |
 | 10 | Bioregistry `ndex` record has no `rdf_uri_format` | both | medium |
 | 11 | `merge_cx2.py` writes the superseded NDEx IRI stem | NCI-PID | medium |
 | 12 | Converter debt in `bio-cx2-to-rdf` | NCI-PID | low |
@@ -82,6 +82,11 @@ These IRIs leak build-host detail, can never join with another graph, and do not
 design §4.9.1 already does this for `proteinfamily`; extend it to the other bare-name types)
 and re-publish.
 
+> **Fixed in the converter (2026-08-10), not yet re-published.** Bare-name `represents` values
+> are now minted as `https://www.ndexbio.org/identifiers/entity/<slug>` (`buildEntityUri`,
+> `uri-builder.ts`). All 19 distinct bare names are covered; a corpus-wide conversion of all
+> 217 networks emits zero relative IRIs.
+
 ### 3. Relative, scheme-less IRIs
 
 30 subjects and 28 objects are stored as bare CURIEs with no scheme — e.g. the literal IRI
@@ -99,6 +104,11 @@ curl -s -X POST -H "Accept: application/sparql-results+json" \
 All 30 are ChEBI small molecules (choline, cholesterol, prostaglandin I2, cAMP/cGMP,
 phosphatidic acid, …). Related to issues 6 and 9. **Fix:** expand through the `@context` /
 Bioregistry stem to `http://purl.obolibrary.org/obo/CHEBI_15354` at conversion time.
+
+> **Fixed in the converter (2026-08-10), not yet re-published.** Root cause was case-sensitive
+> prefix lookup: the `@context` declares `chebi` but every node writes `CHEBI:`. Prefix
+> resolution is now case-insensitive (`resolvePrefix`, `namespace-manager.ts`), and the
+> Bioregistry map is seeded as a floor so networks shipping no `@context` still resolve.
 
 ---
 
@@ -155,6 +165,12 @@ SELECT (COUNT(DISTINCT ?s) AS ?n) WHERE {
 Consequence: a consumer selecting "all proteins" gets cholesterol. **Fix:** honour the
 node `type` attribute in the type mapping and re-publish.
 
+> **Fixed in the converter (2026-08-10), not yet re-published.** The 3-entry type map with its
+> `?? typeMap.protein` fallback is replaced by the verified §4.2 table with **no default**
+> (`nodeTypeToClassUri`). Small molecules now type as `CHEBI:23367`, families as
+> `biolink:GeneFamily`, `RnaReference` as `SO:0000655`. Corpus-wide, zero ChEBI/PubChem
+> entities are typed `SIO:010043`.
+
 ---
 
 ## Medium
@@ -164,6 +180,11 @@ node `type` attribute in the type mapping and re-publish.
 83,704 statement IRIs and 20 family IRIs use `http://example.org/okn/`, along with every
 custom property (`okn:evidenceCount`, `okn:evidenceUrl`, `okn:processType`, `okn:inPathway`).
 `example.org` is reserved for documentation and must not carry production identity.
+
+> **Fixed in the converter (2026-08-10), not yet re-published.** Entities now mint under
+> `https://www.ndexbio.org/identifiers/` and vocabulary terms under
+> `https://www.ndexbio.org/vocab/ncipid/` (`namespace-manager.ts`), matching the NeST/IAS
+> convention. Corpus-wide conversion of all 217 networks emits zero `example.org` IRIs.
 
 The NeST/IAS graphs already retired this in favour of `https://www.ndexbio.org/vocab/` and
 `https://www.ndexbio.org/identifiers/` ([IAS §8](IAS_NETWORK_GENERATION.md)). NCI-PID should
