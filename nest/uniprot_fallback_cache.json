@@ -1,0 +1,125 @@
+{
+"ABHD4": [
+[
+"Q8TB40"
+],
+"uniprot_api:reviewed_exact"
+],
+"AKAP2": [
+[],
+"none"
+],
+"ALG1L": [
+[],
+"none"
+],
+"C10orf90": [
+[
+"Q96M02"
+],
+"uniprot_api:reviewed_exact"
+],
+"C19orf48": [
+[
+"A0A024R4G9"
+],
+"uniprot_api:unreviewed_exact"
+],
+"C22orf46": [
+[],
+"none"
+],
+"C3orf36": [
+[],
+"none"
+],
+"C6orf201": [
+[
+"B3KW47"
+],
+"uniprot_api:unreviewed_exact"
+],
+"C6orf48": [
+[],
+"none"
+],
+"CRIPAK": [
+[],
+"none"
+],
+"GVQW1": [
+[],
+"none"
+],
+"HSD17B8": [
+[
+"Q92506"
+],
+"uniprot_api:reviewed_exact"
+],
+"IQCA1": [
+[
+"Q86XH1"
+],
+"uniprot_api:reviewed_exact"
+],
+"IQCD": [
+[
+"Q96DY2"
+],
+"uniprot_api:reviewed_exact"
+],
+"LRRC29": [
+[],
+"none"
+],
+"LRTOMT": [
+[
+"Q8WZ04",
+"Q96E66"
+],
+"uniprot_api:reviewed_exact"
+],
+"OCLM": [
+[],
+"none"
+],
+"PALM2": [
+[
+"Q9Y2D5"
+],
+"uniprot_api:reviewed_exact"
+],
+"PPP5D1": [
+[],
+"none"
+],
+"SPHAR": [
+[],
+"none"
+],
+"TMEM155": [
+[
+"Q4W5P6"
+],
+"uniprot_api:reviewed_exact"
+],
+"U2AF1L5": [
+[],
+"none"
+],
+"UBE2O": [
+[
+"Q9C0C9"
+],
+"uniprot_api:reviewed_exact"
+],
+"VNN3": [
+[
+"A0AUL5",
+"A7E205",
+"B2RBK8"
+],
+"uniprot_api:unreviewed_exact"
+]
+}

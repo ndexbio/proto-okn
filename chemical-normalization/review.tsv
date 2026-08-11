@@ -1,0 +1,45 @@
+source_id	cx2_name	flag	chosen_id	chosen_iri	pubchem_cid	chebi_id	normalizer_label	collides_with	override_reason	node_instances	networks
+CHEBI:17336	all-trans-retinol	CHEBI-DRIFT	PUBCHEM.COMPOUND:445354	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID445354	PUBCHEM.COMPOUND:445354	CHEBI:12777	Vitamin A			2	2
+CHEBI:31690	imatinib methanesulfonate	CHEBI-DRIFT	PUBCHEM.COMPOUND:5291	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID5291	PUBCHEM.COMPOUND:5291	CHEBI:45783	Imatinib			1	1
+CHEBI:16066	11-cis-retinal	OVERRIDE	CHEBI:16066	http://purl.obolibrary.org/obo/CHEBI_16066	PUBCHEM.COMPOUND:638015	CHEBI:17898	RETINAL		COLLISION: normalizes to PUBCHEM.COMPOUND:638015 ("Retinal"), the same CID as CHEBI:17898 (all-trans-retinal). 11-cis -> all-trans isomerization is the photon-detection step of visual signal transduction; merging the two would reduce the pathway's central reaction to a self-loop.	2	2
+CHEBI:17898	all-trans-retinal	OVERRIDE	CHEBI:17898	http://purl.obolibrary.org/obo/CHEBI_17898	PUBCHEM.COMPOUND:638015	CHEBI:17898	RETINAL		COLLISION: shares PUBCHEM.COMPOUND:638015 with CHEBI:16066 (11-cis-retinal). See that entry.	2	2
+CHEBI:28940	calciol	OVERRIDE	CHEBI:28940	http://purl.obolibrary.org/obo/CHEBI_28940	PUBCHEM.COMPOUND:5280793	CHEBI:27300	Ergocalciferol		WRONG COMPOUND: calciol is vitamin D3 (cholecalciferol), but the clique resolves to CHEBI:27300 / PUBCHEM.COMPOUND:5280793, both verified as ergocalciferol (vitamin D2). D2 is not D3.	1	1
+CHEBI:16618	1-phosphatidyl-1D-myo-inositol 3,4,5-trisphosphate	NO-CID	CHEBI:16618	http://purl.obolibrary.org/obo/CHEBI_16618		CHEBI:16618	1-phosphatidyl-1D-myo-inositol 3,4,5-trisphosphate			5	5
+CHEBI:3098	bile acid	NO-CID	CHEBI:3098	http://purl.obolibrary.org/obo/CHEBI_3098		CHEBI:3098	bile acid			1	1
+CHEBI:50114	estrogen	NO-CID	CHEBI:50114	http://purl.obolibrary.org/obo/CHEBI_50114		CHEBI:50114	estrogen			1	1
+CHEBI:24547	hexadecenal	NO-CID	CHEBI:24547	http://purl.obolibrary.org/obo/CHEBI_24547		CHEBI:24547	hexadecenal			1	1
+CHEBI:39026	low-density lipoprotein	NO-CID	CHEBI:39026	http://purl.obolibrary.org/obo/CHEBI_39026		CHEBI:39026	low-density lipoprotein			1	1
+CHEBI:16337	phosphatidic acid	NO-CID	CHEBI:16337	http://purl.obolibrary.org/obo/CHEBI_16337		CHEBI:16337	Phosphatidate			10	10
+CHEBI:26523	reactive oxygen species	NO-CID	CHEBI:26523	http://purl.obolibrary.org/obo/CHEBI_26523		CHEBI:26523	reactive oxygen species			1	1
+CHEBI:16302	11-cis-retinol	OK	PUBCHEM.COMPOUND:5280382	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID5280382	PUBCHEM.COMPOUND:5280382	CHEBI:16302	11-cis-retinol			2	2
+CHEBI:16330	17beta-hydroxy-5alpha-androstan-3-one	OK	PUBCHEM.COMPOUND:10635	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID10635	PUBCHEM.COMPOUND:10635	CHEBI:16330	Stanolone			6	6
+CHEBI:16595	1D-myo-inositol 1,4,5-trisphosphate	OK	PUBCHEM.COMPOUND:439456	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID439456	PUBCHEM.COMPOUND:439456	CHEBI:16595	INS(1,4,5)P3			27	27
+CHEBI:52392	2-arachidonoylglycerol	OK	PUBCHEM.COMPOUND:5282280	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID5282280	PUBCHEM.COMPOUND:5282280	CHEBI:52392	2-arachidonoylglycerol			1	1
+CHEBI:17489	3',5'-cyclic AMP	OK	PUBCHEM.COMPOUND:6076	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID6076	PUBCHEM.COMPOUND:6076	CHEBI:17489	Cyclic AMP			6	6
+CHEBI:16356	3',5'-cyclic GMP	OK	PUBCHEM.COMPOUND:135398570	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID135398570	PUBCHEM.COMPOUND:135398570	CHEBI:16356	Cyclic GMP			4	4
+cas:11128-99-7	Angiotensin II	OK	PUBCHEM.COMPOUND:25476	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID25476	PUBCHEM.COMPOUND:25476		Angiotensina II			1	1
+CHEBI:48080	brefeldin A	OK	PUBCHEM.COMPOUND:5287620	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID5287620	PUBCHEM.COMPOUND:5287620	CHEBI:48080	Brefeldin A			1	1
+CHEBI:16113	cholesterol	OK	PUBCHEM.COMPOUND:5997	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID5997	PUBCHEM.COMPOUND:5997	CHEBI:16113	Cholesterol			3	3
+CHEBI:15354	choline	OK	PUBCHEM.COMPOUND:305	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID305	PUBCHEM.COMPOUND:305	CHEBI:15354	Choline			9	9
+CHEBI:17650	cortisol	OK	PUBCHEM.COMPOUND:5754	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID5754	PUBCHEM.COMPOUND:5754	CHEBI:17650	Hydrocortisone			3	3
+CHEBI:4031	cyclosporin A	OK	PUBCHEM.COMPOUND:5284373	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID5284373	PUBCHEM.COMPOUND:5284373	CHEBI:4031	Cyclosporine			1	1
+cas:51-61-6	Dopamine	OK	PUBCHEM.COMPOUND:681	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID681	PUBCHEM.COMPOUND:681	CHEBI:18243	Dopamine			1	1
+cas:50-28-2	E2	OK	PUBCHEM.COMPOUND:5757	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID5757	PUBCHEM.COMPOUND:5757	CHEBI:16469	Estradiol			6	5
+cas:85305-87-9	glucosylceramide	OK	PUBCHEM.COMPOUND:6475228	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID6475228	PUBCHEM.COMPOUND:6475228	CHEBI:84744	beta-D-glucosyl-N-(tetracosanoyl)sphingosine			1	1
+cas:17-18-8	glutathione	OK	PUBCHEM.COMPOUND:124886	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID124886	PUBCHEM.COMPOUND:124886	CHEBI:16856	Glutathione		SOURCE DATA ERROR: the CX2 records glutathione as CAS 17-18-8, which is not a valid registry number. Glutathione is CAS 70-18-8 (CHEBI:16856).	1	1
+CHEBI:28087	glycogen	OK	PUBCHEM.COMPOUND:439177	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID439177	PUBCHEM.COMPOUND:439177	CHEBI:28087	glycogen			1	1
+cas:9005-49-6	heparin	OK	PUBCHEM.COMPOUND:22833565	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID22833565	PUBCHEM.COMPOUND:22833565	CHEBI:28304	Heparin			1	1
+cas:74-79-3	L-arginine	OK	PUBCHEM.COMPOUND:6322	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID6322	PUBCHEM.COMPOUND:6322	CHEBI:16467	Arginine			7	7
+cas:372-75-8	L-citrulline	OK	PUBCHEM.COMPOUND:9750	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID9750	PUBCHEM.COMPOUND:9750	CHEBI:16349	Citrulline			7	7
+CHEBI:78331	PP2	OK	PUBCHEM.COMPOUND:4878	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID4878	PUBCHEM.COMPOUND:4878	CHEBI:78331	PP2			1	1
+CHEBI:15552	prostaglandin I2	OK	PUBCHEM.COMPOUND:5282411	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID5282411	PUBCHEM.COMPOUND:5282411	CHEBI:15552	Epoprostenol			1	1
+CHEBI:37550	sphingosine 1-phosphate	OK	PUBCHEM.COMPOUND:5283560	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID5283560	PUBCHEM.COMPOUND:5283560	CHEBI:37550	sphingosine 1-phosphate			10	10
+CHEBI:61049	tacrolimus (anhydrous)	OK	PUBCHEM.COMPOUND:445643	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID445643	PUBCHEM.COMPOUND:445643	CHEBI:61049	Tacrolimus			3	3
+CHEBI:17347	testosterone	OK	PUBCHEM.COMPOUND:6013	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID6013	PUBCHEM.COMPOUND:6013	CHEBI:17347	Testosterone			5	5
+CHEBI:15627	thromboxane A2	OK	PUBCHEM.COMPOUND:5280497	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID5280497	PUBCHEM.COMPOUND:5280497	CHEBI:15627	thromboxane A2			1	1
+cas:133-89-1	UDP-D-glucose	OK	PUBCHEM.COMPOUND:8629	http://rdf.ncbi.nlm.nih.gov/pubchem/compound/CID8629	PUBCHEM.COMPOUND:8629	CHEBI:46229	UDP-glucose			1	1
+cas:24696-26-2	ceramide	UNRESOLVED	CAS:24696-26-2	CAS:24696-26-2						6	6
+cas:22556-62-3	LPA	UNRESOLVED	CAS:22556-62-3	CAS:22556-62-3						2	2
+cas:9031-54-3	sphingomyelin	UNRESOLVED	CAS:9031-54-3	CAS:9031-54-3						6	6
+LPS	LPS	NO-ID	LPS	LPS						1	1
+TH	TH	NO-ID	TH	TH						1	1
