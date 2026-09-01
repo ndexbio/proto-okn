@@ -24,7 +24,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Generate a mapping from pathway:<pathway_id> to NDEx URL")
     parser.add_argument("network_list_file", help="File containing list of network UUIDs")
     parser.add_argument("merged_ttl_file", help="Merged TTL file containing pathway names and identifiers")
-    parser.add_argument("--output_file", default="redirects.csv", help="Output file for the mapping (default: pathway_to_ndex_url_mapping.txt)")  
+    parser.add_argument("--output_file", default="pathway_redirects.csv", help="Output file for the mapping (default: pathway_to_ndex_url_mapping.txt)")  
     args = parser.parse_args()
 
     network_list_file = args.network_list_file
@@ -34,7 +34,6 @@ if __name__ == '__main__':
     df_networks = pd.read_csv(network_list_file, header=0, names=['network_id'])
 
     network_uuids = df_networks['network_id'].tolist()
-    print(network_uuids)
 
     # Create NDEx client
     ndex_client = Ndex2()
@@ -52,21 +51,21 @@ if __name__ == '__main__':
         except Exception as e:
             logger.error(f"Error processing network {uuid}: {e}")
 
-    # print(pathway_name_to_url)
     with open(merged_ttl_file, 'r') as f:
         pathway_id = None
         pathway_name = None
         for line in f:
             
             if line.startswith('pathway:'):
-                print(line)
+                
                 pathway_id = re.sub(' a biolink:Pathway;', '', re.sub(r'^pathway:', '', line.strip()))
-            elif 'rdfs:label' in line:
-                print(line)
+            elif 'rdfs:label' in line:                
                 # rdfs:label "Alpha4 beta1 integrin signaling events (v2.0)".
-                pathway_name = re.sub('".$', '', re.sub('^.*rdfs:label "', '', line.strip()))
-                print(f"pathway_id: {pathway_id}, pathway_name: {pathway_name}")
-                pathway_id_to_url[pathway_id] = pathway_name_to_url.get(pathway_name, None)
+                pathway_name = re.sub('".$', '', re.sub('^.*rdfs:label "', '', line.strip()))               
+                if pathway_name_to_url.get(pathway_name) is None:
+                    continue
+                else:
+                    pathway_id_to_url[pathway_id] = pathway_name_to_url.get(pathway_name, None)
 
 
     # Output the mapping to a file
@@ -76,7 +75,10 @@ if __name__ == '__main__':
             print(f"{pathway_id},{pathway_id},{url}")
     else:   
         with open(output_file, 'w') as f:
+            f.write('ID,URL\n')
             for pathway_id, url in pathway_id_to_url.items():
-                f.write(f"{pathway_id},{pathway_id},{url}\n")
+                if pathway_id is None:
+                    continue
+                f.write(f"{pathway_id},{url}\n")
 
         logger.info(f"Mapping file generated: {output_file}")
