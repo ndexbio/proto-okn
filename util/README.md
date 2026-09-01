@@ -161,3 +161,40 @@ util/download-networks.mjs   →  data_files/*.cx2   (download from NDEx)
 util/merge_cx2.py            →  merged_ncipid.cx2  (dedup + collapse)
 bio-cx2-to-rdf               →  *.ttl              (RDF Turtle)
 ```
+
+## `ncipid_pathway_to_identifiers_mapping_file.py`
+
+Builds a pathway redirect CSV by matching pathway labels in a merged RDF Turtle
+file to NDEx network names from a UUID list. For each match, it writes the
+pathway identifier and the corresponding NDEx network URL.
+
+### Prerequisites
+
+- Python 3
+- `pandas`
+- `ndex2`
+- Network access to NDEx
+
+### Usage
+
+```bash
+python ncipid_pathway_to_identifiers_mapping_file.py \
+    ../data_files/network_list.csv \
+    ../path/to/merged.ttl \
+    --output_file pathway_redirects.csv
+```
+
+### Arguments and flags
+
+| Argument / Flag | Default | Description |
+|---|---|---|
+| `network_list_file` | required | CSV containing a `network_id` column of NDEx UUIDs. |
+| `merged_ttl_file` | required | Merged Turtle file containing `pathway:` subjects and `rdfs:label` pathway names. |
+| `--output_file <path>` | `pathway_redirects.csv` | Output CSV path. |
+
+The generated CSV has two columns:
+
+```csv
+ID,URL
+pathway_identifier,https://www.ndexbio.org/#/network/<uuid>
+```
